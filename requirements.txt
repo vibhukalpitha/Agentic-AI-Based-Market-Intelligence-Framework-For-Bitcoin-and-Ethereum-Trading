@@ -1,0 +1,9 @@
+pandas
+pyarrow
+numpy
+hmmlearn
+scikit-learn
+scipy
+matplotlib
+# tslearn is needed only for M7 (DTW similarity, Phase 5) - add it then.
+pytest

@@ -1,0 +1,17 @@
+# Data and trained models are never committed (CLAUDE.md section 7.5).
+# The download script is committed instead, so the data can be rebuilt.
+data/
+*.parquet
+models/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Editor / OS
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
