@@ -105,6 +105,38 @@ META_COLUMNS = ["open_time", "close_time", "close"]
 DIST_HARD_LIMIT = 2.0
 
 # --------------------------------------------------------------------------
+# M3 - regime detection (one GaussianHMM per asset and timeframe)
+# --------------------------------------------------------------------------
+REGIMES_DIR = DATA_DIR / "regimes"      # M3 output: regime label per candle
+
+# The model is fitted on candles up to and including this date and then
+# applied, unchanged, to everything after it (train on past, test on future).
+# PROPOSED: 2022-12-31 gives training data that contains a full cycle
+# (2017 peak, 2018 bear, 2020 crash, 2021 peak, 2022 bear) and leaves
+# 2023-01 -> 2026-09 as untouched out-of-sample data.
+TRAIN_END = "2022-12-31"
+
+REGIMES = ["Bullish", "Bearish", "Sideways", "Volatile"]
+HMM_N_STATES = 4                # PROPOSED: one state per regime
+HMM_COVARIANCE_TYPE = "full"    # the nine features are strongly correlated,
+                                # which a diagonal covariance cannot represent
+HMM_MAX_ITER = 300              # Baum-Welch iterations (stops earlier on convergence)
+HMM_TOLERANCE = 1e-4            # log-likelihood gain below which training stops
+
+# Baum-Welch only finds a local optimum, so each model is fitted from several
+# random starts and the highest-likelihood fit is kept. Seeds are
+# RANDOM_SEED, RANDOM_SEED + 1, ... so every run is repeatable.
+HMM_N_RESTARTS = 10
+
+# State counts compared by BIC to check that 4 is a reasonable choice.
+HMM_STATE_CANDIDATES = [2, 3, 4, 5, 6]
+
+# OPEN decision: how many consecutive candles a new regime must hold before
+# the change counts as a real transition. The count is reported for each of
+# these so the decision can be made with the numbers in view.
+PERSISTENCE_CANDIDATES = [1, 2, 3, 5, 7]
+
+# --------------------------------------------------------------------------
 # Reproducibility
 # --------------------------------------------------------------------------
 RANDOM_SEED = 42

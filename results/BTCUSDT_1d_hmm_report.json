@@ -1,0 +1,216 @@
+{
+  "symbol": "BTCUSDT",
+  "interval": "1d",
+  "train_end": "2022-12-31",
+  "train_candles": 1863,
+  "test_candles": 1369,
+  "n_states": 4,
+  "covariance_type": "full",
+  "restarts": 10,
+  "best_seed": 46,
+  "converged": true,
+  "train_log_likelihood": -6993.990493136969,
+  "features": [
+    "log_return",
+    "rsi",
+    "macd_hist_norm",
+    "ema_dist",
+    "sma_dist",
+    "bb_width",
+    "bb_pctb",
+    "atr_norm",
+    "adx"
+  ],
+  "state_to_regime": {
+    "1": "Bullish",
+    "0": "Bearish",
+    "3": "Sideways",
+    "2": "Volatile"
+  },
+  "mapping_warnings": [],
+  "state_profiles": {
+    "0": {
+      "regime": "Bearish",
+      "days": 613,
+      "share": 0.3290391841,
+      "log_return": -0.0028235645,
+      "atr_norm": 0.0550509298,
+      "adx": 27.2373846167,
+      "sma_dist": -0.0678953427,
+      "rsi": 42.8066845885
+    },
+    "1": {
+      "regime": "Bullish",
+      "days": 462,
+      "share": 0.2479871176,
+      "log_return": 0.0080010697,
+      "atr_norm": 0.0524752362,
+      "adx": 37.00289967,
+      "sma_dist": 0.2474237812,
+      "rsi": 68.0817410108
+    },
+    "2": {
+      "regime": "Volatile",
+      "days": 328,
+      "share": 0.1760601181,
+      "log_return": -0.0050635011,
+      "atr_norm": 0.1040183715,
+      "adx": 34.3685604059,
+      "sma_dist": -0.1346547346,
+      "rsi": 41.5976181483
+    },
+    "3": {
+      "regime": "Sideways",
+      "days": 460,
+      "share": 0.2469135802,
+      "log_return": 0.0008794815,
+      "atr_norm": 0.0373184592,
+      "adx": 22.1962209271,
+      "sma_dist": 0.0185014749,
+      "rsi": 51.66525149
+    }
+  },
+  "regime_share": {
+    "Bullish": {
+      "train": 0.2479871176,
+      "test": 0.2520087655
+    },
+    "Bearish": {
+      "train": 0.3290391841,
+      "test": 0.2111029949
+    },
+    "Sideways": {
+      "train": 0.2469135802,
+      "test": 0.5259313367
+    },
+    "Volatile": {
+      "train": 0.1760601181,
+      "test": 0.0109569028
+    }
+  },
+  "transition_matrix": {
+    "Bullish": {
+      "Bullish": 0.9492814592,
+      "Bearish": 0.0172613834,
+      "Sideways": 0.0247218283,
+      "Volatile": 0.0087353291
+    },
+    "Bearish": {
+      "Bullish": 0.0144736368,
+      "Bearish": 0.9465366416,
+      "Sideways": 0.0306731172,
+      "Volatile": 0.0083166044
+    },
+    "Sideways": {
+      "Bullish": 0.0225720921,
+      "Bearish": 0.0382930245,
+      "Sideways": 0.9391348834,
+      "Volatile": 4.3161e-319
+    },
+    "Volatile": {
+      "Bullish": 0.0093580312,
+      "Bearish": 0.0189419196,
+      "Sideways": 2.055763778e-177,
+      "Volatile": 0.9717000492
+    }
+  },
+  "bic": [
+    {
+      "covariance": "diag",
+      "states": 2,
+      "log_likelihood": -20210.6263025569,
+      "bic": 40714.92039656726
+    },
+    {
+      "covariance": "diag",
+      "states": 3,
+      "log_likelihood": -17146.124815808977,
+      "bic": 34759.10612059525
+    },
+    {
+      "covariance": "diag",
+      "states": 4,
+      "log_likelihood": -15634.7495104472,
+      "bic": 31924.60409413674
+    },
+    {
+      "covariance": "diag",
+      "states": 5,
+      "log_likelihood": -14514.373727740554,
+      "bic": 29887.16099972969
+    },
+    {
+      "covariance": "diag",
+      "states": 6,
+      "log_likelihood": -13758.626370468419,
+      "bic": 28594.034642932864
+    },
+    {
+      "covariance": "full",
+      "states": 2,
+      "log_likelihood": -11112.596717266897,
+      "bic": 23061.01714867057
+    },
+    {
+      "covariance": "full",
+      "states": 3,
+      "log_likelihood": -8526.387922249114,
+      "bic": 18332.866217500497
+    },
+    {
+      "covariance": "full",
+      "states": 4,
+      "log_likelihood": -6993.990493136969,
+      "bic": 15727.397904882906
+    },
+    {
+      "covariance": "full",
+      "states": 5,
+      "log_likelihood": -5787.4461270975125,
+      "bic": 13788.695605151892
+    },
+    {
+      "covariance": "full",
+      "states": 6,
+      "log_likelihood": -4916.8786214362435,
+      "bic": 12537.006912918458
+    }
+  ],
+  "transitions": [
+    {
+      "persistence": 1,
+      "train": 98,
+      "test": 86,
+      "total": 184,
+      "mean_days_per_regime": 17.47027027027027
+    },
+    {
+      "persistence": 2,
+      "train": 94,
+      "test": 83,
+      "total": 177,
+      "mean_days_per_regime": 18.15730337078652
+    },
+    {
+      "persistence": 3,
+      "train": 89,
+      "test": 80,
+      "total": 169,
+      "mean_days_per_regime": 19.011764705882353
+    },
+    {
+      "persistence": 5,
+      "train": 77,
+      "test": 66,
+      "total": 143,
+      "mean_days_per_regime": 22.444444444444443
+    },
+    {
+      "persistence": 7,
+      "train": 67,
+      "test": 61,
+      "total": 128,
+      "mean_days_per_regime": 25.05426356589147
+    }
+  ]
+}
