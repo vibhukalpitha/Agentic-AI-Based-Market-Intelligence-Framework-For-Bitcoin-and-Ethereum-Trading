@@ -55,8 +55,20 @@ def test_confirmed_states_removes_flicker():
 def test_state_naming_rule():
     profile = pd.DataFrame({
         "share": [0.25, 0.25, 0.25, 0.25],
-        "sma_dist": [0.25, -0.18, -0.02, 0.03],
+        "rsi": [66.0, 38.0, 49.0, 51.0],
         "atr_rel": [0.0, 0.4, -0.3, 0.1],
     })
     assert state_mapping.map_states(profile) == {
         0: "Bullish", 1: "Bearish", 2: "Sideways", 3: "Volatile"}
+
+
+def test_state_naming_when_the_volatile_state_also_drifts_down():
+    """The ETH 1h case: a calm downtrend (RSI 41) and a high-volatility state
+    (RSI 45). The calm downtrend must be Bearish, the high-volatility one Volatile."""
+    profile = pd.DataFrame({
+        "share": [0.15, 0.29, 0.29, 0.27],
+        "rsi": [45.4, 62.8, 50.3, 41.3],
+        "atr_rel": [0.69, 0.00, -0.43, 0.02],
+    })
+    assert state_mapping.map_states(profile) == {
+        1: "Bullish", 3: "Bearish", 2: "Sideways", 0: "Volatile"}

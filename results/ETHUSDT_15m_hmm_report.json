@@ -1,0 +1,159 @@
+{
+  "symbol": "ETHUSDT",
+  "interval": "15m",
+  "train_end": "2022-12-31",
+  "train_candles": 69929,
+  "test_candles": 131419,
+  "n_states": 4,
+  "covariance_type": "full",
+  "restarts": 10,
+  "best_seed": 45,
+  "converged": true,
+  "train_log_likelihood": -313224.42229870573,
+  "features": [
+    "log_return",
+    "rsi",
+    "macd_hist_norm",
+    "ema_dist",
+    "sma_dist",
+    "bb_width_rel",
+    "bb_pctb",
+    "atr_rel",
+    "adx"
+  ],
+  "state_to_regime": {
+    "2": "Bullish",
+    "3": "Bearish",
+    "0": "Sideways",
+    "1": "Volatile"
+  },
+  "mapping_warnings": [],
+  "state_profiles": {
+    "0": {
+      "regime": "Sideways",
+      "days": 20965,
+      "share": 0.299804087,
+      "rsi": 51.2310457992,
+      "atr_rel": -0.468157672,
+      "sma_dist": 0.0017759628,
+      "log_return": -2.41099e-05,
+      "atr_norm": 0.0041320578,
+      "adx": 20.1137652925
+    },
+    "1": {
+      "regime": "Volatile",
+      "days": 9634,
+      "share": 0.1377683079,
+      "rsi": 46.3384974277,
+      "atr_rel": 0.8442616965,
+      "sma_dist": -0.0104394972,
+      "log_return": -0.000189856,
+      "atr_norm": 0.0147995533,
+      "adx": 32.5315871496
+    },
+    "2": {
+      "regime": "Bullish",
+      "days": 19131,
+      "share": 0.2735774857,
+      "rsi": 61.4800822835,
+      "atr_rel": 0.0742135303,
+      "sma_dist": 0.0169262231,
+      "log_return": 0.0005136063,
+      "atr_norm": 0.0069590861,
+      "adx": 28.9107445411
+    },
+    "3": {
+      "regime": "Bearish",
+      "days": 20199,
+      "share": 0.2888501194,
+      "rsi": 41.2391042514,
+      "atr_rel": 0.0401378735,
+      "sma_dist": -0.0119472359,
+      "log_return": -0.000346412,
+      "atr_norm": 0.0067714259,
+      "adx": 29.2368922673
+    }
+  },
+  "regime_share": {
+    "Bullish": {
+      "train": 0.2735774857,
+      "test": 0.1984187979
+    },
+    "Bearish": {
+      "train": 0.2888501194,
+      "test": 0.242073064
+    },
+    "Sideways": {
+      "train": 0.299804087,
+      "test": 0.4687526157
+    },
+    "Volatile": {
+      "train": 0.1377683079,
+      "test": 0.0907555224
+    }
+  },
+  "transition_matrix": {
+    "Bullish": {
+      "Bullish": 0.9375082657,
+      "Bearish": 0.0168325327,
+      "Sideways": 0.0355975665,
+      "Volatile": 0.010061635
+    },
+    "Bearish": {
+      "Bullish": 0.0229255178,
+      "Bearish": 0.9409487814,
+      "Sideways": 0.0248347534,
+      "Volatile": 0.0112909475
+    },
+    "Sideways": {
+      "Bullish": 0.0244334687,
+      "Bearish": 0.0296297319,
+      "Sideways": 0.9457972746,
+      "Volatile": 0.0001395247
+    },
+    "Volatile": {
+      "Bullish": 0.0219675809,
+      "Bearish": 0.0229734266,
+      "Sideways": 5.593045488e-153,
+      "Volatile": 0.9550589924
+    }
+  },
+  "bic": [],
+  "transitions": [
+    {
+      "persistence": 1,
+      "train": 4918,
+      "test": 8625,
+      "total": 13543,
+      "mean_days_per_regime": 14.866213821618429
+    },
+    {
+      "persistence": 2,
+      "train": 4211,
+      "test": 7417,
+      "total": 11628,
+      "mean_days_per_regime": 17.31430045575716
+    },
+    {
+      "persistence": 3,
+      "train": 3672,
+      "test": 6651,
+      "total": 10323,
+      "mean_days_per_regime": 19.502905850445565
+    },
+    {
+      "persistence": 5,
+      "train": 2883,
+      "test": 5542,
+      "total": 8425,
+      "mean_days_per_regime": 23.896036078803704
+    },
+    {
+      "persistence": 7,
+      "train": 2300,
+      "test": 4556,
+      "total": 6856,
+      "mean_days_per_regime": 29.36386174711973
+    }
+  ]
+}

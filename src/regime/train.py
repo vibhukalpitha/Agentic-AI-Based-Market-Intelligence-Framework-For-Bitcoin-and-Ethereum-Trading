@@ -103,7 +103,18 @@ def plot_regimes(regimes: pd.DataFrame, symbol: str, interval: str) -> None:
     plt.close(fig)
 
 
-def train_one(symbol: str, interval: str, run_bic: bool = True) -> None:
+def load_saved(symbol: str, interval: str) -> tuple[hmm_model.RegimeModel, pd.DataFrame]:
+    """Load a model fitted earlier, with the BIC table from its saved record."""
+    with open(config.MODELS_DIR / f"{symbol}_{interval}_hmm.pkl", "rb") as file:
+        model = pickle.load(file)
+    with open(config.RESULTS_DIR / f"{symbol}_{interval}_hmm_report.json") as file:
+        bic = pd.DataFrame(json.load(file)["bic"])
+    return model, bic
+
+
+def train_one(symbol: str, interval: str, run_bic: bool = True, relabel: bool = False) -> None:
+    """relabel=True reuses the saved fitted model and only redoes the naming,
+    labels, report and figure. The fit itself is not touched."""
     features = pd.read_parquet(config.FEATURES_DIR / f"{symbol}_{interval}_features.parquet")
     is_train = hmm_model.split_train(features, config.TRAIN_END).to_numpy()
     train_values = features.loc[is_train, config.FEATURE_COLUMNS].to_numpy(dtype=float)
@@ -120,14 +131,24 @@ def train_one(symbol: str, interval: str, run_bic: bool = True) -> None:
           f"test: {(~is_train).sum():,} candles after")
 
     bic = pd.DataFrame()
-    if run_bic:
+    if relabel:
+        saved, bic = load_saved(symbol, interval)
+        # The saved model must belong to exactly these features and this split.
+        if not (np.allclose(saved.feature_mean, model.feature_mean)
+                and np.allclose(saved.feature_std, model.feature_std)
+                and saved.train_end == config.TRAIN_END):
+            raise ValueError("saved model does not match the current features; refit it")
+        model.hmm, model.seed = saved.hmm, saved.seed
+    elif run_bic:
         bic = bic_table(x_train)
+    if not bic.empty:
         print("\nState-count check (BIC, lower is better):")
         print(bic.pivot(index="states", columns="covariance", values="bic")
               .to_string(float_format=lambda v: f"{v:12.0f}"))
 
-    model.hmm, model.seed = hmm_model.fit_hmm(
-        x_train, config.HMM_N_STATES, config.HMM_COVARIANCE_TYPE)
+    if not relabel:
+        model.hmm, model.seed = hmm_model.fit_hmm(
+            x_train, config.HMM_N_STATES, config.HMM_COVARIANCE_TYPE)
     print(f"\nFinal model: {config.HMM_N_STATES} states, {config.HMM_COVARIANCE_TYPE} "
           f"covariance, best seed {model.seed}, "
           f"converged={model.hmm.monitor_.converged} "
@@ -209,9 +230,11 @@ def main() -> None:
     parser.add_argument("--symbols", nargs="+", default=config.SYMBOLS, choices=config.SYMBOLS)
     parser.add_argument("--skip-bic", action="store_true",
                         help="skip the state-count comparison (slow on 15m and 5m)")
+    parser.add_argument("--relabel", action="store_true",
+                        help="reuse the saved fitted model; redo naming, labels, report, figure")
     args = parser.parse_args()
     for symbol in args.symbols:
-        train_one(symbol, args.interval, run_bic=not args.skip_bic)
+        train_one(symbol, args.interval, run_bic=not args.skip_bic, relabel=args.relabel)
     print("\nSaved: labels in", config.REGIMES_DIR, "| models in", config.MODELS_DIR,
           "| reports and figures in", config.RESULTS_DIR)
 
