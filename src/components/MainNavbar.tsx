@@ -12,7 +12,7 @@ export const MainNavbar: React.FC<MainNavbarProps> = ({ activeTab, setActiveTab 
     { id: 'home' as MainTab, label: 'HOME', icon: LayoutGrid, tag: 'System Overview' },
     { id: 'component-1' as MainTab, label: 'COMPONENT 1', icon: Cpu, tag: 'Data Pipeline' },
     { id: 'component-2' as MainTab, label: 'COMPONENT 2: Cross-Market & Capital Flow Intelligence Engine', icon: LineChart, tag: 'Market Intelligence' },
-    { id: 'component-3' as MainTab, label: 'COMPONENT 3', icon: Activity, tag: 'Risk & Execution' },
+    { id: 'component-3' as MainTab, label: 'COMPONENT 3', icon: Activity, tag: 'Market Integrity' },
     { id: 'component-4' as MainTab, label: 'COMPONENT 4', icon: ShieldCheck, tag: 'Compliance & Audit' },
   ];
 

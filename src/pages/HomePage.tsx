@@ -139,26 +139,30 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigateToTab }) => {
                   </div>
                   <div>
                     <span className="text-[11px] font-bold text-indigo-400 uppercase font-mono">COMPONENT 3</span>
-                    <h4 className="text-base font-bold text-white tracking-tight">Portfolio Risk & Execution Optimization</h4>
+                    <h4 className="text-base font-bold text-white tracking-tight">AI-Based Market Integrity Intelligence Engine</h4>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 text-xs font-bold border border-amber-500/20">
-                  Prototype
+                <span className="px-2.5 py-1 rounded bg-indigo-500/10 text-indigo-400 text-xs font-bold border border-indigo-500/20">
+                  Integrity Engine
                 </span>
               </div>
 
               <p className="text-xs text-gray-300 leading-relaxed">
-                Algorithmic trade execution, dynamic slippage modeling, and multi-asset tail-risk protection module.
+                Real-time market integrity assessment, wash trading &amp; pump-and-dump detection, and explainable integrity scoring for BTC/USDT and ETH/USDT.
               </p>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <div className="p-3 rounded-lg bg-[#0d0f17] border border-[#1e2330]">
-                  <span className="text-[11px] text-gray-400 uppercase">Sharpe Ratio</span>
-                  <div className="text-base font-extrabold text-emerald-400 font-mono mt-0.5">2.84</div>
+              <div className="grid grid-cols-1 gap-2 pt-2">
+                <div className="p-3 rounded-lg bg-[#0d0f17] border border-[#1e2330] flex items-center justify-between">
+                  <span className="text-[11px] text-gray-400 uppercase">Integrity State</span>
+                  <div className="text-sm font-extrabold text-emerald-400 font-mono">HEALTHY</div>
                 </div>
-                <div className="p-3 rounded-lg bg-[#0d0f17] border border-[#1e2330]">
-                  <span className="text-[11px] text-gray-400 uppercase">Max Drawdown</span>
-                  <div className="text-base font-extrabold text-rose-400 font-mono mt-0.5">4.1%</div>
+                <div className="p-3 rounded-lg bg-[#0d0f17] border border-[#1e2330] flex items-center justify-between">
+                  <span className="text-[11px] text-gray-400 uppercase">Integrity Score</span>
+                  <div className="text-sm font-extrabold text-indigo-400 font-mono">92 / 100</div>
+                </div>
+                <div className="p-3 rounded-lg bg-[#0d0f17] border border-[#1e2330] flex items-center justify-between">
+                  <span className="text-[11px] text-gray-400 uppercase">Confidence</span>
+                  <div className="text-sm font-extrabold text-purple-400 font-mono">95%</div>
                 </div>
               </div>
             </div>
