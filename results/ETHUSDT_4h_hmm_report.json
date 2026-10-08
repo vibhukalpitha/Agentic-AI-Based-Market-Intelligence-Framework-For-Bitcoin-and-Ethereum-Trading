@@ -1,0 +1,222 @@
+{
+  "symbol": "ETHUSDT",
+  "interval": "4h",
+  "train_end": "2022-12-31",
+  "train_candles": 9470,
+  "test_candles": 8214,
+  "n_states": 4,
+  "covariance_type": "full",
+  "restarts": 10,
+  "best_seed": 48,
+  "converged": true,
+  "train_log_likelihood": -43634.91911196547,
+  "features": [
+    "log_return",
+    "rsi",
+    "macd_hist_norm",
+    "ema_dist",
+    "sma_dist",
+    "bb_width_rel",
+    "bb_pctb",
+    "atr_rel",
+    "adx"
+  ],
+  "state_to_regime": {
+    "3": "Bullish",
+    "1": "Bearish",
+    "0": "Sideways",
+    "2": "Volatile"
+  },
+  "mapping_warnings": [
+    "the most volatile state is 'Bearish', not 'Volatile'"
+  ],
+  "state_profiles": {
+    "0": {
+      "regime": "Sideways",
+      "days": 2653,
+      "share": 0.2801478353,
+      "sma_dist": 0.0021038481,
+      "atr_rel": -0.393305509,
+      "log_return": -0.0001265964,
+      "atr_norm": 0.0181363148,
+      "adx": 20.1672972656,
+      "rsi": 49.5240137882
+    },
+    "1": {
+      "regime": "Bearish",
+      "days": 1303,
+      "share": 0.137592397,
+      "sma_dist": -0.0685840819,
+      "atr_rel": 0.6312678863,
+      "log_return": -0.0028180355,
+      "atr_norm": 0.0515813697,
+      "adx": 38.5528199189,
+      "rsi": 40.7015524029
+    },
+    "2": {
+      "regime": "Volatile",
+      "days": 2567,
+      "share": 0.2710665259,
+      "sma_dist": -0.0385551082,
+      "atr_rel": 0.0527578486,
+      "log_return": -0.0012939069,
+      "atr_norm": 0.0284697163,
+      "adx": 27.7352310767,
+      "rsi": 42.7421978964
+    },
+    "3": {
+      "regime": "Bullish",
+      "days": 2947,
+      "share": 0.3111932418,
+      "sma_dist": 0.0794507331,
+      "atr_rel": -0.0039853516,
+      "log_return": 0.0029686116,
+      "atr_norm": 0.0263656356,
+      "adx": 30.5671033729,
+      "rsi": 63.9277718222
+    }
+  },
+  "regime_share": {
+    "Bullish": {
+      "train": 0.3111932418,
+      "test": 0.2408083759
+    },
+    "Bearish": {
+      "train": 0.137592397,
+      "test": 0.0926467008
+    },
+    "Sideways": {
+      "train": 0.2801478353,
+      "test": 0.4407109813
+    },
+    "Volatile": {
+      "train": 0.2710665259,
+      "test": 0.2258339421
+    }
+  },
+  "transition_matrix": {
+    "Bullish": {
+      "Bullish": 0.9451275703,
+      "Bearish": 0.008546843,
+      "Sideways": 0.031889976,
+      "Volatile": 0.0144356107
+    },
+    "Bearish": {
+      "Bullish": 0.0161267013,
+      "Bearish": 0.942416958,
+      "Sideways": 3.78839729e-111,
+      "Volatile": 0.0414563407
+    },
+    "Sideways": {
+      "Bullish": 0.033475838,
+      "Bearish": 0.003894458,
+      "Sideways": 0.9346338006,
+      "Volatile": 0.0279959034
+    },
+    "Volatile": {
+      "Bullish": 0.0195441188,
+      "Bearish": 0.0147040276,
+      "Sideways": 0.0344751535,
+      "Volatile": 0.9312767001
+    }
+  },
+  "bic": [
+    {
+      "covariance": "diag",
+      "states": 2,
+      "log_likelihood": -105222.2815963189,
+      "bic": 210801.64267589882
+    },
+    {
+      "covariance": "diag",
+      "states": 3,
+      "log_likelihood": -89534.94242715438,
+      "bic": 179637.54967385193
+    },
+    {
+      "covariance": "diag",
+      "states": 4,
+      "log_likelihood": -82794.30099705979,
+      "bic": 166385.16391831727
+    },
+    {
+      "covariance": "diag",
+      "states": 5,
+      "log_likelihood": -78438.73827751375,
+      "bic": 157921.24735225204
+    },
+    {
+      "covariance": "diag",
+      "states": 6,
+      "log_likelihood": -75170.2699513852,
+      "bic": 151649.83134139417
+    },
+    {
+      "covariance": "full",
+      "states": 2,
+      "log_likelihood": -59614.65167342646,
+      "bic": 120245.6064915189
+    },
+    {
+      "covariance": "full",
+      "states": 3,
+      "log_likelihood": -49188.981374990035,
+      "bic": 99934.4630616307
+    },
+    {
+      "covariance": "full",
+      "states": 4,
+      "log_likelihood": -43634.91911196547,
+      "bic": 89384.84747093855
+    },
+    {
+      "covariance": "full",
+      "states": 5,
+      "log_likelihood": -39264.537387157376,
+      "bic": 81220.9047250517
+    },
+    {
+      "covariance": "full",
+      "states": 6,
+      "log_likelihood": -36321.905448260964,
+      "bic": 75930.7733193606
+    }
+  ],
+  "transitions": [
+    {
+      "persistence": 1,
+      "train": 682,
+      "test": 590,
+      "total": 1272,
+      "mean_days_per_regime": 13.89159465828751
+    },
+    {
+      "persistence": 2,
+      "train": 600,
+      "test": 516,
+      "total": 1116,
+      "mean_days_per_regime": 15.831692032229185
+    },
+    {
+      "persistence": 3,
+      "train": 537,
+      "test": 476,
+      "total": 1013,
+      "mean_days_per_regime": 17.439842209072978
+    },
+    {
+      "persistence": 5,
+      "train": 428,
+      "test": 404,
+      "total": 832,
+      "mean_days_per_regime": 21.229291716686674
+    },
+    {
+      "persistence": 7,
+      "train": 337,
+      "test": 324,
+      "total": 661,
+      "mean_days_per_regime": 26.71299093655589
+    }
+  ]
+}

@@ -163,12 +163,36 @@ def adx(high: np.ndarray, low: np.ndarray, close: np.ndarray, period: int) -> np
     return wilder_smooth(dx, period)
 
 
+def relative_to_trailing_median(values: np.ndarray, window: int) -> np.ndarray:
+    """log(value / median of the last `window` values, today's included).
+
+    0 means "normal for the past year", +0.69 means twice the usual level,
+    -0.69 means half. The logarithm makes "twice" and "half" equally far from
+    zero, which suits the HMM's bell-shaped (Gaussian) assumption.
+    The median is used, not the mean, so a few crash days do not distort the
+    reference level. Only past and present values enter the window.
+    """
+    baseline = pd.Series(values).rolling(window).median().to_numpy()
+    ratio = _safe_divide(values, baseline, fill=1.0)
+    # A zero value (flat outage candles) has no logarithm; floor it at the
+    # smallest positive value seen SO FAR, so the result stays finite and
+    # still depends on the past only.
+    positive_so_far = np.fmin.accumulate(np.where(ratio > 0, ratio, np.nan))
+    return np.log(np.where(ratio > 0, ratio, positive_so_far))
+
+
+def baseline_window(interval: str) -> int:
+    """Number of candles in VOL_BASELINE_DAYS for this timeframe."""
+    return int(pd.Timedelta(days=config.VOL_BASELINE_DAYS) / config.INTERVAL_STEP[interval])
+
+
 # --------------------------------------------------------------------------
 # Feature table
 # --------------------------------------------------------------------------
-def compute_features(candles: pd.DataFrame) -> pd.DataFrame:
+def compute_features(candles: pd.DataFrame, vol_window: int) -> pd.DataFrame:
     """Return META_COLUMNS + the nine FEATURE_COLUMNS, same length as the input.
 
+    vol_window is the length, in candles, of the volatility baseline.
     Warm-up rows are still present here (as NaN); build_features removes them.
     """
     high = candles["high"].to_numpy(dtype=float)
@@ -179,24 +203,32 @@ def compute_features(candles: pd.DataFrame) -> pd.DataFrame:
     sma_values = sma(close, config.SMA_PERIOD)
     bb_width, bb_pctb = bollinger(close, config.BB_PERIOD, config.BB_NUM_STD)
 
-    out = candles[config.META_COLUMNS].copy()
+    atr_norm = atr(high, low, close, config.ATR_PERIOD) / close
+
+    out = candles[["open_time", "close_time", "close"]].copy()
+    out["atr_norm"] = atr_norm
+    out["bb_width"] = bb_width
     out["log_return"] = np.log(close / np.concatenate(([np.nan], close[:-1])))
     out["rsi"] = rsi(close, config.RSI_PERIOD)
     out["macd_hist_norm"] = macd_histogram(
         close, config.MACD_FAST, config.MACD_SLOW, config.MACD_SIGNAL) / close
     out["ema_dist"] = (close - ema_values) / ema_values
     out["sma_dist"] = (close - sma_values) / sma_values
-    out["bb_width"] = bb_width
+    out["bb_width_rel"] = relative_to_trailing_median(bb_width, vol_window)
     out["bb_pctb"] = bb_pctb
-    out["atr_norm"] = atr(high, low, close, config.ATR_PERIOD) / close
+    out["atr_rel"] = relative_to_trailing_median(atr_norm, vol_window)
     out["adx"] = adx(high, low, close, config.ADX_PERIOD)
-    return out
+    return out[config.META_COLUMNS + config.FEATURE_COLUMNS]
 
 
 def build_features(symbol: str, interval: str) -> pd.DataFrame:
     """Load one raw file, compute features, drop warm-up, check, save, report."""
     candles = pd.read_parquet(config.PARQUET_DIR / f"{symbol}_{interval}.parquet")
-    features = compute_features(candles).iloc[config.WARMUP_ROWS:].reset_index(drop=True)
+    # The volatility baseline needs a full window of valid ATR / band values
+    # before its first output, so that window is added to the warm-up.
+    vol_window = baseline_window(interval)
+    warmup = config.WARMUP_ROWS + vol_window
+    features = compute_features(candles, vol_window).iloc[warmup:].reset_index(drop=True)
 
     values = features[config.FEATURE_COLUMNS]
     if not np.isfinite(values.to_numpy()).all():

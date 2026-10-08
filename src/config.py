@@ -89,15 +89,27 @@ SMA_PERIOD = 50         # medium-term trend reference
 # (Wilder 14: (13/14)^86 = 0.2%; EMA 26: (25/27)^74 = 0.3%).
 WARMUP_ROWS = 100
 
+# Volatility baseline: the two volatility features are measured against their
+# own median over the previous 365 days (past candles only).
+# WHY: crypto volatility has fallen as the market matured. "ATR is 5% of price"
+# was calm in 2018 and extreme in 2025, so a model trained on the absolute
+# level stops recognising volatile periods in later years. Relative to the
+# trailing year, "volatile" means the same thing in every era.
+# WHY 365 days: long enough to be a stable reference through a whole market
+# phase, short enough to follow the slow decline in volatility.
+VOL_BASELINE_DAYS = 365
+
 # The nine columns that are fed to the HMM. Nothing else may be used as input.
 FEATURE_COLUMNS = [
     "log_return", "rsi", "macd_hist_norm", "ema_dist", "sma_dist",
-    "bb_width", "bb_pctb", "atr_norm", "adx",
+    "bb_width_rel", "bb_pctb", "atr_rel", "adx",
 ]
 
 # Kept in the feature files for bookkeeping only - NEVER model inputs.
 # close_time is needed later so that a candle is only used after it has closed.
-META_COLUMNS = ["open_time", "close_time", "close"]
+# atr_norm and bb_width are the plain scale-free values that the two relative
+# volatility features are built from; kept so reports can show real units.
+META_COLUMNS = ["open_time", "close_time", "close", "atr_norm", "bb_width"]
 
 # Hard failure limit for |ema_dist| and |sma_dist|. A correctly normalised
 # distance is a fraction of price; values beyond this mean raw price units

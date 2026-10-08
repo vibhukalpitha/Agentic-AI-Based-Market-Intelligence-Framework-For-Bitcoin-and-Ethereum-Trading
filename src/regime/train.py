@@ -103,7 +103,7 @@ def plot_regimes(regimes: pd.DataFrame, symbol: str, interval: str) -> None:
     plt.close(fig)
 
 
-def train_one(symbol: str, interval: str) -> None:
+def train_one(symbol: str, interval: str, run_bic: bool = True) -> None:
     features = pd.read_parquet(config.FEATURES_DIR / f"{symbol}_{interval}_features.parquet")
     is_train = hmm_model.split_train(features, config.TRAIN_END).to_numpy()
     train_values = features.loc[is_train, config.FEATURE_COLUMNS].to_numpy(dtype=float)
@@ -119,10 +119,12 @@ def train_one(symbol: str, interval: str) -> None:
     print(f"train: {is_train.sum():,} candles up to {config.TRAIN_END} | "
           f"test: {(~is_train).sum():,} candles after")
 
-    bic = bic_table(x_train)
-    print("\nState-count check (BIC, lower is better):")
-    print(bic.pivot(index="states", columns="covariance", values="bic")
-          .to_string(float_format=lambda v: f"{v:12.0f}"))
+    bic = pd.DataFrame()
+    if run_bic:
+        bic = bic_table(x_train)
+        print("\nState-count check (BIC, lower is better):")
+        print(bic.pivot(index="states", columns="covariance", values="bic")
+              .to_string(float_format=lambda v: f"{v:12.0f}"))
 
     model.hmm, model.seed = hmm_model.fit_hmm(
         x_train, config.HMM_N_STATES, config.HMM_COVARIANCE_TYPE)
@@ -205,9 +207,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--interval", default="1d", choices=config.INTERVALS)
     parser.add_argument("--symbols", nargs="+", default=config.SYMBOLS, choices=config.SYMBOLS)
+    parser.add_argument("--skip-bic", action="store_true",
+                        help="skip the state-count comparison (slow on 15m and 5m)")
     args = parser.parse_args()
     for symbol in args.symbols:
-        train_one(symbol, args.interval)
+        train_one(symbol, args.interval, run_bic=not args.skip_bic)
     print("\nSaved: labels in", config.REGIMES_DIR, "| models in", config.MODELS_DIR,
           "| reports and figures in", config.RESULTS_DIR)
 

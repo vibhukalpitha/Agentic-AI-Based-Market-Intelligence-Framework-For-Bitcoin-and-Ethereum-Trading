@@ -55,8 +55,8 @@ def test_confirmed_states_removes_flicker():
 def test_state_naming_rule():
     profile = pd.DataFrame({
         "share": [0.25, 0.25, 0.25, 0.25],
-        "log_return": [0.004, -0.003, 0.0005, -0.001],
-        "atr_norm": [0.03, 0.04, 0.02, 0.09],
+        "sma_dist": [0.25, -0.18, -0.02, 0.03],
+        "atr_rel": [0.0, 0.4, -0.3, 0.1],
     })
     assert state_mapping.map_states(profile) == {
         0: "Bullish", 1: "Bearish", 2: "Sideways", 3: "Volatile"}

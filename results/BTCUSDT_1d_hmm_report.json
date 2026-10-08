@@ -2,215 +2,221 @@
   "symbol": "BTCUSDT",
   "interval": "1d",
   "train_end": "2022-12-31",
-  "train_candles": 1863,
+  "train_candles": 1498,
   "test_candles": 1369,
   "n_states": 4,
   "covariance_type": "full",
   "restarts": 10,
   "best_seed": 46,
   "converged": true,
-  "train_log_likelihood": -6993.990493136969,
+  "train_log_likelihood": -6294.515851079836,
   "features": [
     "log_return",
     "rsi",
     "macd_hist_norm",
     "ema_dist",
     "sma_dist",
-    "bb_width",
+    "bb_width_rel",
     "bb_pctb",
-    "atr_norm",
+    "atr_rel",
     "adx"
   ],
   "state_to_regime": {
     "1": "Bullish",
-    "0": "Bearish",
-    "3": "Sideways",
-    "2": "Volatile"
+    "3": "Bearish",
+    "2": "Sideways",
+    "0": "Volatile"
   },
-  "mapping_warnings": [],
+  "mapping_warnings": [
+    "the most volatile state is 'Bearish', not 'Volatile'"
+  ],
   "state_profiles": {
     "0": {
-      "regime": "Bearish",
-      "days": 613,
-      "share": 0.3290391841,
-      "log_return": -0.0028235645,
-      "atr_norm": 0.0550509298,
-      "adx": 27.2373846167,
-      "sma_dist": -0.0678953427,
-      "rsi": 42.8066845885
+      "regime": "Volatile",
+      "days": 527,
+      "share": 0.3518024032,
+      "sma_dist": 0.0249641165,
+      "atr_rel": 0.0874440323,
+      "log_return": 0.0001956783,
+      "atr_norm": 0.0577594206,
+      "adx": 24.1933896027,
+      "rsi": 51.7084898253
     },
     "1": {
       "regime": "Bullish",
-      "days": 462,
-      "share": 0.2479871176,
-      "log_return": 0.0080010697,
-      "atr_norm": 0.0524752362,
-      "adx": 37.00289967,
-      "sma_dist": 0.2474237812,
-      "rsi": 68.0817410108
+      "days": 362,
+      "share": 0.2416555407,
+      "sma_dist": 0.2447179892,
+      "atr_rel": -0.0036155545,
+      "log_return": 0.0087444132,
+      "atr_norm": 0.0494956985,
+      "adx": 39.0896093889,
+      "rsi": 69.1492278635
     },
     "2": {
-      "regime": "Volatile",
-      "days": 328,
-      "share": 0.1760601181,
-      "log_return": -0.0050635011,
-      "atr_norm": 0.1040183715,
-      "adx": 34.3685604059,
-      "sma_dist": -0.1346547346,
-      "rsi": 41.5976181483
+      "regime": "Sideways",
+      "days": 267,
+      "share": 0.1782376502,
+      "sma_dist": -0.0279659184,
+      "atr_rel": -0.3757593603,
+      "log_return": 0.0004854533,
+      "atr_norm": 0.035931984,
+      "adx": 21.1611165133,
+      "rsi": 48.7841724286
     },
     "3": {
-      "regime": "Sideways",
-      "days": 460,
-      "share": 0.2469135802,
-      "log_return": 0.0008794815,
-      "atr_norm": 0.0373184592,
-      "adx": 22.1962209271,
-      "sma_dist": 0.0185014749,
-      "rsi": 51.66525149
+      "regime": "Bearish",
+      "days": 342,
+      "share": 0.2283044059,
+      "sma_dist": -0.1675314485,
+      "atr_rel": 0.229629017,
+      "log_return": -0.0057355245,
+      "atr_norm": 0.0706471705,
+      "adx": 35.4762231563,
+      "rsi": 35.9189984124
     }
   },
   "regime_share": {
     "Bullish": {
-      "train": 0.2479871176,
-      "test": 0.2520087655
+      "train": 0.2416555407,
+      "test": 0.2965668371
     },
     "Bearish": {
-      "train": 0.3290391841,
-      "test": 0.2111029949
+      "train": 0.2283044059,
+      "test": 0.1972242513
     },
     "Sideways": {
-      "train": 0.2469135802,
-      "test": 0.5259313367
+      "train": 0.1782376502,
+      "test": 0.2169466764
     },
     "Volatile": {
-      "train": 0.1760601181,
-      "test": 0.0109569028
+      "train": 0.3518024032,
+      "test": 0.2892622352
     }
   },
   "transition_matrix": {
     "Bullish": {
-      "Bullish": 0.9492814592,
-      "Bearish": 0.0172613834,
-      "Sideways": 0.0247218283,
-      "Volatile": 0.0087353291
+      "Bullish": 0.9604002469,
+      "Bearish": 0.0,
+      "Sideways": 3.725180162e-252,
+      "Volatile": 0.0395997531
     },
     "Bearish": {
-      "Bullish": 0.0144736368,
-      "Bearish": 0.9465366416,
-      "Sideways": 0.0306731172,
-      "Volatile": 0.0083166044
+      "Bullish": 0.0,
+      "Bearish": 0.9444448702,
+      "Sideways": 0.0164709908,
+      "Volatile": 0.039084139
     },
     "Sideways": {
-      "Bullish": 0.0225720921,
-      "Bearish": 0.0382930245,
-      "Sideways": 0.9391348834,
-      "Volatile": 4.3161e-319
+      "Bullish": 0.0144005997,
+      "Bearish": 0.0110037801,
+      "Sideways": 0.9523867059,
+      "Volatile": 0.0222089144
     },
     "Volatile": {
-      "Bullish": 0.0093580312,
-      "Bearish": 0.0189419196,
-      "Sideways": 2.055763778e-177,
-      "Volatile": 0.9717000492
+      "Bullish": 0.0199441876,
+      "Bearish": 0.0295175601,
+      "Sideways": 0.0165986333,
+      "Volatile": 0.933939619
     }
   },
   "bic": [
     {
       "covariance": "diag",
       "states": 2,
-      "log_likelihood": -20210.6263025569,
-      "bic": 40714.92039656726
+      "log_likelihood": -16376.57265305724,
+      "bic": 33038.308866513486
     },
     {
       "covariance": "diag",
       "states": 3,
-      "log_likelihood": -17146.124815808977,
-      "bic": 34759.10612059525
+      "log_likelihood": -14284.020342226724,
+      "bic": 29021.377626626232
     },
     {
       "covariance": "diag",
       "states": 4,
-      "log_likelihood": -15634.7495104472,
-      "bic": 31924.60409413674
+      "log_likelihood": -13113.927030138908,
+      "bic": 26863.98815655253
     },
     {
       "covariance": "diag",
       "states": 5,
-      "log_likelihood": -14514.373727740554,
-      "bic": 29887.16099972969
+      "log_likelihood": -12386.400451682292,
+      "bic": 25606.35592606938
     },
     {
       "covariance": "diag",
       "states": 6,
-      "log_likelihood": -13758.626370468419,
-      "bic": 28594.034642932864
+      "log_likelihood": -11721.634304784728,
+      "bic": 24488.86833103249
     },
     {
       "covariance": "full",
       "states": 2,
-      "log_likelihood": -11112.596717266897,
-      "bic": 23061.01714867057
+      "log_likelihood": -8849.57486970385,
+      "bic": 18510.769103620267
     },
     {
       "covariance": "full",
       "states": 3,
-      "log_likelihood": -8526.387922249114,
-      "bic": 18332.866217500497
+      "log_likelihood": -7416.071872970526,
+      "bic": 16075.16439383417
     },
     {
       "covariance": "full",
       "states": 4,
-      "log_likelihood": -6993.990493136969,
-      "bic": 15727.397904882906
+      "log_likelihood": -6294.515851079836,
+      "bic": 14278.077406061497
     },
     {
       "covariance": "full",
       "states": 5,
-      "log_likelihood": -5787.4461270975125,
-      "bic": 13788.695605151892
+      "log_likelihood": -5563.519069921807,
+      "bic": 13276.7326720823
     },
     {
       "covariance": "full",
       "states": 6,
-      "log_likelihood": -4916.8786214362435,
-      "bic": 12537.006912918458
+      "log_likelihood": -4836.472300575976,
+      "bic": 12297.911734055655
     }
   ],
   "transitions": [
     {
       "persistence": 1,
-      "train": 98,
-      "test": 86,
-      "total": 184,
-      "mean_days_per_regime": 17.47027027027027
+      "train": 92,
+      "test": 119,
+      "total": 211,
+      "mean_days_per_regime": 13.523584905660377
     },
     {
       "persistence": 2,
-      "train": 94,
-      "test": 83,
-      "total": 177,
-      "mean_days_per_regime": 18.15730337078652
+      "train": 81,
+      "test": 102,
+      "total": 183,
+      "mean_days_per_regime": 15.581521739130435
     },
     {
       "persistence": 3,
-      "train": 89,
-      "test": 80,
-      "total": 169,
-      "mean_days_per_regime": 19.011764705882353
+      "train": 75,
+      "test": 88,
+      "total": 163,
+      "mean_days_per_regime": 17.48170731707317
     },
     {
       "persistence": 5,
-      "train": 77,
-      "test": 66,
-      "total": 143,
-      "mean_days_per_regime": 22.444444444444443
+      "train": 70,
+      "test": 71,
+      "total": 141,
+      "mean_days_per_regime": 20.190140845070424
     },
     {
       "persistence": 7,
-      "train": 67,
-      "test": 61,
-      "total": 128,
-      "mean_days_per_regime": 25.05426356589147
+      "train": 59,
+      "test": 55,
+      "total": 114,
+      "mean_days_per_regime": 24.930434782608696
     }
   ]
 }

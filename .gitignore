@@ -1,8 +1,8 @@
 # Data and trained models are never committed (CLAUDE.md section 7.5).
 # The download script is committed instead, so the data can be rebuilt.
-data/
+/data/
 *.parquet
-models/
+/models/
 
 # Python
 .venv/

@@ -2,215 +2,221 @@
   "symbol": "ETHUSDT",
   "interval": "1d",
   "train_end": "2022-12-31",
-  "train_candles": 1863,
+  "train_candles": 1498,
   "test_candles": 1369,
   "n_states": 4,
   "covariance_type": "full",
   "restarts": 10,
-  "best_seed": 51,
+  "best_seed": 47,
   "converged": true,
-  "train_log_likelihood": -7137.218563288354,
+  "train_log_likelihood": -6169.085582237635,
   "features": [
     "log_return",
     "rsi",
     "macd_hist_norm",
     "ema_dist",
     "sma_dist",
-    "bb_width",
+    "bb_width_rel",
     "bb_pctb",
-    "atr_norm",
+    "atr_rel",
     "adx"
   ],
   "state_to_regime": {
     "3": "Bullish",
-    "2": "Bearish",
+    "0": "Bearish",
     "1": "Sideways",
-    "0": "Volatile"
+    "2": "Volatile"
   },
-  "mapping_warnings": [],
+  "mapping_warnings": [
+    "the most volatile state is 'Bearish', not 'Volatile'"
+  ],
   "state_profiles": {
     "0": {
-      "regime": "Volatile",
-      "days": 421,
-      "share": 0.2259796028,
-      "log_return": -0.0107685043,
-      "atr_norm": 0.1048859666,
-      "adx": 36.2481913768,
-      "sma_dist": -0.2138041473,
-      "rsi": 35.9202671207
+      "regime": "Bearish",
+      "days": 327,
+      "share": 0.2182910547,
+      "sma_dist": -0.1925266282,
+      "atr_rel": 0.3700779614,
+      "log_return": -0.0037939337,
+      "atr_norm": 0.1052052821,
+      "adx": 36.3948272957,
+      "rsi": 39.6801999149
     },
     "1": {
       "regime": "Sideways",
-      "days": 515,
-      "share": 0.2764358561,
-      "log_return": 0.0051900977,
-      "atr_norm": 0.0610621224,
-      "adx": 31.0421265399,
-      "sma_dist": 0.2179696685,
-      "rsi": 62.9768808435
+      "days": 358,
+      "share": 0.2389853138,
+      "sma_dist": -0.0440370506,
+      "atr_rel": -0.281130194,
+      "log_return": -0.0007139122,
+      "atr_norm": 0.053055459,
+      "adx": 26.0010210231,
+      "rsi": 46.7738735887
     },
     "2": {
-      "regime": "Bearish",
-      "days": 624,
-      "share": 0.3349436393,
-      "log_return": -0.0010926142,
-      "atr_norm": 0.0596923731,
-      "adx": 23.8031605424,
-      "sma_dist": -0.0525271748,
-      "rsi": 46.7028436496
+      "regime": "Volatile",
+      "days": 383,
+      "share": 0.2556742323,
+      "sma_dist": 0.0393166176,
+      "atr_rel": 0.0308530243,
+      "log_return": -0.0029417836,
+      "atr_norm": 0.0713019145,
+      "adx": 23.4829850338,
+      "rsi": 50.6919036798
     },
     "3": {
       "regime": "Bullish",
-      "days": 303,
-      "share": 0.1626409018,
-      "log_return": 0.011480776,
-      "atr_norm": 0.0972865492,
-      "adx": 31.5740377288,
-      "sma_dist": 0.2259876721,
-      "rsi": 60.3184817409
+      "days": 430,
+      "share": 0.2870493992,
+      "sma_dist": 0.2961921216,
+      "atr_rel": -0.0589624238,
+      "log_return": 0.0115483057,
+      "atr_norm": 0.0635987657,
+      "adx": 34.2006189331,
+      "rsi": 67.2771915223
     }
   },
   "regime_share": {
     "Bullish": {
-      "train": 0.1626409018,
-      "test": 0.0014609204
+      "train": 0.2870493992,
+      "test": 0.292184076
     },
     "Bearish": {
-      "train": 0.3349436393,
-      "test": 0.5836376917
+      "train": 0.2182910547,
+      "test": 0.2176771366
     },
     "Sideways": {
-      "train": 0.2764358561,
-      "test": 0.3119065011
+      "train": 0.2389853138,
+      "test": 0.3067932798
     },
     "Volatile": {
-      "train": 0.2259796028,
-      "test": 0.1029948868
+      "train": 0.2556742323,
+      "test": 0.1833455077
     }
   },
   "transition_matrix": {
     "Bullish": {
-      "Bullish": 0.939910502,
-      "Bearish": 0.0135090986,
-      "Sideways": 0.0271203805,
-      "Volatile": 0.0194600189
+      "Bullish": 0.9431969221,
+      "Bearish": 0.0049221283,
+      "Sideways": 0.0023771803,
+      "Volatile": 0.0495037694
     },
     "Bearish": {
-      "Bullish": 1.35310649e-206,
-      "Bearish": 0.9586698132,
-      "Sideways": 0.0202971614,
-      "Volatile": 0.0210330254
+      "Bullish": 0.0065049526,
+      "Bearish": 0.9511817731,
+      "Sideways": 0.0194363233,
+      "Volatile": 0.022876951
     },
     "Sideways": {
-      "Bullish": 0.0077718086,
-      "Bearish": 0.0169723337,
-      "Sideways": 0.9602476995,
-      "Volatile": 0.0150081581
+      "Bullish": 0.0258342572,
+      "Bearish": 0.0136326797,
+      "Sideways": 0.954982586,
+      "Volatile": 0.005550477
     },
     "Volatile": {
-      "Bullish": 0.0308990208,
-      "Bearish": 0.0340604538,
-      "Sideways": 0.0,
-      "Volatile": 0.9350405253
+      "Bullish": 0.0352446028,
+      "Bearish": 0.0180870828,
+      "Sideways": 0.0278476283,
+      "Volatile": 0.9188206861
     }
   },
   "bic": [
     {
       "covariance": "diag",
       "states": 2,
-      "log_likelihood": -20054.030129625364,
-      "bic": 40401.72805070419
+      "log_likelihood": -16100.032376168847,
+      "bic": 32485.228312736705
     },
     {
       "covariance": "diag",
       "states": 3,
-      "log_likelihood": -17236.489339750362,
-      "bic": 34939.83516847802
+      "log_likelihood": -14110.491208140293,
+      "bic": 28674.31935845337
     },
     {
       "covariance": "diag",
       "states": 4,
-      "log_likelihood": -15838.687307680799,
-      "bic": 32332.479688603937
+      "log_likelihood": -13070.691192996564,
+      "bic": 26777.51648226784
     },
     {
       "covariance": "diag",
       "states": 5,
-      "log_likelihood": -14809.521970196367,
-      "bic": 30477.457484641316
+      "log_likelihood": -12272.452195483007,
+      "bic": 25378.45941367081
     },
     {
       "covariance": "diag",
       "states": 6,
-      "log_likelihood": -14030.775061507817,
-      "bic": 29138.33202501166
+      "log_likelihood": -11703.69954936724,
+      "bic": 24452.998820197514
     },
     {
       "covariance": "full",
       "states": 2,
-      "log_likelihood": -10884.039137144397,
-      "bic": 22603.90198842557
+      "log_likelihood": -8920.181521637882,
+      "bic": 18651.98240748833
     },
     {
       "covariance": "full",
       "states": 3,
-      "log_likelihood": -8590.978742139005,
-      "bic": 18462.04785728028
+      "log_likelihood": -7183.963458316599,
+      "bic": 15610.947564526316
     },
     {
       "covariance": "full",
       "states": 4,
-      "log_likelihood": -7137.218563288354,
-      "bic": 16013.854045185675
+      "log_likelihood": -6169.085582237635,
+      "bic": 14027.216868377096
     },
     {
       "covariance": "full",
       "states": 5,
-      "log_likelihood": -6196.9435029547185,
-      "bic": 14607.690356866304
+      "log_likelihood": -5519.78655011707,
+      "bic": 13189.267632472827
     },
     {
       "covariance": "full",
       "states": 6,
-      "log_likelihood": -5407.3481370949785,
-      "bic": 13517.945944235928
+      "log_likelihood": -4998.452793169295,
+      "bic": 12621.872719242292
     }
   ],
   "transitions": [
     {
       "persistence": 1,
-      "train": 97,
-      "test": 96,
-      "total": 193,
-      "mean_days_per_regime": 16.65979381443299
+      "train": 94,
+      "test": 158,
+      "total": 252,
+      "mean_days_per_regime": 11.33201581027668
     },
     {
       "persistence": 2,
-      "train": 94,
-      "test": 71,
-      "total": 165,
-      "mean_days_per_regime": 19.46987951807229
+      "train": 87,
+      "test": 124,
+      "total": 211,
+      "mean_days_per_regime": 13.523584905660377
     },
     {
       "persistence": 3,
-      "train": 90,
-      "test": 63,
-      "total": 153,
-      "mean_days_per_regime": 20.98701298701299
+      "train": 84,
+      "test": 96,
+      "total": 180,
+      "mean_days_per_regime": 15.839779005524862
     },
     {
       "persistence": 5,
       "train": 79,
-      "test": 45,
-      "total": 124,
-      "mean_days_per_regime": 25.856
+      "test": 69,
+      "total": 148,
+      "mean_days_per_regime": 19.241610738255034
     },
     {
       "persistence": 7,
-      "train": 70,
-      "test": 41,
-      "total": 111,
-      "mean_days_per_regime": 28.857142857142858
+      "train": 66,
+      "test": 51,
+      "total": 117,
+      "mean_days_per_regime": 24.296610169491526
     }
   ]
 }
