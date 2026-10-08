@@ -149,6 +149,22 @@ HMM_STATE_CANDIDATES = [2, 3, 4, 5, 6]
 PERSISTENCE_CANDIDATES = [1, 2, 3, 5, 7]
 
 # --------------------------------------------------------------------------
+# M4 - regime fusion (decision-level: labels are combined, never features)
+# --------------------------------------------------------------------------
+FUSION_DIR = DATA_DIR / "fusion"        # M4 output: alignment time series
+
+# PROPOSED starting weights: slower timeframes count more because their
+# regimes are steadier. Novelty 3 later replaces these with learned,
+# context-dependent weights. When a timeframe is left out (Daily, for H1) the
+# formula divides by the sum of the remaining weights, so no rescaling is needed.
+TIMEFRAME_WEIGHTS = {"1d": 0.30, "4h": 0.25, "1h": 0.20, "15m": 0.15, "5m": 0.10}
+
+# Timeframes used for the H1 alignment score. Daily is excluded because Daily
+# defines the transitions being predicted; including it would let Daily
+# partly "predict" its own change (circularity).
+H1_ALIGNMENT_INTERVALS = ["4h", "1h", "15m", "5m"]
+
+# --------------------------------------------------------------------------
 # Reproducibility
 # --------------------------------------------------------------------------
 RANDOM_SEED = 42
