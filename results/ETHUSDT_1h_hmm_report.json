@@ -9,6 +9,8 @@
   "restarts": 10,
   "best_seed": 50,
   "converged": true,
+  "iterations": 162,
+  "last_log_likelihood_gain": 8.757045725360513e-05,
   "train_log_likelihood": -175577.51176368588,
   "features": [
     "log_return",

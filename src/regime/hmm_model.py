@@ -76,6 +76,19 @@ def fit_hmm(x_train: np.ndarray, n_states: int, covariance_type: str) -> tuple[G
     return best_model, best_seed
 
 
+def convergence(model: GaussianHMM) -> tuple[bool, float]:
+    """(reached the tolerance before the iteration limit?, last log-likelihood gain).
+
+    hmmlearn's own `converged` flag is also True when training simply ran out of
+    iterations, so it cannot be trusted on its own. The last gain shows how
+    close a run that hit the limit actually was.
+    """
+    monitor = model.monitor_
+    history = list(monitor.history)
+    last_gain = history[-1] - history[-2] if len(history) > 1 else float("nan")
+    return bool(monitor.iter < monitor.n_iter and abs(last_gain) < monitor.tol), float(last_gain)
+
+
 def emission_log_density(model: GaussianHMM, x: np.ndarray) -> np.ndarray:
     """log p(features on day t | state k), shape (days, states).
 

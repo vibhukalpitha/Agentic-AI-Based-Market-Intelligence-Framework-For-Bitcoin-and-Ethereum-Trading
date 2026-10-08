@@ -34,9 +34,15 @@ def load_regime_grid(symbol: str, intervals: list[str]) -> pd.DataFrame:
     def load(interval: str) -> pd.DataFrame:
         regimes = pd.read_parquet(
             config.REGIMES_DIR / f"{symbol}_{interval}_regimes.parquet",
-            columns=["close_time", "regime", "confidence"])
-        return regimes.rename(columns={"regime": f"regime_{interval}",
-                                       "confidence": f"conf_{interval}"})
+            columns=["open_time", "close_time", "regime", "confidence"])
+        # Binance records a few outage candles with a close_time BEFORE their
+        # open_time (e.g. 1h, 2020-12-21 14:00 "closing" at 13:47). A candle
+        # cannot be known before it opens, so its time is never earlier than that.
+        regimes["close_time"] = regimes[["open_time", "close_time"]].max(axis=1)
+        if not regimes["close_time"].is_monotonic_increasing:
+            raise ValueError(f"{symbol} {interval}: candle times are not in order")
+        return regimes.drop(columns="open_time").rename(
+            columns={"regime": f"regime_{interval}", "confidence": f"conf_{interval}"})
 
     grid = load(fastest).rename(columns={"close_time": "time"})
     for interval in ordered[:-1]:

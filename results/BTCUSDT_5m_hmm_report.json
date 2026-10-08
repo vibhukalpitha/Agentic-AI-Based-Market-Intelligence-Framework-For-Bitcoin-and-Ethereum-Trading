@@ -8,7 +8,9 @@
   "covariance_type": "full",
   "restarts": 10,
   "best_seed": 45,
-  "converged": true,
+  "converged": false,
+  "iterations": 300,
+  "last_log_likelihood_gain": 0.0003330624895170331,
   "train_log_likelihood": -907579.3156614637,
   "features": [
     "log_return",
@@ -33,45 +35,45 @@
       "regime": "Sideways",
       "days": 61820,
       "share": 0.2944061872,
-      "sma_dist": 0.000142263,
+      "rsi": 50.1999320667,
       "atr_rel": -0.5783730763,
+      "sma_dist": 0.000142263,
       "log_return": -6.7721e-06,
       "atr_norm": 0.0016117906,
-      "adx": 19.3172970871,
-      "rsi": 50.1999320667
+      "adx": 19.3172970871
     },
     "1": {
       "regime": "Bullish",
       "days": 60097,
       "share": 0.286200722,
-      "sma_dist": 0.0047609849,
+      "rsi": 58.0043675194,
       "atr_rel": 0.0382658044,
+      "sma_dist": 0.0047609849,
       "log_return": 0.0001504868,
       "atr_norm": 0.0029682943,
-      "adx": 26.4003855295,
-      "rsi": 58.0043675194
+      "adx": 26.4003855295
     },
     "2": {
       "regime": "Bearish",
       "days": 55866,
       "share": 0.2660513758,
-      "sma_dist": -0.0055227203,
+      "rsi": 40.9328991804,
       "atr_rel": 0.0789034361,
+      "sma_dist": -0.0055227203,
       "log_return": -0.0001891815,
       "atr_norm": 0.0031022104,
-      "adx": 27.9037162785,
-      "rsi": 40.9328991804
+      "adx": 27.9037162785
     },
     "3": {
       "regime": "Volatile",
       "days": 32199,
       "share": 0.153341715,
-      "sma_dist": 0.0001266252,
+      "rsi": 51.1125495621,
       "atr_rel": 0.8445019014,
+      "sma_dist": 0.0001266252,
       "log_return": 4.27537e-05,
       "atr_norm": 0.0064458862,
-      "adx": 33.2898358154,
-      "rsi": 51.1125495621
+      "adx": 33.2898358154
     }
   },
   "regime_share": {

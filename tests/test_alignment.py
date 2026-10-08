@@ -53,12 +53,17 @@ def test_unfinished_candle_is_never_used(tmp_path, monkeypatch):
     start = pd.Timestamp("2024-01-01")
 
     pd.DataFrame({
+        "open_time": [start, start + day],
         "close_time": [start + day - almost, start + 2 * day - almost],
         "regime": ["Bullish", "Bearish"], "confidence": [0.9, 0.9],
     }).to_parquet(tmp_path / "TEST_1d_regimes.parquet")
-    hourly_close = [start + (h + 1) * hour - almost for h in range(48)]
+    hourly_open = [start + h * hour for h in range(48)]
+    hourly_close = [t + hour - almost for t in hourly_open]
+    # Reproduce the real Binance fault: one candle "closes" before it opens.
+    hourly_close[30] = hourly_open[30] - 13 * pd.Timedelta(minutes=1)
     pd.DataFrame({
-        "close_time": hourly_close, "regime": "Sideways", "confidence": 0.8,
+        "open_time": hourly_open, "close_time": hourly_close,
+        "regime": "Sideways", "confidence": 0.8,
     }).to_parquet(tmp_path / "TEST_1h_regimes.parquet")
 
     grid = alignment.load_regime_grid("TEST", ["1d", "1h"]).set_index("time")

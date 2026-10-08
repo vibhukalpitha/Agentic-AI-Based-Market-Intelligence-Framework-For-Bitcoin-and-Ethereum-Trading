@@ -149,10 +149,13 @@ def train_one(symbol: str, interval: str, run_bic: bool = True, relabel: bool = 
     if not relabel:
         model.hmm, model.seed = hmm_model.fit_hmm(
             x_train, config.HMM_N_STATES, config.HMM_COVARIANCE_TYPE)
+    converged, last_gain = hmm_model.convergence(model.hmm)
     print(f"\nFinal model: {config.HMM_N_STATES} states, {config.HMM_COVARIANCE_TYPE} "
-          f"covariance, best seed {model.seed}, "
-          f"converged={model.hmm.monitor_.converged} "
-          f"after {model.hmm.monitor_.iter} iterations")
+          f"covariance, best seed {model.seed}, converged={converged} "
+          f"after {model.hmm.monitor_.iter} of {config.HMM_MAX_ITER} iterations "
+          f"(last log-likelihood gain {last_gain:.5f}, tolerance {config.HMM_TOLERANCE})")
+    if not converged:
+        print("  WARNING: training stopped at the iteration limit before reaching the tolerance")
 
     probabilities = hmm_model.filtered_probabilities(model.hmm, x_all)
     states = probabilities.argmax(axis=1)
@@ -207,7 +210,9 @@ def train_one(symbol: str, interval: str, run_bic: bool = True, relabel: bool = 
         "train_candles": int(is_train.sum()), "test_candles": int((~is_train).sum()),
         "n_states": config.HMM_N_STATES, "covariance_type": config.HMM_COVARIANCE_TYPE,
         "restarts": config.HMM_N_RESTARTS, "best_seed": model.seed,
-        "converged": bool(model.hmm.monitor_.converged),
+        "converged": converged,
+        "iterations": int(model.hmm.monitor_.iter),
+        "last_log_likelihood_gain": last_gain,
         "train_log_likelihood": float(model.hmm.score(x_train)),
         "features": config.FEATURE_COLUMNS,
         "state_to_regime": {str(k): v for k, v in model.state_to_regime.items()},
