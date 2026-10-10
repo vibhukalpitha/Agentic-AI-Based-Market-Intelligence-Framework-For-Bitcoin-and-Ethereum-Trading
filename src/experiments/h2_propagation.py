@@ -36,6 +36,9 @@ no information from the outcome can enter the predictor.
 import argparse
 import json
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -174,6 +177,53 @@ def print_results(symbol: str, period: str, results: dict) -> None:
     print(table.to_string(float_format=lambda v: f"{v:.3f}"))
 
 
+SUPPORTED_COLOUR, UNSUPPORTED_COLOUR = "#2a78d6", "#eb6834"
+MUTED, GRID, INK = "#898781", "#e1e0d9", "#0b0b0b"
+
+
+def plot_durable_rates(period: str, path) -> None:
+    """Share of flips that proved durable, with and without support from
+    below, at each timeframe. Whiskers are 95% intervals for a proportion
+    (normal approximation)."""
+    intervals = [config.H2_HEADLINE_INTERVAL] + config.H2_SECONDARY_INTERVALS
+    fig, axes = plt.subplots(1, len(config.SYMBOLS), figsize=(12, 4.4), sharey=True)
+    for ax, symbol in zip(axes, config.SYMBOLS):
+        for row, interval in enumerate(intervals):
+            events = load_events(symbol, interval, period, config.H2_DURABLE_CANDLES)
+            for supported, colour in ((False, UNSUPPORTED_COLOUR), (True, SUPPORTED_COLOUR)):
+                part = events[(events["depth"] >= 1) == supported]["durable"]
+                rate = part.mean()
+                half = 1.96 * np.sqrt(rate * (1 - rate) / len(part))
+                ax.plot([100 * (rate - half), 100 * (rate + half)], [row, row],
+                        color=colour, linewidth=2, alpha=0.45, solid_capstyle="round")
+                ax.plot(100 * rate, row, "o", color=colour, markersize=9,
+                        markeredgecolor="white", markeredgewidth=2, zorder=3)
+                # Labels lean outward so they do not collide when the dots are close.
+                ax.annotate(f"{100 * rate:.0f}%", (100 * rate, row),
+                            xytext=(10 if supported else -10, 11),
+                            textcoords="offset points", ha="center", color=INK, fontsize=9)
+        ax.set_yticks(range(len(intervals)), intervals)
+        ax.set_ylim(len(intervals) - 0.4, -0.7)
+        ax.set_xlim(45, 100)
+        ax.set_title(f"{symbol}  ({period} period)", loc="left", color=INK, fontsize=11)
+        ax.set_xlabel(f"Flips that held at least {config.H2_DURABLE_CANDLES} candles (%)",
+                      color=MUTED)
+        ax.grid(True, axis="x", color=GRID, linewidth=0.6)
+        ax.tick_params(colors=MUTED, length=0)
+        for side in ("top", "right", "left"):
+            ax.spines[side].set_visible(False)
+        ax.spines["bottom"].set_color(GRID)
+    axes[0].set_ylabel("Timeframe of the flip", color=MUTED)
+    handles = [plt.Line2D([], [], marker="o", linestyle="", markersize=9, color=SUPPORTED_COLOUR,
+                          label="Supported from below (bottom-up)"),
+               plt.Line2D([], [], marker="o", linestyle="", markersize=9, color=UNSUPPORTED_COLOUR,
+                          label="Not supported (top-down)")]
+    fig.legend(handles=handles, loc="upper center", ncol=2, frameon=False,
+               bbox_to_anchor=(0.5, 1.04), labelcolor=INK)
+    fig.savefig(path, dpi=150, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--period", choices=["train", "test"], required=True,
@@ -196,7 +246,9 @@ def main() -> None:
     path = config.RESULTS_DIR / f"h2_results_{args.period}.json"
     with open(path, "w") as file:
         json.dump(everything, file, indent=2)
-    print(f"\nSaved: {path.name}")
+    figure = config.RESULTS_DIR / f"h2_durable_rates_{args.period}.png"
+    plot_durable_rates(args.period, figure)
+    print(f"\nSaved: {path.name}, {figure.name}")
 
 
 if __name__ == "__main__":
