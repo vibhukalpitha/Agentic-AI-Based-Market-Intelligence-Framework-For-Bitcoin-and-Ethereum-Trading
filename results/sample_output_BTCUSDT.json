@@ -1,0 +1,144 @@
+{
+  "schema_version": "0.1",
+  "component": "market_regime_engine",
+  "symbol": "BTCUSDT",
+  "as_of": "2026-09-30T23:59:59.999Z",
+  "timeframes": {
+    "1d": {
+      "regime": "Bullish",
+      "confidence": 1.0,
+      "probabilities": {
+        "Bullish": 1.0,
+        "Bearish": 0.0,
+        "Sideways": 0.0,
+        "Volatile": 0.0
+      },
+      "candles_in_regime": 13,
+      "last_closed_candle": "2026-09-30T23:59:59.999Z"
+    },
+    "4h": {
+      "regime": "Sideways",
+      "confidence": 0.9992,
+      "probabilities": {
+        "Bullish": 0.0,
+        "Bearish": 0.0,
+        "Sideways": 0.9992,
+        "Volatile": 0.0008
+      },
+      "candles_in_regime": 27,
+      "last_closed_candle": "2026-09-30T23:59:59.999Z"
+    },
+    "1h": {
+      "regime": "Sideways",
+      "confidence": 0.9815,
+      "probabilities": {
+        "Bullish": 0.0005,
+        "Bearish": 0.018,
+        "Sideways": 0.9815,
+        "Volatile": 0.0
+      },
+      "candles_in_regime": 3,
+      "last_closed_candle": "2026-09-30T23:59:59.999Z"
+    },
+    "15m": {
+      "regime": "Sideways",
+      "confidence": 1.0,
+      "probabilities": {
+        "Bullish": 0.0,
+        "Bearish": 0.0,
+        "Sideways": 1.0,
+        "Volatile": 0.0
+      },
+      "candles_in_regime": 14,
+      "last_closed_candle": "2026-09-30T23:59:59.999Z"
+    },
+    "5m": {
+      "regime": "Sideways",
+      "confidence": 0.9992,
+      "probabilities": {
+        "Bullish": 0.0,
+        "Bearish": 0.0008,
+        "Sideways": 0.9992,
+        "Volatile": 0.0
+      },
+      "candles_in_regime": 38,
+      "last_closed_candle": "2026-09-30T23:59:59.999Z"
+    }
+  },
+  "fusion": {
+    "dominant_regime": "Sideways",
+    "alignment_score": 69.88,
+    "confidence_score": 69.53,
+    "timeframes_agreeing": [
+      "4h",
+      "1h",
+      "15m",
+      "5m"
+    ],
+    "timeframes_disagreeing": [
+      "1d"
+    ],
+    "weights": {
+      "1d": 0.3,
+      "4h": 0.25,
+      "1h": 0.2,
+      "15m": 0.15,
+      "5m": 0.1
+    }
+  },
+  "propagation": {
+    "1d": {
+      "from_regime": "Volatile",
+      "to_regime": "Bullish",
+      "flip_candle_open": "2026-09-18T00:00:00.000Z",
+      "support_depth": 0,
+      "faster_timeframes": 4,
+      "direction": "top-down",
+      "adopted_by_slower": "not_applicable"
+    },
+    "4h": {
+      "from_regime": "Volatile",
+      "to_regime": "Sideways",
+      "flip_candle_open": "2026-09-26T12:00:00.000Z",
+      "support_depth": 3,
+      "faster_timeframes": 3,
+      "direction": "bottom-up",
+      "adopted_by_slower": "failed"
+    },
+    "1h": {
+      "from_regime": "Bullish",
+      "to_regime": "Sideways",
+      "flip_candle_open": "2026-09-30T21:00:00.000Z",
+      "support_depth": 2,
+      "faster_timeframes": 2,
+      "direction": "bottom-up",
+      "adopted_by_slower": "already_there"
+    },
+    "15m": {
+      "from_regime": "Volatile",
+      "to_regime": "Sideways",
+      "flip_candle_open": "2026-09-30T20:30:00.000Z",
+      "support_depth": 0,
+      "faster_timeframes": 1,
+      "direction": "top-down",
+      "adopted_by_slower": "adopted"
+    },
+    "5m": {
+      "from_regime": "Bearish",
+      "to_regime": "Sideways",
+      "flip_candle_open": "2026-09-30T20:50:00.000Z",
+      "support_depth": 0,
+      "faster_timeframes": 0,
+      "direction": "not_applicable",
+      "adopted_by_slower": "already_there"
+    }
+  },
+  "stability": null,
+  "explanation": null,
+  "caveats": [
+    "confidence is the model's own probability for its current regime; it is above 0.99 about 75% of the time and should not be read as a calibrated accuracy.",
+    "each timeframe has its own independent model, so a regime name is not guaranteed to mean exactly the same thing at every timeframe.",
+    "alignment_score did not anticipate Daily regime transitions in testing (H1 not supported); use it as a description of agreement, not as a warning signal.",
+    "propagation.direction 'bottom-up' flips proved more durable than 'top-down' flips in testing, by a modest margin (H2 partly supported)."
+  ]
+}

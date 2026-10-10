@@ -28,15 +28,18 @@ from src import config
 
 
 def load_labels(symbol: str, interval: str,
-                label_map: dict[str, str] | None = None) -> pd.DataFrame:
+                label_map: dict[str, str] | None = None,
+                extra_columns: list[str] | None = None) -> pd.DataFrame:
     """Regime labels of one timeframe with the time each label became known.
 
     label_map optionally renames the labels (the direction-only check maps the
-    four regimes to up / down / neutral).
+    four regimes to up / down / neutral). extra_columns adds further saved
+    columns, such as the per-regime probabilities.
     """
     labels = pd.read_parquet(
         config.REGIMES_DIR / f"{symbol}_{interval}_regimes.parquet",
-        columns=["open_time", "close_time", "regime", "confidence", "close"])
+        columns=["open_time", "close_time", "regime", "confidence", "close"]
+        + (extra_columns or []))
     # A candle is known when it closes, and never before it opens (one faulty
     # Binance record has a close_time earlier than its open_time).
     labels["known_time"] = labels[["open_time", "close_time"]].max(axis=1)

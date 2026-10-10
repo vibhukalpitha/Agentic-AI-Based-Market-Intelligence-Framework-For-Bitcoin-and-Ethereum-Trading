@@ -17,7 +17,10 @@ market state. It does not predict price.
 | M2 | Feature engineering (9 scale-free features) | Built |
 | M3 | Regime detection (one Gaussian HMM per asset and timeframe) | Built |
 | M4 | Regime fusion (dominant regime, Alignment Score, Confidence Score) | Built |
-| M5–M9 | Propagation, stability, similarity, explanation, hypothesis tests | Not built yet |
+| M5 | Propagation between timeframes (direction and support depth of each regime flip) | Built |
+| M9 | Hypothesis tests H1 and H2 | Built and run |
+| Output | One JSON record per asset for the Fusion Engine | Built (proposal, see `docs/OUTPUT_FORMAT.md`) |
+| M6–M8 | Stability score, historical similarity, explanation | Not built yet |
 
 ### Setup
 
@@ -41,6 +44,10 @@ Run the steps in this order. Each one prints a report of what it produced.
 | 3. Build features | `.\.venv\Scripts\python.exe -m src.features.indicators` | about 1 minute | `data/features/` |
 | 4. Train regime models | `.\.venv\Scripts\python.exe -W ignore -m src.regime.train --interval 1d` | minutes for `1d`; over an hour for `5m` | `models/`, `data/regimes/`, `results/` |
 | 5. Fuse the timeframes | `.\.venv\Scripts\python.exe -W ignore -m src.fusion.alignment` | about 10 seconds | `data/fusion/` |
+| 6. Propagation | `.\.venv\Scripts\python.exe -W ignore -m src.fusion.propagation` | seconds | `data/propagation/` |
+| 7. Test H1 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h1_precursor` | about 1 minute | `results/h1_*` |
+| 8. Test H2 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2_propagation --period test` | about 1 minute | `results/h2_*` |
+| 9. Output record | `.\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol BTCUSDT` | seconds | printed JSON |
 
 Step 4 is run once per timeframe: `1d`, `4h`, `1h`, `15m`, `5m`. Two options help:
 
@@ -53,7 +60,10 @@ Step 4 is run once per timeframe: `1d`, `4h`, `1h`, `15m`, `5m`. Two options hel
 - `results/` holds, for every asset and timeframe, a chart of the detected regimes
   (`*_regimes.png`) and a full record of the model (`*_hmm_report.json`): settings,
   random seed, state profiles, regime shares, transition matrix and transition counts.
-- `data/` and `models/` are not in Git because of their size. Steps 1 to 5 rebuild them.
+- `results/h1_*` and `results/h2_*` hold the hypothesis test results, with the design
+  settings recorded inside each JSON file.
+- `results/sample_output_*.json` are example records for the Fusion Engine.
+- `data/` and `models/` are not in Git because of their size. Steps 1 to 6 rebuild them.
 
 ### Tests
 
