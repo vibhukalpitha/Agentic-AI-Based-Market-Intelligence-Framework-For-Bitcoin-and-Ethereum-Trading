@@ -1,0 +1,547 @@
+{
+  "design": {
+    "persistence": 3,
+    "window_days": 3,
+    "stable_margin_days": 7,
+    "alignment_intervals": [
+      "4h",
+      "1h",
+      "15m",
+      "5m"
+    ],
+    "train_end": "2022-12-31",
+    "permutations": 10000,
+    "bootstraps": 2000,
+    "seed": 42
+  },
+  "BTCUSDT": {
+    "headline_test": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 52,
+        "stable_total": 473,
+        "transitions_matched": 52,
+        "stable_matched": 424,
+        "median_transition": 64.66735655332327,
+        "median_stable": 62.42553967689127,
+        "effect_auc": 0.39828239875821725,
+        "ci_low": 0.33718542118416706,
+        "ci_high": 0.4599360769733504,
+        "p_matched": 0.9889011098890111,
+        "p_unmatched_mwu": 0.9773973642298156
+      },
+      {
+        "measure": "slope_standard",
+        "transitions_total": 52,
+        "stable_total": 473,
+        "transitions_matched": 52,
+        "stable_matched": 424,
+        "median_transition": 0.0016699755432796337,
+        "median_stable": 0.485445964352202,
+        "effect_auc": 0.4917770336584146,
+        "ci_low": 0.41929695922763544,
+        "ci_high": 0.5651323132106115,
+        "p_matched": 0.567943205679432,
+        "p_unmatched_mwu": 0.5997926078325624
+      },
+      {
+        "measure": "volatility",
+        "transitions_total": 52,
+        "stable_total": 473,
+        "transitions_matched": 52,
+        "stable_matched": 424,
+        "median_transition": -0.11352030544237464,
+        "median_stable": 0.04032192139361733,
+        "effect_auc": 0.3107809517855064,
+        "ci_low": 0.25194343619180787,
+        "ci_high": 0.374455837559412,
+        "p_matched": 1.0,
+        "p_unmatched_mwu": 0.9996680038018461
+      },
+      {
+        "measure": "changes_4h",
+        "transitions_total": 52,
+        "stable_total": 473,
+        "transitions_matched": 52,
+        "stable_matched": 424,
+        "median_transition": 1.0,
+        "median_stable": 1.0,
+        "effect_auc": 0.46612424490713944,
+        "ci_low": 0.40172956595615456,
+        "ci_high": 0.5317182537968311,
+        "p_matched": 0.7926207379262074,
+        "p_unmatched_mwu": 0.6954605274547929
+      }
+    ],
+    "all_transitions_test": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 88,
+        "stable_total": 473,
+        "transitions_matched": 88,
+        "stable_matched": 458,
+        "median_transition": 64.8475315728481,
+        "median_stable": 62.42553967689127,
+        "effect_auc": 0.3951493062259262,
+        "ci_low": 0.33874137716379493,
+        "ci_high": 0.453048646855977,
+        "p_matched": 0.998000199980002,
+        "p_unmatched_mwu": 0.991010617873241
+      },
+      {
+        "measure": "slope_standard",
+        "transitions_total": 88,
+        "stable_total": 473,
+        "transitions_matched": 88,
+        "stable_matched": 458,
+        "median_transition": -2.6603644813190535,
+        "median_stable": 0.485445964352202,
+        "effect_auc": 0.5482378227616291,
+        "ci_low": 0.4868447842221603,
+        "ci_high": 0.6091395912111631,
+        "p_matched": 0.08409159084091591,
+        "p_unmatched_mwu": 0.09098914067613134
+      }
+    ],
+    "in_sample_train": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 30,
+        "stable_total": 250,
+        "transitions_matched": 30,
+        "stable_matched": 153,
+        "median_transition": 60.154648258705066,
+        "median_stable": 60.8609267203318,
+        "effect_auc": 0.5154885854885854,
+        "ci_low": 0.43232727920227926,
+        "ci_high": 0.6012571317571316,
+        "p_matched": 0.40445955404459555,
+        "p_unmatched_mwu": 0.3161709936716675
+      },
+      {
+        "measure": "slope_standard",
+        "transitions_total": 30,
+        "stable_total": 250,
+        "transitions_matched": 30,
+        "stable_matched": 153,
+        "median_transition": 1.513874819706075,
+        "median_stable": -0.1693150978860558,
+        "effect_auc": 0.515944240944241,
+        "ci_low": 0.42223387260887263,
+        "ci_high": 0.6135267094017094,
+        "p_matched": 0.407959204079592,
+        "p_unmatched_mwu": 0.6752910812090398
+      }
+    ],
+    "variants_test": [
+      {
+        "measure": "level_no_confidence",
+        "transitions_total": 52,
+        "stable_total": 473,
+        "transitions_matched": 52,
+        "stable_matched": 424,
+        "median_transition": 64.54199735449737,
+        "median_stable": 61.81382275132275,
+        "effect_auc": 0.3940276448038066,
+        "ci_low": 0.33235284268297277,
+        "ci_high": 0.4546653303286295,
+        "p_matched": 0.9921007899210079,
+        "p_unmatched_mwu": 0.9766901487863069
+      },
+      {
+        "measure": "level_direction_only",
+        "transitions_total": 52,
+        "stable_total": 473,
+        "transitions_matched": 52,
+        "stable_matched": 424,
+        "median_transition": 72.1731908261355,
+        "median_stable": 70.18990636442184,
+        "effect_auc": 0.40014091162216486,
+        "ci_low": 0.3361641538683157,
+        "ci_high": 0.46507027728262695,
+        "p_matched": 0.9876012398760124,
+        "p_unmatched_mwu": 0.9581153739516476
+      }
+    ],
+    "persistence_1_test": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 54,
+        "stable_total": 413,
+        "transitions_matched": 54,
+        "stable_matched": 387,
+        "median_transition": 65.64525438037691,
+        "median_stable": 61.790585640527645,
+        "effect_auc": 0.38581858171641453,
+        "ci_low": 0.32219958699297363,
+        "ci_high": 0.4499547175414692,
+        "p_matched": 0.9956004399560044,
+        "p_unmatched_mwu": 0.9964474959244354
+      }
+    ],
+    "persistence_5_test": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 52,
+        "stable_total": 527,
+        "transitions_matched": 52,
+        "stable_matched": 471,
+        "median_transition": 66.58056848659227,
+        "median_stable": 62.71573818283965,
+        "effect_auc": 0.36317066325223046,
+        "ci_low": 0.30411763151097665,
+        "ci_high": 0.42694440893329766,
+        "p_matched": 0.9992000799920008,
+        "p_unmatched_mwu": 0.9960540601383215
+      }
+    ],
+    "persistence_7_test": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 49,
+        "stable_total": 628,
+        "transitions_matched": 49,
+        "stable_matched": 537,
+        "median_transition": 68.16349781039078,
+        "median_stable": 62.18043393539223,
+        "effect_auc": 0.31298151843584987,
+        "ci_low": 0.25124292360750244,
+        "ci_high": 0.3777646277817503,
+        "p_matched": 1.0,
+        "p_unmatched_mwu": 0.9999304656614415
+      }
+    ],
+    "beyond_baselines_test": {
+      "volatility": {
+        "coefficient": -0.5612467996489464,
+        "ci_low": -0.9284909349358917,
+        "ci_high": -0.22880007783191528
+      },
+      "changes_4h": {
+        "coefficient": -0.05827765685894206,
+        "ci_low": -0.3690041934152088,
+        "ci_high": 0.2432090238284829
+      },
+      "level_standard": {
+        "coefficient": -0.04928345644318828,
+        "ci_low": -0.4658285921329913,
+        "ci_high": 0.3092367978867558
+      }
+    },
+    "positive_control_test": [
+      {
+        "measure": "daily_confidence",
+        "transitions_total": 52,
+        "stable_total": 473,
+        "transitions_matched": 52,
+        "stable_matched": 424,
+        "median_transition": 0.930934607687812,
+        "median_stable": 0.9999951938529082,
+        "effect_auc": 0.9077602601514545,
+        "ci_low": 0.8616586891305388,
+        "ci_high": 0.9520325122330437,
+        "p_matched": 9.999000099990002e-05,
+        "p_unmatched_mwu": 2.144886763480827e-20
+      }
+    ],
+    "exploratory_by_regime_test": [
+      {
+        "regime": "Bullish",
+        "transitions_matched": 16,
+        "stable_matched": 156,
+        "median_transition": 63.56726696153092,
+        "median_stable": 63.82858645784067,
+        "effect_auc": 0.4682659279126671
+      },
+      {
+        "regime": "Bearish",
+        "transitions_matched": 12,
+        "stable_matched": 67,
+        "median_transition": 61.39294658643865,
+        "median_stable": 58.118618915586524,
+        "effect_auc": 0.39935897435897433
+      },
+      {
+        "regime": "Sideways",
+        "transitions_matched": 11,
+        "stable_matched": 87,
+        "median_transition": 73.19037592487764,
+        "median_stable": 73.35071871932992,
+        "effect_auc": 0.4499292374292374
+      },
+      {
+        "regime": "Volatile",
+        "transitions_matched": 13,
+        "stable_matched": 114,
+        "median_transition": 63.75441442013754,
+        "median_stable": 59.57366361521062,
+        "effect_auc": 0.26745389113810164
+      }
+    ]
+  },
+  "ETHUSDT": {
+    "headline_test": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 61,
+        "stable_total": 410,
+        "transitions_matched": 61,
+        "stable_matched": 387,
+        "median_transition": 67.72326007729787,
+        "median_stable": 65.8786487596819,
+        "effect_auc": 0.44033363704987327,
+        "ci_low": 0.37748968008255934,
+        "ci_high": 0.5032058876901351,
+        "p_matched": 0.9068093190680931,
+        "p_unmatched_mwu": 0.7338841856097172
+      },
+      {
+        "measure": "slope_standard",
+        "transitions_total": 61,
+        "stable_total": 410,
+        "transitions_matched": 61,
+        "stable_matched": 387,
+        "median_transition": -7.837489553990039,
+        "median_stable": -1.146370841326938,
+        "effect_auc": 0.6003549536006523,
+        "ci_low": 0.5307904104624306,
+        "ci_high": 0.6709633957120378,
+        "p_matched": 0.012398760123987601,
+        "p_unmatched_mwu": 0.002649433194440172
+      },
+      {
+        "measure": "volatility",
+        "transitions_total": 61,
+        "stable_total": 410,
+        "transitions_matched": 61,
+        "stable_matched": 387,
+        "median_transition": -0.023112242309757124,
+        "median_stable": 0.012247000004536053,
+        "effect_auc": 0.45845627005475753,
+        "ci_low": 0.3822041716816148,
+        "ci_high": 0.5456935250372797,
+        "p_matched": 0.8261173882611739,
+        "p_unmatched_mwu": 0.5170894815065643
+      },
+      {
+        "measure": "changes_4h",
+        "transitions_total": 61,
+        "stable_total": 410,
+        "transitions_matched": 61,
+        "stable_matched": 387,
+        "median_transition": 1.0,
+        "median_stable": 1.0,
+        "effect_auc": 0.5180404251145382,
+        "ci_low": 0.45714199614271933,
+        "ci_high": 0.5794614491971652,
+        "p_matched": 0.33236676332366766,
+        "p_unmatched_mwu": 0.048761090548570966
+      }
+    ],
+    "all_transitions_test": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 95,
+        "stable_total": 410,
+        "transitions_matched": 95,
+        "stable_matched": 410,
+        "median_transition": 67.04013341973034,
+        "median_stable": 65.8786487596819,
+        "effect_auc": 0.44519911750480434,
+        "ci_low": 0.3863978819598014,
+        "ci_high": 0.504494919412825,
+        "p_matched": 0.9259074092590741,
+        "p_unmatched_mwu": 0.7148698846707322
+      },
+      {
+        "measure": "slope_standard",
+        "transitions_total": 95,
+        "stable_total": 410,
+        "transitions_matched": 95,
+        "stable_matched": 410,
+        "median_transition": -6.810874145181742,
+        "median_stable": -1.146370841326938,
+        "effect_auc": 0.5944566847976495,
+        "ci_low": 0.5309436597815488,
+        "ci_high": 0.6606890812881016,
+        "p_matched": 0.0057994200579942,
+        "p_unmatched_mwu": 0.0009633566294840835
+      }
+    ],
+    "in_sample_train": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 29,
+        "stable_total": 287,
+        "transitions_matched": 29,
+        "stable_matched": 202,
+        "median_transition": 64.80370861227904,
+        "median_stable": 62.25231101114773,
+        "effect_auc": 0.4246747505368194,
+        "ci_low": 0.3408617531893393,
+        "ci_high": 0.508082422845354,
+        "p_matched": 0.8911108889111089,
+        "p_unmatched_mwu": 0.9397375785209858
+      },
+      {
+        "measure": "slope_standard",
+        "transitions_total": 29,
+        "stable_total": 287,
+        "transitions_matched": 29,
+        "stable_matched": 202,
+        "median_transition": 5.74715367069885,
+        "median_stable": -0.49511774652344087,
+        "effect_auc": 0.43604164035198506,
+        "ci_low": 0.34309355395562285,
+        "ci_high": 0.52651596248579,
+        "p_matched": 0.8583141685831417,
+        "p_unmatched_mwu": 0.8429398908498673
+      }
+    ],
+    "variants_test": [
+      {
+        "measure": "level_no_confidence",
+        "transitions_total": 61,
+        "stable_total": 410,
+        "transitions_matched": 61,
+        "stable_matched": 387,
+        "median_transition": 67.16269841269842,
+        "median_stable": 65.39765211640211,
+        "effect_auc": 0.4354758742726312,
+        "ci_low": 0.37136697064503116,
+        "ci_high": 0.49753900204746837,
+        "p_matched": 0.9241075892410759,
+        "p_unmatched_mwu": 0.7538357199558862
+      },
+      {
+        "measure": "level_direction_only",
+        "transitions_total": 61,
+        "stable_total": 410,
+        "transitions_matched": 61,
+        "stable_matched": 387,
+        "median_transition": 71.79219385266599,
+        "median_stable": 70.73045332759851,
+        "effect_auc": 0.45695453476184844,
+        "ci_low": 0.3898048714380776,
+        "ci_high": 0.5244933653645525,
+        "p_matched": 0.8331166883311669,
+        "p_unmatched_mwu": 0.7732595434319991
+      }
+    ],
+    "persistence_1_test": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 54,
+        "stable_total": 311,
+        "transitions_matched": 54,
+        "stable_matched": 262,
+        "median_transition": 68.56381844228056,
+        "median_stable": 67.70769963455582,
+        "effect_auc": 0.3965136662634083,
+        "ci_low": 0.32926391839258407,
+        "ci_high": 0.4657500328952856,
+        "p_matched": 0.9762023797620238,
+        "p_unmatched_mwu": 0.522006943580993
+      }
+    ],
+    "persistence_5_test": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 53,
+        "stable_total": 553,
+        "transitions_matched": 53,
+        "stable_matched": 470,
+        "median_transition": 64.44098482397415,
+        "median_stable": 66.00221635810108,
+        "effect_auc": 0.5197074285615368,
+        "ci_low": 0.44840452632726285,
+        "ci_high": 0.5937648381636497,
+        "p_matched": 0.3320667933206679,
+        "p_unmatched_mwu": 0.4221923893864303
+      }
+    ],
+    "persistence_7_test": [
+      {
+        "measure": "level_standard",
+        "transitions_total": 46,
+        "stable_total": 693,
+        "transitions_matched": 46,
+        "stable_matched": 584,
+        "median_transition": 65.23617673159396,
+        "median_stable": 66.00221635810108,
+        "effect_auc": 0.4811201849957472,
+        "ci_low": 0.41753524339246323,
+        "ci_high": 0.5463733430764915,
+        "p_matched": 0.6604339566043396,
+        "p_unmatched_mwu": 0.49217572430550777
+      }
+    ],
+    "beyond_baselines_test": {
+      "volatility": {
+        "coefficient": -0.023191270937302954,
+        "ci_low": -0.3868443012497811,
+        "ci_high": 0.3583307774967122
+      },
+      "changes_4h": {
+        "coefficient": 0.13952124171553684,
+        "ci_low": -0.06989322406282737,
+        "ci_high": 0.3787580650484477
+      },
+      "level_standard": {
+        "coefficient": 0.06407709961393196,
+        "ci_low": -0.29252613441487835,
+        "ci_high": 0.43320708881325354
+      }
+    },
+    "positive_control_test": [
+      {
+        "measure": "daily_confidence",
+        "transitions_total": 61,
+        "stable_total": 410,
+        "transitions_matched": 61,
+        "stable_matched": 387,
+        "median_transition": 0.8506526914619672,
+        "median_stable": 0.9999957929742913,
+        "effect_auc": 0.8851971015613608,
+        "ci_low": 0.8317398418599536,
+        "ci_high": 0.9321208057209078,
+        "p_matched": 9.999000099990002e-05,
+        "p_unmatched_mwu": 8.052810050791253e-23
+      }
+    ],
+    "exploratory_by_regime_test": [
+      {
+        "regime": "Bullish",
+        "transitions_matched": 16,
+        "stable_matched": 131,
+        "median_transition": 69.93691754891904,
+        "median_stable": 65.3579942625106,
+        "effect_auc": 0.37154148391812863
+      },
+      {
+        "regime": "Bearish",
+        "transitions_matched": 13,
+        "stable_matched": 118,
+        "median_transition": 61.5809093000342,
+        "median_stable": 61.44988184105556,
+        "effect_auc": 0.49660633484162897
+      },
+      {
+        "regime": "Sideways",
+        "transitions_matched": 19,
+        "stable_matched": 115,
+        "median_transition": 68.61198307822002,
+        "median_stable": 76.42027466039794,
+        "effect_auc": 0.6601652156707559
+      },
+      {
+        "regime": "Volatile",
+        "transitions_matched": 13,
+        "stable_matched": 23,
+        "median_transition": 65.98230829711385,
+        "median_stable": 55.791134613070426,
+        "effect_auc": 0.1474358974358974
+      }
+    ]
+  }
+}

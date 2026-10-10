@@ -1,0 +1,637 @@
+{
+  "design": {
+    "period": "train",
+    "durable_candles": 3,
+    "headline_interval": "1d",
+    "secondary_intervals": [
+      "4h",
+      "1h",
+      "15m"
+    ],
+    "propagation_window": 3,
+    "train_end": "2022-12-31",
+    "permutations": 10000,
+    "bootstraps": 2000,
+    "seed": 42
+  },
+  "BTCUSDT": {
+    "1d": {
+      "comparison": {
+        "measure": "depth",
+        "flips": 51,
+        "durable": 43,
+        "short_lived": 8,
+        "durable_matched": 29,
+        "short_matched": 8,
+        "durable_rate_supported": 0.8214285714285714,
+        "durable_rate_unsupported": 0.8695652173913043,
+        "effect_auc": 0.4525862068965517,
+        "ci_low": 0.25851293103448275,
+        "ci_high": 0.6551724137931034,
+        "p_matched": 0.6561343865613438
+      },
+      "run_length": {
+        "unsupported_matched": 23,
+        "supported_matched": 28,
+        "median_run_unsupported": 10.0,
+        "median_run_supported": 12.5,
+        "effect_auc": 0.5957556935817806,
+        "ci_low": 0.41871118012422354,
+        "ci_high": 0.7562370600414078,
+        "p_matched": 0.1406859314068593
+      },
+      "by_depth": [
+        {
+          "depth": 0,
+          "flips": 23,
+          "durable_rate": 0.8695652173913043,
+          "median_run_candles": 10.0
+        },
+        {
+          "depth": 1,
+          "flips": 17,
+          "durable_rate": 0.8235294117647058,
+          "median_run_candles": 10.0
+        },
+        {
+          "depth": 2,
+          "flips": 5,
+          "durable_rate": 0.8,
+          "median_run_candles": 20.0
+        },
+        {
+          "depth": 3,
+          "flips": 1,
+          "durable_rate": 1.0,
+          "median_run_candles": 23.0
+        },
+        {
+          "depth": 4,
+          "flips": 5,
+          "durable_rate": 0.8,
+          "median_run_candles": 13.0
+        }
+      ],
+      "beyond_baselines": {
+        "note": "too few rows for a joint model"
+      }
+    },
+    "4h": {
+      "comparison": {
+        "measure": "depth",
+        "flips": 329,
+        "durable": 262,
+        "short_lived": 67,
+        "durable_matched": 262,
+        "short_matched": 67,
+        "durable_rate_supported": 0.8267716535433071,
+        "durable_rate_unsupported": 0.7772277227722773,
+        "effect_auc": 0.5232718405428329,
+        "ci_low": 0.4617709072429373,
+        "ci_high": 0.5847377432390551,
+        "p_matched": 0.25317468253174685
+      },
+      "run_length": {
+        "unsupported_matched": 202,
+        "supported_matched": 127,
+        "median_run_unsupported": 8.0,
+        "median_run_supported": 8.0,
+        "effect_auc": 0.5710752236919139,
+        "ci_low": 0.47847075101937186,
+        "ci_high": 0.6585289309935703,
+        "p_matched": 0.09979002099790021
+      },
+      "by_depth": [
+        {
+          "depth": 0,
+          "flips": 202,
+          "durable_rate": 0.7772277227722773,
+          "median_run_candles": 8.0
+        },
+        {
+          "depth": 1,
+          "flips": 61,
+          "durable_rate": 0.7868852459016393,
+          "median_run_candles": 7.0
+        },
+        {
+          "depth": 2,
+          "flips": 22,
+          "durable_rate": 0.8181818181818182,
+          "median_run_candles": 15.5
+        },
+        {
+          "depth": 3,
+          "flips": 44,
+          "durable_rate": 0.8863636363636364,
+          "median_run_candles": 7.5
+        }
+      ],
+      "beyond_baselines": {
+        "confidence": {
+          "coefficient": 0.4590201242006293,
+          "ci_low": 0.20075629635513031,
+          "ci_high": 0.7258144846355353
+        },
+        "move_size": {
+          "coefficient": 0.16300848440722648,
+          "ci_low": -0.12843679979346403,
+          "ci_high": 0.6088171778392392
+        },
+        "depth": {
+          "coefficient": 0.22561163774903595,
+          "ci_low": -0.04132309201415217,
+          "ci_high": 0.5836138961929134
+        }
+      }
+    },
+    "1h": {
+      "comparison": {
+        "measure": "depth",
+        "flips": 1372,
+        "durable": 1125,
+        "short_lived": 247,
+        "durable_matched": 1125,
+        "short_matched": 247,
+        "durable_rate_supported": 0.8585657370517928,
+        "durable_rate_unsupported": 0.7977011494252874,
+        "effect_auc": 0.5523022774327122,
+        "ci_low": 0.5201616621703579,
+        "ci_high": 0.5854154211368342,
+        "p_matched": 0.0011998800119988001
+      },
+      "run_length": {
+        "unsupported_matched": 870,
+        "supported_matched": 502,
+        "median_run_unsupported": 8.0,
+        "median_run_supported": 9.0,
+        "effect_auc": 0.5393404169981008,
+        "ci_low": 0.5060368130184849,
+        "ci_high": 0.5709125900098807,
+        "p_matched": 0.0124987501249875
+      },
+      "by_depth": [
+        {
+          "depth": 0,
+          "flips": 870,
+          "durable_rate": 0.7977011494252874,
+          "median_run_candles": 8.0
+        },
+        {
+          "depth": 1,
+          "flips": 153,
+          "durable_rate": 0.8627450980392157,
+          "median_run_candles": 8.0
+        },
+        {
+          "depth": 2,
+          "flips": 349,
+          "durable_rate": 0.8567335243553008,
+          "median_run_candles": 9.0
+        }
+      ],
+      "beyond_baselines": {
+        "confidence": {
+          "coefficient": 0.5612873105155952,
+          "ci_low": 0.4244681211353261,
+          "ci_high": 0.7065443930044168
+        },
+        "move_size": {
+          "coefficient": 0.23151247860716165,
+          "ci_low": 0.031009231715836152,
+          "ci_high": 0.45293100419806454
+        },
+        "depth": {
+          "coefficient": 0.28517575850406196,
+          "ci_low": 0.13890691064673066,
+          "ci_high": 0.4381489888746343
+        }
+      }
+    },
+    "15m": {
+      "comparison": {
+        "measure": "depth",
+        "flips": 4834,
+        "durable": 3977,
+        "short_lived": 857,
+        "durable_matched": 3977,
+        "short_matched": 857,
+        "durable_rate_supported": 0.8561001042752867,
+        "durable_rate_unsupported": 0.8007544581618655,
+        "effect_auc": 0.5262517323926607,
+        "ci_low": 0.5106073564930801,
+        "ci_high": 0.5415386592011254,
+        "p_matched": 0.00029997000299970003
+      },
+      "run_length": {
+        "unsupported_matched": 2916,
+        "supported_matched": 1918,
+        "median_run_unsupported": 9.0,
+        "median_run_supported": 10.0,
+        "effect_auc": 0.4295423676547198,
+        "ci_low": 0.3814145385600725,
+        "ci_high": 0.48300201094456346,
+        "p_matched": 0.9983001699830018
+      },
+      "by_depth": [
+        {
+          "depth": 0,
+          "flips": 2916,
+          "durable_rate": 0.8007544581618655,
+          "median_run_candles": 9.0
+        },
+        {
+          "depth": 1,
+          "flips": 1918,
+          "durable_rate": 0.8561001042752867,
+          "median_run_candles": 10.0
+        }
+      ],
+      "beyond_baselines": {
+        "confidence": {
+          "coefficient": 0.46795643609762283,
+          "ci_low": 0.39782419991854123,
+          "ci_high": 0.5517486789593233
+        },
+        "move_size": {
+          "coefficient": -0.03235208362790193,
+          "ci_low": -0.1112402296293672,
+          "ci_high": 0.056190788037300154
+        },
+        "depth": {
+          "coefficient": 0.17501115933853667,
+          "ci_low": 0.0926345957814826,
+          "ci_high": 0.2571354395795567
+        }
+      }
+    },
+    "robustness_1d": {
+      "plain_count": {
+        "measure": "support_count",
+        "flips": 51,
+        "durable": 43,
+        "short_lived": 8,
+        "durable_matched": 29,
+        "short_matched": 8,
+        "durable_rate_supported": 0.8604651162790697,
+        "durable_rate_unsupported": 0.75,
+        "effect_auc": 0.41810344827586204,
+        "ci_low": 0.18103448275862066,
+        "ci_high": 0.6810344827586207,
+        "p_matched": 0.7578242175782421
+      },
+      "durable_2_candles": {
+        "measure": "depth",
+        "flips": 51,
+        "durable": 45,
+        "short_lived": 6,
+        "durable_matched": 31,
+        "short_matched": 6,
+        "durable_rate_supported": 0.8928571428571429,
+        "durable_rate_unsupported": 0.8695652173913043,
+        "effect_auc": 0.5241935483870968,
+        "ci_low": 0.3225806451612903,
+        "ci_high": 0.7258064516129032,
+        "p_matched": 0.45625437456254375
+      },
+      "durable_5_candles": {
+        "measure": "depth",
+        "flips": 51,
+        "durable": 39,
+        "short_lived": 12,
+        "durable_matched": 25,
+        "short_matched": 12,
+        "durable_rate_supported": 0.8214285714285714,
+        "durable_rate_unsupported": 0.6956521739130435,
+        "effect_auc": 0.5966666666666667,
+        "ci_low": 0.3857142857142857,
+        "ci_high": 0.781904761904762,
+        "p_matched": 0.17348265173482652
+      },
+      "direction_only": {
+        "measure": "depth",
+        "flips": 43,
+        "durable": 39,
+        "short_lived": 4,
+        "durable_matched": 25,
+        "short_matched": 4,
+        "durable_rate_supported": 0.8928571428571429,
+        "durable_rate_unsupported": 0.9333333333333333,
+        "effect_auc": 0.45,
+        "ci_low": 0.27999999999999997,
+        "ci_high": 0.62,
+        "p_matched": 0.6252374762523748
+      }
+    }
+  },
+  "ETHUSDT": {
+    "1d": {
+      "comparison": {
+        "measure": "depth",
+        "flips": 41,
+        "durable": 38,
+        "short_lived": 3,
+        "durable_matched": 20,
+        "short_matched": 3,
+        "durable_rate_supported": 0.9,
+        "durable_rate_unsupported": 0.9523809523809523,
+        "effect_auc": 0.225,
+        "ci_low": 0.1,
+        "ci_high": 0.325,
+        "p_matched": 0.9273072692730727
+      },
+      "run_length": {
+        "unsupported_matched": 21,
+        "supported_matched": 20,
+        "median_run_unsupported": 11.0,
+        "median_run_supported": 14.0,
+        "effect_auc": 0.4357142857142857,
+        "ci_low": 0.08452380952380953,
+        "ci_high": 0.8071428571428572,
+        "p_matched": 0.657034296570343
+      },
+      "by_depth": [
+        {
+          "depth": 0,
+          "flips": 21,
+          "durable_rate": 0.9523809523809523,
+          "median_run_candles": 11.0
+        },
+        {
+          "depth": 1,
+          "flips": 10,
+          "durable_rate": 0.8,
+          "median_run_candles": 15.0
+        },
+        {
+          "depth": 2,
+          "flips": 3,
+          "durable_rate": 1.0,
+          "median_run_candles": 5.0
+        },
+        {
+          "depth": 3,
+          "flips": 3,
+          "durable_rate": 1.0,
+          "median_run_candles": 26.0
+        },
+        {
+          "depth": 4,
+          "flips": 4,
+          "durable_rate": 1.0,
+          "median_run_candles": 14.0
+        }
+      ],
+      "beyond_baselines": {
+        "note": "too few rows for a joint model"
+      }
+    },
+    "4h": {
+      "comparison": {
+        "measure": "depth",
+        "flips": 331,
+        "durable": 271,
+        "short_lived": 60,
+        "durable_matched": 271,
+        "short_matched": 60,
+        "durable_rate_supported": 0.848,
+        "durable_rate_unsupported": 0.8009708737864077,
+        "effect_auc": 0.5521349499209278,
+        "ci_low": 0.48180910648392206,
+        "ci_high": 0.6187532946758039,
+        "p_matched": 0.0674932506749325
+      },
+      "run_length": {
+        "unsupported_matched": 206,
+        "supported_matched": 125,
+        "median_run_unsupported": 7.0,
+        "median_run_supported": 9.0,
+        "effect_auc": 0.5554213300501135,
+        "ci_low": 0.4740814463472943,
+        "ci_high": 0.6420694745241433,
+        "p_matched": 0.11678832116788321
+      },
+      "by_depth": [
+        {
+          "depth": 0,
+          "flips": 206,
+          "durable_rate": 0.8009708737864077,
+          "median_run_candles": 7.0
+        },
+        {
+          "depth": 1,
+          "flips": 39,
+          "durable_rate": 0.8461538461538461,
+          "median_run_candles": 10.0
+        },
+        {
+          "depth": 2,
+          "flips": 34,
+          "durable_rate": 0.8823529411764706,
+          "median_run_candles": 7.0
+        },
+        {
+          "depth": 3,
+          "flips": 52,
+          "durable_rate": 0.8269230769230769,
+          "median_run_candles": 9.5
+        }
+      ],
+      "beyond_baselines": {
+        "confidence": {
+          "coefficient": 0.4846455895576876,
+          "ci_low": 0.20397998217709834,
+          "ci_high": 0.8138453647851035
+        },
+        "move_size": {
+          "coefficient": 0.5051865852872026,
+          "ci_low": 0.08842256331038109,
+          "ci_high": 1.0267208876681
+        },
+        "depth": {
+          "coefficient": 0.17564376079000116,
+          "ci_low": -0.121821439767173,
+          "ci_high": 0.533242173942481
+        }
+      }
+    },
+    "1h": {
+      "comparison": {
+        "measure": "depth",
+        "flips": 1400,
+        "durable": 1108,
+        "short_lived": 292,
+        "durable_matched": 1108,
+        "short_matched": 292,
+        "durable_rate_supported": 0.8224543080939948,
+        "durable_rate_unsupported": 0.7539432176656151,
+        "effect_auc": 0.5695545462780394,
+        "ci_low": 0.5360011632544811,
+        "ci_high": 0.6041024254521626,
+        "p_matched": 9.999000099990002e-05
+      },
+      "run_length": {
+        "unsupported_matched": 634,
+        "supported_matched": 766,
+        "median_run_unsupported": 6.0,
+        "median_run_supported": 8.0,
+        "effect_auc": 0.5352760520532986,
+        "ci_low": 0.5031574551154611,
+        "ci_high": 0.566854131092997,
+        "p_matched": 0.015798420157984203
+      },
+      "by_depth": [
+        {
+          "depth": 0,
+          "flips": 634,
+          "durable_rate": 0.7539432176656151,
+          "median_run_candles": 6.0
+        },
+        {
+          "depth": 1,
+          "flips": 214,
+          "durable_rate": 0.7850467289719626,
+          "median_run_candles": 8.0
+        },
+        {
+          "depth": 2,
+          "flips": 552,
+          "durable_rate": 0.8369565217391305,
+          "median_run_candles": 9.0
+        }
+      ],
+      "beyond_baselines": {
+        "confidence": {
+          "coefficient": 0.5287026266581693,
+          "ci_low": 0.39545985591657357,
+          "ci_high": 0.6699579253698543
+        },
+        "move_size": {
+          "coefficient": 0.18719067213839627,
+          "ci_low": 0.025268146162515076,
+          "ci_high": 0.38500176018459026
+        },
+        "depth": {
+          "coefficient": 0.284224973230263,
+          "ci_low": 0.14500399495613897,
+          "ci_high": 0.43214178786451296
+        }
+      }
+    },
+    "15m": {
+      "comparison": {
+        "measure": "depth",
+        "flips": 4918,
+        "durable": 4037,
+        "short_lived": 881,
+        "durable_matched": 4037,
+        "short_matched": 881,
+        "durable_rate_supported": 0.8553299492385786,
+        "durable_rate_unsupported": 0.7768518518518519,
+        "effect_auc": 0.5556091856764857,
+        "ci_low": 0.5376115806071912,
+        "ci_high": 0.5740611103345998,
+        "p_matched": 9.999000099990002e-05
+      },
+      "run_length": {
+        "unsupported_matched": 2160,
+        "supported_matched": 2758,
+        "median_run_unsupported": 7.0,
+        "median_run_supported": 10.0,
+        "effect_auc": 0.5633743388854582,
+        "ci_low": 0.5474427791935307,
+        "ci_high": 0.5799419186999127,
+        "p_matched": 9.999000099990002e-05
+      },
+      "by_depth": [
+        {
+          "depth": 0,
+          "flips": 2160,
+          "durable_rate": 0.7768518518518519,
+          "median_run_candles": 7.0
+        },
+        {
+          "depth": 1,
+          "flips": 2758,
+          "durable_rate": 0.8553299492385786,
+          "median_run_candles": 10.0
+        }
+      ],
+      "beyond_baselines": {
+        "confidence": {
+          "coefficient": 0.6181039808792412,
+          "ci_low": 0.5476926076277037,
+          "ci_high": 0.6913497695274851
+        },
+        "move_size": {
+          "coefficient": 0.11159996107256107,
+          "ci_low": 0.007091080032055979,
+          "ci_high": 0.2195416382110379
+        },
+        "depth": {
+          "coefficient": 0.26376590098264635,
+          "ci_low": 0.18239936720670505,
+          "ci_high": 0.34039894695481526
+        }
+      }
+    },
+    "robustness_1d": {
+      "plain_count": {
+        "measure": "support_count",
+        "flips": 41,
+        "durable": 38,
+        "short_lived": 3,
+        "durable_matched": 20,
+        "short_matched": 3,
+        "durable_rate_supported": 0.9259259259259259,
+        "durable_rate_unsupported": 0.9285714285714286,
+        "effect_auc": 0.33749999999999997,
+        "ci_low": 0.24999999999999994,
+        "ci_high": 0.42531249999999826,
+        "p_matched": 0.7795220477952205
+      },
+      "durable_2_candles": {
+        "measure": "depth",
+        "flips": 41,
+        "durable": 39,
+        "short_lived": 2,
+        "durable_matched": 21,
+        "short_matched": 2,
+        "durable_rate_supported": 0.9,
+        "durable_rate_unsupported": 1.0,
+        "effect_auc": 0.16666666666666666,
+        "ci_low": 0.07142857142857142,
+        "ci_high": 0.2857142857142857,
+        "p_matched": 0.9671032896710329
+      },
+      "durable_5_candles": {
+        "measure": "depth",
+        "flips": 41,
+        "durable": 36,
+        "short_lived": 5,
+        "durable_matched": 28,
+        "short_matched": 5,
+        "durable_rate_supported": 0.85,
+        "durable_rate_unsupported": 0.9047619047619048,
+        "effect_auc": 0.4375,
+        "ci_low": 0.24107142857142858,
+        "ci_high": 0.6428571428571429,
+        "p_matched": 0.7077292270772922
+      },
+      "direction_only": {
+        "measure": "depth",
+        "flips": 35,
+        "durable": 34,
+        "short_lived": 1,
+        "durable_matched": 16,
+        "short_matched": 1,
+        "durable_rate_supported": 0.9523809523809523,
+        "durable_rate_unsupported": 1.0,
+        "effect_auc": 0.3125,
+        "ci_low": 0.125,
+        "ci_high": 0.5,
+        "p_matched": 0.8275172482751725
+      }
+    }
+  }
+}

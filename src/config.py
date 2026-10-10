@@ -165,6 +165,61 @@ TIMEFRAME_WEIGHTS = {"1d": 0.30, "4h": 0.25, "1h": 0.20, "15m": 0.15, "5m": 0.10
 H1_ALIGNMENT_INTERVALS = ["4h", "1h", "15m", "5m"]
 
 # --------------------------------------------------------------------------
+# M9 - H1 experiment: does alignment fall before a Daily regime transition?
+# These values were fixed on 10 Oct 2026, BEFORE any H1 result was computed.
+# --------------------------------------------------------------------------
+# A Daily regime change counts as a transition only if the new regime then
+# holds for this many days. Removes one- and two-day flicker.
+H1_PERSISTENCE = 3
+H1_ROBUSTNESS_PERSISTENCE = [1, 5, 7]   # reported beside the headline, never instead of it
+
+# Alignment is measured over this many WHOLE UTC days before the transition
+# day. Whole days cancel the time-of-day rhythm of the fast timeframes. The
+# window ends when the transition day opens, so nothing from that day is used.
+H1_WINDOW_DAYS = 3
+
+# A stable comparison day has no transition within this many days on either
+# side. Headline transitions must likewise have this many quiet days before
+# them, so both kinds of window start from a settled market.
+H1_STABLE_MARGIN_DAYS = 7
+
+# A day's alignment is used only if at least this share of its 288
+# five-minute points exists (guards against exchange outages).
+H1_MIN_DAY_COVERAGE = 0.95
+
+H1_PERMUTATIONS = 10_000    # label shuffles for the p-value
+H1_BOOTSTRAPS = 2_000       # resamples for the confidence interval
+
+# Direction-only robustness check: regime names reduced to direction, because
+# "Volatile" and "Sideways" do not mean exactly the same at every timeframe.
+DIRECTION_OF_REGIME = {"Bullish": "up", "Bearish": "down",
+                       "Sideways": "neutral", "Volatile": "neutral"}
+
+# --------------------------------------------------------------------------
+# M5 - regime propagation between timeframes
+# --------------------------------------------------------------------------
+PROPAGATION_DIR = DATA_DIR / "propagation"   # M5 output: one row per regime flip
+
+# PROPOSED: a flip at one timeframe counts as "adopted" by the next slower
+# timeframe if that timeframe shows the same regime within this many of ITS
+# OWN candles. Otherwise the propagation is recorded as failed.
+PROPAGATION_WINDOW_CANDLES = 3
+
+# --------------------------------------------------------------------------
+# M9 - H2 experiment: do flips supported from below last longer?
+# Design fixed on 10 Oct 2026 using the TRAINING period only (2021-2022),
+# before any test-period H2 result was computed.
+# --------------------------------------------------------------------------
+# A flip is "durable" if the new regime holds for at least this many candles
+# of its own timeframe; shorter runs are treated as noise. Three matches the
+# persistence used for Daily transitions in H1.
+H2_DURABLE_CANDLES = 3
+H2_ROBUSTNESS_DURABLE = [2, 5]
+
+H2_HEADLINE_INTERVAL = "1d"                  # Daily is the anchor, as in H1
+H2_SECONDARY_INTERVALS = ["4h", "1h", "15m"]  # replication at faster levels
+
+# --------------------------------------------------------------------------
 # Reproducibility
 # --------------------------------------------------------------------------
 RANDOM_SEED = 42

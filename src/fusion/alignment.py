@@ -54,17 +54,23 @@ def load_regime_grid(symbol: str, intervals: list[str]) -> pd.DataFrame:
 
 
 def compute_alignment(grid: pd.DataFrame, intervals: list[str],
-                      weights: dict[str, float]) -> pd.DataFrame:
-    """Add dominant regime, Alignment Score (0-100) and Confidence Score (0-100)."""
+                      weights: dict[str, float],
+                      classes: list[str] | None = None) -> pd.DataFrame:
+    """Add dominant regime, Alignment Score (0-100) and Confidence Score (0-100).
+
+    `classes` lists the possible labels. It defaults to the four regimes; the
+    H1 robustness check passes direction labels (up / down / neutral) instead.
+    """
+    classes = config.REGIMES if classes is None else classes
     labels = np.column_stack([grid[f"regime_{i}"].to_numpy() for i in intervals])
     confidence = np.column_stack([grid[f"conf_{i}"].to_numpy(dtype=float) for i in intervals])
     votes = confidence * np.array([weights[i] for i in intervals])
 
     # Total vote for each regime at each moment: shape (moments, regimes).
     regime_votes = np.column_stack([
-        np.where(labels == regime, votes, 0.0).sum(axis=1) for regime in config.REGIMES])
+        np.where(labels == regime, votes, 0.0).sum(axis=1) for regime in classes])
     dominant_index = regime_votes.argmax(axis=1)
-    dominant = np.array(config.REGIMES)[dominant_index]
+    dominant = np.array(classes)[dominant_index]
 
     agrees = labels == dominant[:, None]
     alignment = 100.0 * regime_votes.max(axis=1) / votes.sum(axis=1)
