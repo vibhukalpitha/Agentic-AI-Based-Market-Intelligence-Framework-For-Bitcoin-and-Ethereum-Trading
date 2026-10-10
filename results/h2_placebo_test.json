@@ -1,0 +1,89 @@
+{
+  "status": "post-hoc control, added after the H2 test result was known",
+  "placebo_lag_days": 30,
+  "period": "test",
+  "BTCUSDT": {
+    "1d": {
+      "flips": 119,
+      "real_effect": 0.5442105263157895,
+      "placebo_effect": 0.556374269005848,
+      "placebo_ci_low": 0.4605584795321638,
+      "placebo_ci_high": 0.6421315789473683,
+      "real_minus_placebo": -0.012163742690058488,
+      "difference_ci_low": -0.13216374269005848,
+      "difference_ci_high": 0.10995321637426891
+    },
+    "4h": {
+      "flips": 588,
+      "real_effect": 0.5996901604189053,
+      "placebo_effect": 0.535999445412401,
+      "placebo_ci_low": 0.49169968590515145,
+      "placebo_ci_high": 0.5757288898989303,
+      "real_minus_placebo": 0.06369071500650436,
+      "difference_ci_low": 0.0014428454458818827,
+      "difference_ci_high": 0.12746712279860056
+    },
+    "1h": {
+      "flips": 2213,
+      "real_effect": 0.5663726254271808,
+      "placebo_effect": 0.5018739051636835,
+      "placebo_ci_low": 0.4783618559422169,
+      "placebo_ci_high": 0.5237815937015818,
+      "real_minus_placebo": 0.06449872026349734,
+      "difference_ci_low": 0.0287819307239811,
+      "difference_ci_high": 0.10385585561703503
+    },
+    "15m": {
+      "flips": 8285,
+      "real_effect": 0.5325059161403118,
+      "placebo_effect": 0.507587252717184,
+      "placebo_ci_low": 0.4958721586574337,
+      "placebo_ci_high": 0.5192661257553568,
+      "real_minus_placebo": 0.024918663423127874,
+      "difference_ci_low": 0.008436853180855467,
+      "difference_ci_high": 0.04021114580315156
+    }
+  },
+  "ETHUSDT": {
+    "1d": {
+      "flips": 158,
+      "real_effect": 0.5934697742733457,
+      "placebo_effect": 0.5485209235209235,
+      "placebo_ci_low": 0.4627902913059163,
+      "placebo_ci_high": 0.6258712966720779,
+      "real_minus_placebo": 0.044948850752422165,
+      "difference_ci_low": -0.07278255288857964,
+      "difference_ci_high": 0.1527214910585446
+    },
+    "4h": {
+      "flips": 590,
+      "real_effect": 0.5334352522934517,
+      "placebo_effect": 0.5116889270442951,
+      "placebo_ci_low": 0.4590580310709746,
+      "placebo_ci_high": 0.5599619785045649,
+      "real_minus_placebo": 0.02174632524915654,
+      "difference_ci_low": -0.05580706388645822,
+      "difference_ci_high": 0.10192238034703059
+    },
+    "1h": {
+      "flips": 2295,
+      "real_effect": 0.5604789561833499,
+      "placebo_effect": 0.4966697614387751,
+      "placebo_ci_low": 0.4719570826517231,
+      "placebo_ci_high": 0.5221203464354595,
+      "real_minus_placebo": 0.06380919474457475,
+      "difference_ci_low": 0.02539101300992452,
+      "difference_ci_high": 0.09972020214477913
+    },
+    "15m": {
+      "flips": 8625,
+      "real_effect": 0.599754689872013,
+      "placebo_effect": 0.5133731937618415,
+      "placebo_ci_low": 0.5013004858066684,
+      "placebo_ci_high": 0.5259513680136071,
+      "real_minus_placebo": 0.08638149611017143,
+      "difference_ci_low": 0.06734806882923079,
+      "difference_ci_high": 0.10420443473371335
+    }
+  }
+}

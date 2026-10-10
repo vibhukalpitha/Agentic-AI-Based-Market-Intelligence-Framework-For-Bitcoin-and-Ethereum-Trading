@@ -94,6 +94,8 @@ These come from this component's own tests (training data to 2022, tested on 202
    timeframe has its own independent model.
 3. **`alignment_score` is a description, not a warning.** It did not anticipate Daily
    regime changes in testing.
-4. **`bottom-up` changes lasted longer than `top-down` ones**, by a modest margin
-   (for Daily flips, 85% held at least 3 days against 75% for BTC and 64% for ETH).
+4. **`bottom-up` changes lasted somewhat longer than `top-down` ones at the 1h and 15m
+   timeframes.** At the Daily timeframe the difference could not be separated from a
+   background effect (a placebo check gave a similar result), so do not rely on
+   `direction` for Daily flips.
 5. **Data ends on 2026-09-30.** The record is built from saved files, not from a live feed.

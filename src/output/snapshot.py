@@ -34,8 +34,9 @@ CAVEATS = [
     "mean exactly the same thing at every timeframe.",
     "alignment_score did not anticipate Daily regime transitions in testing (H1 not "
     "supported); use it as a description of agreement, not as a warning signal.",
-    "propagation.direction 'bottom-up' flips proved more durable than 'top-down' flips in "
-    "testing, by a modest margin (H2 partly supported).",
+    "propagation.direction: 'bottom-up' flips were somewhat more durable than 'top-down' "
+    "flips at the 1h and 15m timeframes in testing. At the Daily timeframe the difference "
+    "could not be separated from a background effect, so do not rely on it there.",
 ]
 
 
