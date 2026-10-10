@@ -59,7 +59,7 @@ def transition_table(states: np.ndarray, is_train: np.ndarray) -> pd.DataFrame:
                      "train": int(changed[is_train].sum()),
                      "test": int(changed[~is_train].sum()),
                      "total": total,
-                     "mean_days_per_regime": len(states) / (total + 1)})
+                     "mean_candles_per_regime": len(states) / (total + 1)})
     return pd.DataFrame(rows)
 
 
@@ -182,7 +182,7 @@ def train_one(symbol: str, interval: str, run_bic: bool = True, relabel: bool = 
              for s, mapped in model.state_to_regime.items() if mapped == name]
     transmat = pd.DataFrame(model.hmm.transmat_[np.ix_(order, order)],
                             index=config.REGIMES, columns=config.REGIMES)
-    print("\nTransition matrix (row = today, column = tomorrow):")
+    print("\nTransition matrix (row = this candle, column = next candle):")
     print(transmat.to_string(float_format=lambda v: f"{v:8.3f}"))
 
     transitions = transition_table(states, is_train)

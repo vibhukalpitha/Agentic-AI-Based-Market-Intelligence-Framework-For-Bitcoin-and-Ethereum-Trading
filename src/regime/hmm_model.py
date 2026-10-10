@@ -7,9 +7,10 @@ and the market moves between states according to a transition matrix. Training
 the data, without ever being told what the states mean.
 
 The most important function here is filtered_probabilities. hmmlearn's own
-predict() and predict_proba() read the WHOLE series, so their answer for day t
-depends on days after t. Using them would make every "early warning" result in
-this project invalid. filtered_probabilities uses days 0..t only.
+predict() and predict_proba() read the WHOLE series, so their answer for
+candle t depends on candles after t. Using them would make every "early
+warning" result in this project invalid. filtered_probabilities uses candles
+0..t only. (A "candle" is one day on the Daily model, five minutes on the 5m model.)
 """
 from dataclasses import dataclass, field
 
@@ -90,7 +91,7 @@ def convergence(model: GaussianHMM) -> tuple[bool, float]:
 
 
 def emission_log_density(model: GaussianHMM, x: np.ndarray) -> np.ndarray:
-    """log p(features on day t | state k), shape (days, states).
+    """log p(features of candle t | state k), shape (candles, states).
 
     Each state is a multivariate Gaussian; this is just its density formula.
     """
@@ -102,14 +103,14 @@ def emission_log_density(model: GaussianHMM, x: np.ndarray) -> np.ndarray:
 
 
 def filtered_probabilities(model: GaussianHMM, x: np.ndarray) -> np.ndarray:
-    """P(state on day t | data from day 0 to day t), shape (days, states).
+    """P(state at candle t | data from candle 0 to candle t), shape (candles, states).
 
     This is the forward algorithm, written out:
-      1. prior    = yesterday's probabilities pushed through the transition matrix
-                    (on the first day: the model's start probabilities)
-      2. evidence = how well each state explains today's features
-      3. today    = prior * evidence, rescaled to sum to 1
-    Nothing from day t+1 or later is ever touched.
+      1. prior    = the previous candle's probabilities pushed through the
+                    transition matrix (first candle: the model's start probabilities)
+      2. evidence = how well each state explains this candle's features
+      3. result   = prior * evidence, rescaled to sum to 1
+    Nothing from candle t+1 or later is ever touched.
     """
     log_density = emission_log_density(model, x)
     probabilities = np.empty_like(log_density)

@@ -33,8 +33,8 @@ def state_profiles(features: pd.DataFrame, states: np.ndarray) -> pd.DataFrame:
     """Average behaviour of the market while it was in each state."""
     grouped = features.assign(state=states).groupby("state")
     profile = grouped[PROFILE_COLUMNS].mean()
-    profile.insert(0, "days", grouped.size())
-    profile.insert(1, "share", profile["days"] / len(features))
+    profile.insert(0, "candles", grouped.size())
+    profile.insert(1, "share", profile["candles"] / len(features))
     return profile
 
 

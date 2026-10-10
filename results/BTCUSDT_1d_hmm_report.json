@@ -35,7 +35,7 @@
   "state_profiles": {
     "0": {
       "regime": "Volatile",
-      "days": 527,
+      "candles": 527,
       "share": 0.3518024032,
       "rsi": 51.7084898253,
       "atr_rel": 0.0874440323,
@@ -46,7 +46,7 @@
     },
     "1": {
       "regime": "Bullish",
-      "days": 362,
+      "candles": 362,
       "share": 0.2416555407,
       "rsi": 69.1492278635,
       "atr_rel": -0.0036155545,
@@ -57,7 +57,7 @@
     },
     "2": {
       "regime": "Sideways",
-      "days": 267,
+      "candles": 267,
       "share": 0.1782376502,
       "rsi": 48.7841724286,
       "atr_rel": -0.3757593603,
@@ -68,7 +68,7 @@
     },
     "3": {
       "regime": "Bearish",
-      "days": 342,
+      "candles": 342,
       "share": 0.2283044059,
       "rsi": 35.9189984124,
       "atr_rel": 0.229629017,
@@ -190,35 +190,35 @@
       "train": 92,
       "test": 119,
       "total": 211,
-      "mean_days_per_regime": 13.523584905660377
+      "mean_candles_per_regime": 13.523584905660377
     },
     {
       "persistence": 2,
       "train": 81,
       "test": 102,
       "total": 183,
-      "mean_days_per_regime": 15.581521739130435
+      "mean_candles_per_regime": 15.581521739130435
     },
     {
       "persistence": 3,
       "train": 75,
       "test": 88,
       "total": 163,
-      "mean_days_per_regime": 17.48170731707317
+      "mean_candles_per_regime": 17.48170731707317
     },
     {
       "persistence": 5,
       "train": 70,
       "test": 71,
       "total": 141,
-      "mean_days_per_regime": 20.190140845070424
+      "mean_candles_per_regime": 20.190140845070424
     },
     {
       "persistence": 7,
       "train": 59,
       "test": 55,
       "total": 114,
-      "mean_days_per_regime": 24.930434782608696
+      "mean_candles_per_regime": 24.930434782608696
     }
   ]
 }
