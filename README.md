@@ -48,6 +48,7 @@ Run the steps in this order. Each one prints a report of what it produced.
 | 7. Test H1 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h1_precursor` | about 1 minute | `results/h1_*` |
 | 8. Test H2 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2_propagation --period test` | about 1 minute | `results/h2_*` |
 | 8b. H2 placebo control | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2_placebo` | about 2 minutes | `results/h2_placebo_test.json` |
+| 8c. Test H2b | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2b_failed_propagation --period test` | about 3 minutes | `results/h2b_*` |
 | 9. Output record | `.\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol BTCUSDT` | seconds | printed JSON |
 
 Step 4 is run once per timeframe: `1d`, `4h`, `1h`, `15m`, `5m`. Two options help:
@@ -76,7 +77,9 @@ An effect of 0.5 means no difference.
 | H1: cross-timeframe alignment declines before a Daily regime transition | **Not supported.** BTC 0.398 (95% interval 0.337–0.460), ETH 0.440 (0.377–0.503). For BTC alignment was slightly higher before transitions. Alignment added nothing beyond volatility. |
 | H2: regime changes already present at faster timeframes are more durable | **Not established at the Daily level** (the effect is no larger than a placebo). **A small effect at the 1h and 15m levels** that exceeds the placebo by 0.025–0.086. |
 
-The H1 and H2 designs were fixed before their results were computed. The H2 placebo
+| H2b: a regime change that the next slower timeframe does not take up is noise | **Not established for 4h changes taken up by Daily** (too few cases). **A small effect at the 5m level and for ETH at 15m** that exceeds the placebo by 0.040–0.071. |
+
+The H1, H2 and H2b designs were fixed before their results were computed. The H2 placebo
 control was added after the H2 result was known and is reported as an additional check.
 
 ### Tests

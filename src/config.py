@@ -235,6 +235,26 @@ H2B_SECONDARY_INTERVALS = ["1h", "15m", "5m"]
 PLACEBO_LAG_DAYS = 30
 
 # --------------------------------------------------------------------------
+# M6 - Regime Stability Score
+# Design fixed on 11 Oct 2026; the delivered model is chosen on the TRAINING
+# period only, before any test-period evaluation.
+# --------------------------------------------------------------------------
+STABILITY_DIR = DATA_DIR / "stability"
+
+# The score is the probability that the Daily regime stays unchanged for this
+# many days. Three matches the persistence used throughout (H1, H2).
+STABILITY_HORIZON_DAYS = 3
+
+# Time-ordered cross-validation inside the training period: the data is cut
+# into this many consecutive blocks; each block after the first is predicted
+# by a model fitted only on the blocks before it.
+STABILITY_CV_BLOCKS = 5
+
+# Confidence intervals in the evaluation resample whole weeks, because
+# neighbouring days share most of their 3-day outcome and are not independent.
+STABILITY_BLOCK_DAYS = 7
+
+# --------------------------------------------------------------------------
 # Reproducibility
 # --------------------------------------------------------------------------
 RANDOM_SEED = 42
