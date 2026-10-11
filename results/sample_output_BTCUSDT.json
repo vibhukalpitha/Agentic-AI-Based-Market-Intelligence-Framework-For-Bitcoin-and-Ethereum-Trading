@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2",
+  "schema_version": "0.3",
   "component": "market_regime_engine",
   "symbol": "BTCUSDT",
   "as_of": "2026-09-30T23:59:59.999Z",
@@ -163,11 +163,19 @@
       "adopted_by_slower": "already_there"
     }
   },
-  "stability": null,
+  "stability": {
+    "probability_regime_persists": 0.8888,
+    "horizon_days": 3,
+    "regime": "Bullish",
+    "daily_candle": "2026-09-30T00:00:00.000Z",
+    "in_training_period": false,
+    "baseline_always": 0.8103
+  },
   "explanation": null,
   "caveats": [
     "confidence is the model's own probability for its current regime; it is above 0.99 about 75% of the time and should not be read as a calibrated accuracy.",
     "each timeframe has its own independent model, so a regime name is not guaranteed to mean exactly the same thing at every timeframe. 'Volatile' is the more active of the two non-directional states, not always the most volatile one; check regime_profile.",
+    "stability.probability_regime_persists ranks days usefully (in testing a day whose regime persisted got the higher score 73% of the time for BTC and 67% for ETH), but it is too confident at the top: when it said above 90%, the regime persisted about 86-93% of the time for BTC and about 80% for ETH.",
     "alignment_score did not anticipate Daily regime transitions in testing (H1 not supported); use it as a description of agreement, not as a warning signal.",
     "propagation.direction: 'bottom-up' flips were somewhat more durable than 'top-down' flips at the 1h and 15m timeframes in testing. At the Daily timeframe the difference could not be separated from a background effect, so do not rely on it there."
   ]

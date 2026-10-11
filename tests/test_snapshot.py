@@ -79,6 +79,26 @@ def test_regime_profile_explains_the_label_for_that_model(labels):
     assert record["timeframes"]["4h"]["regime_profile"] is None
 
 
+def test_stability_comes_from_the_last_closed_daily_candle(labels):
+    """At 12:00 on day 6 the day-6 Daily candle is still forming, so the record
+    must carry day 5's score, never day 6's."""
+    days = labels["1d"]["open_time"]
+    table = pd.DataFrame({"delivered": np.linspace(0.5, 0.9, len(days)), "B0": 0.8,
+                          "regime": labels["1d"]["regime"].to_numpy(),
+                          "period": "test"}, index=pd.DatetimeIndex(days, name="date"))
+    as_of = START + pd.Timedelta(days=6, hours=12)
+    block = snapshot.build_snapshot("TEST", as_of, labels, stability=table)["stability"]
+    assert block["daily_candle"].startswith("2024-01-06")          # the 6th day = index 5
+    assert block["probability_regime_persists"] == round(float(table["delivered"].iloc[5]), 4)
+    assert block["horizon_days"] == config.STABILITY_HORIZON_DAYS
+    assert block["in_training_period"] is False
+
+    # No score for that day -> the block is empty, not an error.
+    without = snapshot.build_snapshot("TEST", as_of, labels, stability=table.drop(days.iloc[5]))
+    assert without["stability"] is None
+    assert snapshot.build_snapshot("TEST", as_of, labels)["stability"] is None
+
+
 def test_candles_in_regime_counts_the_current_run():
     frame = pd.DataFrame({
         "open_time": pd.date_range(START, periods=6, freq="1D"),

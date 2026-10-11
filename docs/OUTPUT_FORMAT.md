@@ -1,6 +1,6 @@
 # Output of the Market Regime Engine (Component 02)
 
-**Status: proposal, schema version 0.2.** The group has not yet agreed a common format.
+**Status: proposal, schema version 0.3.** The group has not yet agreed a common format.
 This is what Component 02 can deliver today; field names can be changed to fit the
 Fusion Intelligence Engine.
 
@@ -44,7 +44,7 @@ Full examples: `results/sample_output_BTCUSDT.json` and `results/sample_output_E
 | `timeframes` | object | State of each timeframe. See below. |
 | `fusion` | object | The five timeframes combined. See below. |
 | `propagation` | object | Where the latest regime change at each timeframe started. See below. |
-| `stability` | null | Regime Stability Score. **Not built yet**; currently always `null`. |
+| `stability` | object or null | Regime Stability Score. See below. `null` where no score exists (before 2021). |
 | `explanation` | null | Plain-language explanation. **Not built yet**; currently always `null`. |
 | `caveats` | list of text | Limits a consumer must respect. See the last section. |
 
@@ -87,6 +87,23 @@ the most volatile state**: in 5 of the 10 models that is `Bearish`. Check
 | `timeframes_disagreeing` | list | The others. |
 | `weights` | object | Weight of each timeframe in the vote (1d 0.30, 4h 0.25, 1h 0.20, 15m 0.15, 5m 0.10). |
 
+## `stability`
+
+How settled the current Daily regime is (new in version 0.3):
+
+| Field | Type | Meaning |
+|---|---|---|
+| `probability_regime_persists` | number 0–1 | Estimated probability that the Daily regime stays unchanged on each of the next `horizon_days` days. |
+| `horizon_days` | whole number | Always 3. |
+| `regime` | text | The Daily regime the score refers to. |
+| `daily_candle` | time | Open time of the Daily candle the score was computed from (the last one closed at `as_of`). |
+| `in_training_period` | true / false | `true` if that day lies in the period the model was fitted on (up to 2022). Such scores are not out-of-sample. |
+| `baseline_always` | number 0–1 | How often the regime persisted in the training period, for comparison. A score near this value says nothing special. |
+
+The score comes from the Daily model's own signals: its confidence, how long the regime
+has lasted, its transition probability and volatility. It describes the present state
+only; it does not say which regime would come next and it is not a price forecast.
+
 ## `propagation`
 
 One entry per timeframe, describing the flip that began its current regime
@@ -108,7 +125,12 @@ These come from this component's own tests (training data to 2022, tested on 202
 1. **`confidence` is not a calibrated accuracy.** It is above 0.99 about 75% of the time.
 2. **A regime name can differ in meaning between timeframes**, because each timeframe
    has its own independent model. `regime_profile` states the meaning for each one.
-3. **`alignment_score` is a description, not a warning.** It did not anticipate Daily
+3. **`stability.probability_regime_persists` ranks days usefully but is too confident
+   at the top.** In testing, a day whose regime persisted received the higher score 73% of
+   the time for BTC and 67% for ETH. But when the score was above 90%, the regime
+   persisted about 86–93% of the time for BTC and only about 80% for ETH. Treat high
+   values as "more settled than usual", not as an exact probability.
+3b. **`alignment_score` is a description, not a warning.** It did not anticipate Daily
    regime changes in testing.
 4. **`bottom-up` changes lasted somewhat longer than `top-down` ones at the 1h and 15m
    timeframes.** At the Daily timeframe the difference could not be separated from a

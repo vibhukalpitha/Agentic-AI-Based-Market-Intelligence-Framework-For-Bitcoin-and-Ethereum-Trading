@@ -116,7 +116,10 @@ def build_inputs(symbol: str) -> pd.DataFrame:
     # A training day's outcome must also lie inside the training period.
     frame["period"] = np.where(frame.index + horizon * ONE_DAY <= train_end, "train",
                                np.where(frame.index > train_end, "test", "gap"))
-    return frame.dropna(subset=MODELS["S2"] + ["target"])
+    # Days whose outcome is not known yet (the last `horizon` days of the data)
+    # are kept: they cannot be used for fitting or evaluation, but they still
+    # get a score, which is what the output record reports for the latest day.
+    return frame.dropna(subset=MODELS["S2"])
 
 
 def fit(train: pd.DataFrame, signals: list[str]) -> dict:

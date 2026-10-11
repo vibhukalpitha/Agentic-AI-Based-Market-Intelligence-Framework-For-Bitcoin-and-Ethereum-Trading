@@ -89,7 +89,8 @@ def weekly_block_differences(frame: pd.DataFrame, pairs: list[tuple[str, str]],
 
 def evaluate(symbol: str, period: str, rng: np.random.Generator) -> dict:
     scores = pd.read_parquet(config.STABILITY_DIR / f"{symbol}_stability.parquet")
-    frame = scores[scores["period"] == period].reset_index(drop=True)
+    # Days with no known outcome yet (the last few of the data) cannot be scored.
+    frame = scores[(scores["period"] == period) & scores["target"].notna()].reset_index(drop=True)
     with open(config.RESULTS_DIR / f"stability_model_{symbol}.json") as file:
         delivered = json.load(file)["delivered_model"]
     target = frame["target"].to_numpy()

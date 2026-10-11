@@ -24,7 +24,7 @@ from src import config
 from src.fusion import alignment, propagation
 from src.regime import describe
 
-SCHEMA_VERSION = "0.2"
+SCHEMA_VERSION = "0.3"
 PROBABILITY_COLUMNS = [f"p_{name.lower()}" for name in config.REGIMES]
 
 # Facts a consumer of this record must know to use it correctly.
@@ -34,6 +34,10 @@ CAVEATS = [
     "each timeframe has its own independent model, so a regime name is not guaranteed to "
     "mean exactly the same thing at every timeframe. 'Volatile' is the more active of the "
     "two non-directional states, not always the most volatile one; check regime_profile.",
+    "stability.probability_regime_persists ranks days usefully (in testing a day whose "
+    "regime persisted got the higher score 73% of the time for BTC and 67% for ETH), but "
+    "it is too confident at the top: when it said above 90%, the regime persisted about "
+    "86-93% of the time for BTC and about 80% for ETH.",
     "alignment_score did not anticipate Daily regime transitions in testing (H1 not "
     "supported); use it as a description of agreement, not as a warning signal.",
     "propagation.direction: 'bottom-up' flips were somewhat more durable than 'top-down' "
@@ -143,6 +147,39 @@ def latest_flip(labels: dict[str, pd.DataFrame], interval: str, as_of: pd.Timest
     return record
 
 
+def load_stability(symbol: str) -> pd.DataFrame | None:
+    """Saved Regime Stability Scores (M6), indexed by Daily candle date."""
+    path = config.STABILITY_DIR / f"{symbol}_stability.parquet"
+    return pd.read_parquet(path).set_index("date") if path.exists() else None
+
+
+def stability_state(table: pd.DataFrame | None, daily: pd.DataFrame,
+                    as_of: pd.Timestamp) -> dict | None:
+    """The Regime Stability Score of the last Daily candle closed at `as_of`.
+
+    The score for a day is computed from signals known at that day's close by
+    a model fitted on the training period only, so it uses no future data.
+    Returns None where no score exists (before 2021, or signals missing).
+    """
+    position = _position(daily, as_of)
+    if table is None or position < 0:
+        return None
+    date = daily["open_time"].iloc[position]
+    if date not in table.index:
+        return None
+    row = table.loc[date]
+    return {
+        "probability_regime_persists": round(float(row["delivered"]), 4),
+        "horizon_days": config.STABILITY_HORIZON_DAYS,
+        "regime": row["regime"],
+        "daily_candle": _iso(date),
+        # True when the day lies in the period the model was fitted on, where
+        # the score is not an out-of-sample estimate.
+        "in_training_period": bool(row["period"] != "test"),
+        "baseline_always": round(float(row["B0"]), 4),
+    }
+
+
 def fusion_state(states: dict[str, dict]) -> dict:
     """Dominant regime and scores from the five timeframe states (M4 formula)."""
     intervals = list(states)
@@ -162,8 +199,11 @@ def fusion_state(states: dict[str, dict]) -> dict:
 
 def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
                    labels: dict[str, pd.DataFrame] | None = None,
-                   profiles: dict[str, dict] | None = None) -> dict:
+                   profiles: dict[str, dict] | None = None,
+                   stability: pd.DataFrame | None = None) -> dict:
     """The full record for one asset at one moment (default: the latest data)."""
+    if stability is None and labels is None:
+        stability = load_stability(symbol)
     labels = load_all_labels(symbol) if labels is None else labels
     if profiles is None:
         profiles = {i: describe.load_profiles(symbol, i) for i in config.INTERVALS}
@@ -184,7 +224,7 @@ def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
         "timeframes": states,
         "fusion": fusion_state(states),
         "propagation": {i: latest_flip(labels, i, as_of) for i in config.INTERVALS},
-        "stability": None,       # Regime Stability Score - added with module M6
+        "stability": stability_state(stability, labels["1d"], as_of),
         "explanation": None,     # plain-language text with base rates - added with M8
         "caveats": CAVEATS,
     }

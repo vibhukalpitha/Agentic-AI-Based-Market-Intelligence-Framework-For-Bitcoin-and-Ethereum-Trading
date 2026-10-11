@@ -20,7 +20,8 @@ market state. It does not predict price.
 | M5 | Propagation between timeframes (direction and support depth of each regime flip) | Built |
 | M9 | Hypothesis tests H1 and H2 | Built and run |
 | Output | One JSON record per asset for the Fusion Engine | Built (proposal, see `docs/OUTPUT_FORMAT.md`) |
-| M6–M8 | Stability score, historical similarity, explanation | Not built yet |
+| M6 | Regime Stability Score (probability the Daily regime holds 3 more days) | Built and evaluated |
+| M7, M8 | Historical similarity, explanation | Not built yet |
 
 ### Setup
 
@@ -49,7 +50,9 @@ Run the steps in this order. Each one prints a report of what it produced.
 | 8. Test H2 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2_propagation --period test` | about 1 minute | `results/h2_*` |
 | 8b. H2 placebo control | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2_placebo` | about 2 minutes | `results/h2_placebo_test.json` |
 | 8c. Test H2b | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2b_failed_propagation --period test` | about 3 minutes | `results/h2b_*` |
-| 9. Output record | `.\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol BTCUSDT` | seconds | printed JSON |
+| 9. Stability score | `.\.venv\Scripts\python.exe -W ignore -m src.stability.stability` | about 20 seconds | `data/stability/`, `results/stability_model_*` |
+| 9b. Evaluate it | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.m6_evaluation --period test` | seconds | `results/m6_*` |
+| 10. Output record | `.\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol BTCUSDT` | seconds | printed JSON |
 
 Step 4 is run once per timeframe: `1d`, `4h`, `1h`, `15m`, `5m`. Two options help:
 
@@ -78,6 +81,18 @@ An effect of 0.5 means no difference.
 | H2: regime changes already present at faster timeframes are more durable | **Not established at the Daily level** (the effect is no larger than a placebo). **A small effect at the 1h and 15m levels** that exceeds the placebo by 0.025–0.086. |
 
 | H2b: a regime change that the next slower timeframe does not take up is noise | **Not established for 4h changes taken up by Daily** (too few cases). **A small effect at the 5m level and for ETH at 15m** that exceeds the placebo by 0.040–0.071. |
+
+**Regime Stability Score (M6), test period.** The delivered score (the Daily model's own
+signals) beats both baselines for both assets:
+
+| | BTC | ETH |
+|---|---|---|
+| Brier score: constant baseline / HMM-only baseline / delivered score (lower is better) | 0.182 / 0.185 / 0.151 | 0.223 / 0.223 / 0.199 |
+| AUC of the delivered score (0.5 = no skill) | 0.734 | 0.665 |
+| Adding the cross-timeframe signals | a small further gain | no clear gain |
+
+It is well calibrated for BTC except at the top, and too confident for ETH at high values.
+The model was chosen on training data before this evaluation.
 
 The H1, H2 and H2b designs were fixed before their results were computed. The H2 placebo
 control was added after the H2 result was known and is reported as an additional check.
