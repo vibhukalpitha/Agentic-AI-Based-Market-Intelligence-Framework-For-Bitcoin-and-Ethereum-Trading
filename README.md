@@ -48,8 +48,8 @@ Run the steps in this order. Each one prints a report of what it produced.
 | 4. Train regime models | `.\.venv\Scripts\python.exe -W ignore -m src.regime.train --interval 1d` | minutes for `1d`; over an hour for `5m` | `models/`, `data/regimes/`, `results/` |
 | 5. Fuse the timeframes | `.\.venv\Scripts\python.exe -W ignore -m src.fusion.alignment` | about 10 seconds | `data/fusion/` |
 | 6. Propagation | `.\.venv\Scripts\python.exe -W ignore -m src.fusion.propagation` | seconds | `data/propagation/` |
-| 7. Test H1 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h1_precursor` | about 1 minute | `results/h1_*` |
-| 8. Test H2 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2_propagation --period test` | about 1 minute | `results/h2_*` |
+| 7. Test H1 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h1_precursor` | about 4 minutes | `results/h1_*` |
+| 8. Test H2 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2_propagation --period test` | about 2 minutes | `results/h2_*` |
 | 8b. H2 placebo control | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2_placebo` | about 2 minutes | `results/h2_placebo_test.json` |
 | 8c. Test H2b | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2b_failed_propagation --period test` | about 3 minutes | `results/h2b_*` |
 | 9. Stability score | `.\.venv\Scripts\python.exe -W ignore -m src.stability.stability` | about 20 seconds | `data/stability/`, `results/stability_model_*` |
