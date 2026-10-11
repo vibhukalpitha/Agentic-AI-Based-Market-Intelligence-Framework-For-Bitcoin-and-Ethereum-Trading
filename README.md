@@ -47,6 +47,7 @@ Run the steps in this order. Each one prints a report of what it produced.
 | 6. Propagation | `.\.venv\Scripts\python.exe -W ignore -m src.fusion.propagation` | seconds | `data/propagation/` |
 | 7. Test H1 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h1_precursor` | about 1 minute | `results/h1_*` |
 | 8. Test H2 | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2_propagation --period test` | about 1 minute | `results/h2_*` |
+| 8b. H2 placebo control | `.\.venv\Scripts\python.exe -W ignore -m src.experiments.h2_placebo` | about 2 minutes | `results/h2_placebo_test.json` |
 | 9. Output record | `.\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol BTCUSDT` | seconds | printed JSON |
 
 Step 4 is run once per timeframe: `1d`, `4h`, `1h`, `15m`, `5m`. Two options help:
@@ -65,6 +66,19 @@ Step 4 is run once per timeframe: `1d`, `4h`, `1h`, `15m`, `5m`. Two options hel
 - `results/sample_output_*.json` are example records for the Fusion Engine.
 - `data/` and `models/` are not in Git because of their size. Steps 1 to 6 rebuild them.
 
+### Findings so far
+
+Models were trained on data up to 2022-12-31 and tested, unchanged, on 2023–2026.
+An effect of 0.5 means no difference.
+
+| Hypothesis | Result |
+|---|---|
+| H1: cross-timeframe alignment declines before a Daily regime transition | **Not supported.** BTC 0.398 (95% interval 0.337–0.460), ETH 0.440 (0.377–0.503). For BTC alignment was slightly higher before transitions. Alignment added nothing beyond volatility. |
+| H2: regime changes already present at faster timeframes are more durable | **Not established at the Daily level** (the effect is no larger than a placebo). **A small effect at the 1h and 15m levels** that exceeds the placebo by 0.025–0.086. |
+
+The H1 and H2 designs were fixed before their results were computed. The H2 placebo
+control was added after the H2 result was known and is reported as an additional check.
+
 ### Tests
 
 ```
@@ -79,6 +93,9 @@ level, and that no feature, regime label or alignment value uses data from the f
 - Data source: Binance Vision public spot klines, <https://data.binance.vision>.
 - All settings (indicator periods, training cut-off, model options, fusion weights) are
   in `src/config.py`, each with its reason.
+- What the four regime names mean in each model is stated in
+  `docs/REGIME_DEFINITIONS.md`. In particular, "Volatile" is the more active of the two
+  non-directional states and is not always the most volatile state.
 - Models are fitted on data up to 2022-12-31 and applied unchanged to later data.
 - Regime labels use past data only (filtered probabilities), and the fusion step uses
   only candles that have already closed.

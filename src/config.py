@@ -220,6 +220,21 @@ H2_HEADLINE_INTERVAL = "1d"                  # Daily is the anchor, as in H1
 H2_SECONDARY_INTERVALS = ["4h", "1h", "15m"]  # replication at faster levels
 
 # --------------------------------------------------------------------------
+# M9 - H2b: is a "failed propagation" a sign of noise?
+# Design fixed on 11 Oct 2026 on the TRAINING period, before any test-period
+# H2b result. The placebo control is part of the design from the start.
+# --------------------------------------------------------------------------
+# Timeframes whose flips can be adopted by a slower timeframe. 4h is the
+# primary level because its slower timeframe is Daily, the anchor.
+H2B_PRIMARY_INTERVAL = "4h"
+H2B_SECONDARY_INTERVALS = ["1h", "15m", "5m"]
+
+# Placebo: "adoption" re-measured this many days earlier. A slower timeframe
+# showing the regime a month before cannot be a response to this flip, so any
+# effect it produces is a background (era) effect, not propagation.
+PLACEBO_LAG_DAYS = 30
+
+# --------------------------------------------------------------------------
 # Reproducibility
 # --------------------------------------------------------------------------
 RANDOM_SEED = 42

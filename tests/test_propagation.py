@@ -70,11 +70,14 @@ def test_adopted_above_looks_only_at_the_window():
     known = np.array([START + HOUR - ALMOST], dtype="datetime64[ns]")
     target = np.array(["B"])
     # Next slower candles to become known are indices 0, 1, 2, ...
-    _, adopted_2, _ = propagation.adopted_above(slower, known, target, window=2)
-    _, adopted_3, complete = propagation.adopted_above(slower, known, target, window=3)
+    _, adopted_2, _, _ = propagation.adopted_above(slower, known, target, window=2)
+    _, adopted_3, complete, window_end = propagation.adopted_above(slower, known, target, window=3)
     assert (adopted_2[0], adopted_3[0], complete[0]) == (False, True, True)
+    # The window of 3 slower candles (indices 0, 1, 2) ends when candle 2 closes.
+    assert pd.Timestamp(window_end[0]) == START + 12 * HOUR - ALMOST
 
     # A flip near the end of the data has no full window to judge.
     late = np.array([START + 22 * HOUR], dtype="datetime64[ns]")
-    already, _, complete = propagation.adopted_above(slower, late, target, window=3)
+    already, _, complete, window_end = propagation.adopted_above(slower, late, target, window=3)
     assert (already[0], complete[0]) == (False, False)
+    assert pd.isna(window_end[0])

@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.1",
+  "schema_version": "0.2",
   "component": "market_regime_engine",
   "symbol": "ETHUSDT",
   "as_of": "2026-09-30T23:59:59.999Z",
@@ -14,7 +14,13 @@
         "Volatile": 0.0
       },
       "candles_in_regime": 13,
-      "last_closed_candle": "2026-09-30T23:59:59.999Z"
+      "last_closed_candle": "2026-09-30T23:59:59.999Z",
+      "regime_profile": {
+        "typical_rsi": 67.3,
+        "volatility_vs_norm": 0.94,
+        "share_of_training_time": 0.287,
+        "is_most_volatile_state": false
+      }
     },
     "4h": {
       "regime": "Sideways",
@@ -26,7 +32,13 @@
         "Volatile": 0.0
       },
       "candles_in_regime": 42,
-      "last_closed_candle": "2026-09-30T23:59:59.999Z"
+      "last_closed_candle": "2026-09-30T23:59:59.999Z",
+      "regime_profile": {
+        "typical_rsi": 49.5,
+        "volatility_vs_norm": 0.67,
+        "share_of_training_time": 0.28,
+        "is_most_volatile_state": false
+      }
     },
     "1h": {
       "regime": "Sideways",
@@ -38,7 +50,13 @@
         "Volatile": 0.0
       },
       "candles_in_regime": 28,
-      "last_closed_candle": "2026-09-30T23:59:59.999Z"
+      "last_closed_candle": "2026-09-30T23:59:59.999Z",
+      "regime_profile": {
+        "typical_rsi": 50.3,
+        "volatility_vs_norm": 0.65,
+        "share_of_training_time": 0.288,
+        "is_most_volatile_state": false
+      }
     },
     "15m": {
       "regime": "Sideways",
@@ -50,7 +68,13 @@
         "Volatile": 0.0
       },
       "candles_in_regime": 19,
-      "last_closed_candle": "2026-09-30T23:59:59.999Z"
+      "last_closed_candle": "2026-09-30T23:59:59.999Z",
+      "regime_profile": {
+        "typical_rsi": 51.2,
+        "volatility_vs_norm": 0.63,
+        "share_of_training_time": 0.3,
+        "is_most_volatile_state": false
+      }
     },
     "5m": {
       "regime": "Sideways",
@@ -62,7 +86,13 @@
         "Volatile": 0.0
       },
       "candles_in_regime": 13,
-      "last_closed_candle": "2026-09-30T23:59:59.999Z"
+      "last_closed_candle": "2026-09-30T23:59:59.999Z",
+      "regime_profile": {
+        "typical_rsi": 50.2,
+        "volatility_vs_norm": 0.59,
+        "share_of_training_time": 0.313,
+        "is_most_volatile_state": false
+      }
     }
   },
   "fusion": {
@@ -137,7 +167,7 @@
   "explanation": null,
   "caveats": [
     "confidence is the model's own probability for its current regime; it is above 0.99 about 75% of the time and should not be read as a calibrated accuracy.",
-    "each timeframe has its own independent model, so a regime name is not guaranteed to mean exactly the same thing at every timeframe.",
+    "each timeframe has its own independent model, so a regime name is not guaranteed to mean exactly the same thing at every timeframe. 'Volatile' is the more active of the two non-directional states, not always the most volatile one; check regime_profile.",
     "alignment_score did not anticipate Daily regime transitions in testing (H1 not supported); use it as a description of agreement, not as a warning signal.",
     "propagation.direction: 'bottom-up' flips were somewhat more durable than 'top-down' flips at the 1h and 15m timeframes in testing. At the Daily timeframe the difference could not be separated from a background effect, so do not rely on it there."
   ]

@@ -61,6 +61,7 @@ def find_flips(labels: pd.DataFrame) -> pd.DataFrame:
     end = np.r_[start[1:], len(regime)]
     close = labels["close"].to_numpy(dtype=float)
     return pd.DataFrame({
+        "row": start,                       # position of the flip candle in its series
         "open_time": labels["open_time"].to_numpy()[start],
         "known_time": labels["known_time"].to_numpy()[start],
         "from_regime": regime[start - 1],
@@ -97,13 +98,15 @@ def support_depth(target: np.ndarray, faster_labels: list[np.ndarray]) -> tuple[
 
 
 def adopted_above(slower: pd.DataFrame, known_times: np.ndarray, target: np.ndarray,
-                  window: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+                  window: int) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """For each flip: (slower timeframe was already in the regime,
                        it showed the regime within `window` of its next candles,
-                       the full window exists in the data).
+                       the full window exists in the data,
+                       the moment the window ends).
 
     The "next candles" are the slower candles that become known AFTER the flip
     is known, so the candle still forming at the flip is the first of them.
+    The window ends when the last of those `window` candles closes.
     """
     regime = slower["regime"].to_numpy()
     position = np.searchsorted(slower["known_time"].to_numpy(), known_times, side="right") - 1
@@ -117,7 +120,10 @@ def adopted_above(slower: pd.DataFrame, known_times: np.ndarray, target: np.ndar
         inside = index < len(regime)
         adopted[inside] |= regime[index[inside]] == target[inside]
     complete = position + window < len(regime)
-    return already, adopted, complete
+    known = slower["known_time"].to_numpy()
+    window_end = np.full(len(target), np.datetime64("NaT"), dtype=known.dtype)
+    window_end[complete] = known[position[complete] + window]
+    return already, adopted, complete, window_end
 
 
 def build_flips(symbol: str, label_map: dict[str, str] | None = None) -> pd.DataFrame:
@@ -143,13 +149,21 @@ def build_flips(symbol: str, label_map: dict[str, str] | None = None) -> pd.Data
         flips["direction"] = np.where(flips["depth"] >= 1, "bottom-up", "top-down")
 
         if level > 0:
-            already, adopted, complete = adopted_above(
+            already, adopted, complete, window_end = adopted_above(
                 labels[config.INTERVALS[level - 1]], flips["known_time"].to_numpy(),
                 target, config.PROPAGATION_WINDOW_CANDLES)
-            flips["slower_already"], flips["adopted_above"], flips["adoption_known"] = \
-                already, adopted, complete
+            flips["slower_already"] = already
+            flips["adopted_above"] = adopted
+            flips["adoption_known"] = complete
+            # How many candles of the new regime had passed when the adoption
+            # window closed. A flip is still "alive" then if its run is longer.
+            last_known = np.searchsorted(labels[interval]["known_time"].to_numpy(),
+                                         window_end, side="right") - 1
+            flips["candles_at_window_end"] = np.where(
+                complete, last_known - flips["row"].to_numpy() + 1, -1)
         else:
             flips["slower_already"] = flips["adopted_above"] = flips["adoption_known"] = False
+            flips["candles_at_window_end"] = -1
 
         flips.insert(0, "interval", interval)
         tables.append(flips)

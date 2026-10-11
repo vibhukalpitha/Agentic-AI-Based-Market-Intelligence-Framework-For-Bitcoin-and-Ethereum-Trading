@@ -1,6 +1,6 @@
 # Output of the Market Regime Engine (Component 02)
 
-**Status: proposal, schema version 0.1.** The group has not yet agreed a common format.
+**Status: proposal, schema version 0.2.** The group has not yet agreed a common format.
 This is what Component 02 can deliver today; field names can be changed to fit the
 Fusion Intelligence Engine.
 
@@ -59,6 +59,22 @@ One entry for each of `1d`, `4h`, `1h`, `15m`, `5m`:
 | `probabilities` | object | Probability of each of the four regimes; they sum to 1. |
 | `candles_in_regime` | whole number | How many candles in a row this regime has held. |
 | `last_closed_candle` | time | Close time of the candle the state comes from. |
+| `regime_profile` | object | What this regime name means in this particular model. See below. |
+
+`regime_profile` (new in version 0.2) has four fields, all measured on the training period:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `typical_rsi` | number 0–100 | Average RSI in this regime. Above 50: gains outweigh losses. |
+| `volatility_vs_norm` | number | Typical price range as a multiple of its own past-year norm. 1.00 = normal, 2.00 = twice. |
+| `share_of_training_time` | number 0–1 | Share of the training period spent in this regime. |
+| `is_most_volatile_state` | true / false | Whether this is the most volatile of the model's four states. |
+
+The four names and their rules are defined in `docs/REGIME_DEFINITIONS.md`. In short:
+`Bullish` and `Bearish` are the states with the highest and lowest average RSI; of the two
+left, `Volatile` is the more active and `Sideways` the quieter. **`Volatile` is not always
+the most volatile state**: in 5 of the 10 models that is `Bearish`. Check
+`volatility_vs_norm` and `is_most_volatile_state` before treating `Volatile` as turbulence.
 
 ## `fusion`
 
@@ -90,8 +106,8 @@ One entry per timeframe, describing the flip that began its current regime
 These come from this component's own tests (training data to 2022, tested on 2023–2026):
 
 1. **`confidence` is not a calibrated accuracy.** It is above 0.99 about 75% of the time.
-2. **A regime name can differ slightly in meaning between timeframes**, because each
-   timeframe has its own independent model.
+2. **A regime name can differ in meaning between timeframes**, because each timeframe
+   has its own independent model. `regime_profile` states the meaning for each one.
 3. **`alignment_score` is a description, not a warning.** It did not anticipate Daily
    regime changes in testing.
 4. **`bottom-up` changes lasted somewhat longer than `top-down` ones at the 1h and 15m

@@ -32,6 +32,11 @@ The design (fixed on the training period, before any test-period result):
 
 Depth is measured before the flip candle opens and durability after it, so
 no information from the outcome can enter the predictor.
+
+READ WITH src/experiments/h2_placebo.py. A control added after this test was
+run shows that at the DAILY level the effect is no larger than a placebo, so
+the Daily headline is not established. The effect exceeds the placebo only at
+the 1h and 15m levels (and 4h for BTC), by a small margin.
 """
 import argparse
 import json

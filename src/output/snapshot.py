@@ -22,8 +22,9 @@ import pandas as pd
 
 from src import config
 from src.fusion import alignment, propagation
+from src.regime import describe
 
-SCHEMA_VERSION = "0.1"
+SCHEMA_VERSION = "0.2"
 PROBABILITY_COLUMNS = [f"p_{name.lower()}" for name in config.REGIMES]
 
 # Facts a consumer of this record must know to use it correctly.
@@ -31,7 +32,8 @@ CAVEATS = [
     "confidence is the model's own probability for its current regime; it is above 0.99 "
     "about 75% of the time and should not be read as a calibrated accuracy.",
     "each timeframe has its own independent model, so a regime name is not guaranteed to "
-    "mean exactly the same thing at every timeframe.",
+    "mean exactly the same thing at every timeframe. 'Volatile' is the more active of the "
+    "two non-directional states, not always the most volatile one; check regime_profile.",
     "alignment_score did not anticipate Daily regime transitions in testing (H1 not "
     "supported); use it as a description of agreement, not as a warning signal.",
     "propagation.direction: 'bottom-up' flips were somewhat more durable than 'top-down' "
@@ -64,8 +66,13 @@ def _run_start(regime: np.ndarray, position: int) -> int:
     return start
 
 
-def timeframe_state(labels: pd.DataFrame, as_of: pd.Timestamp) -> dict | None:
-    """Regime, confidence and age at one timeframe, from its last closed candle."""
+def timeframe_state(labels: pd.DataFrame, as_of: pd.Timestamp,
+                    profiles: dict[str, dict] | None = None) -> dict | None:
+    """Regime, confidence and age at one timeframe, from its last closed candle.
+
+    profiles (from src.regime.describe) adds what the current regime name means
+    in THIS model: its typical RSI and its volatility relative to the yearly norm.
+    """
     position = _position(labels, as_of)
     if position < 0:
         return None
@@ -78,6 +85,7 @@ def timeframe_state(labels: pd.DataFrame, as_of: pd.Timestamp) -> dict | None:
                           for name, column in zip(config.REGIMES, PROBABILITY_COLUMNS)},
         "candles_in_regime": position - _run_start(regime, position) + 1,
         "last_closed_candle": _iso(row["known_time"]),
+        "regime_profile": None if profiles is None else profiles[row["regime"]],
     }
 
 
@@ -153,14 +161,17 @@ def fusion_state(states: dict[str, dict]) -> dict:
 
 
 def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
-                   labels: dict[str, pd.DataFrame] | None = None) -> dict:
+                   labels: dict[str, pd.DataFrame] | None = None,
+                   profiles: dict[str, dict] | None = None) -> dict:
     """The full record for one asset at one moment (default: the latest data)."""
     labels = load_all_labels(symbol) if labels is None else labels
+    if profiles is None:
+        profiles = {i: describe.load_profiles(symbol, i) for i in config.INTERVALS}
     if as_of is None:
         as_of = max(frame["known_time"].iloc[-1] for frame in labels.values())
     as_of = pd.Timestamp(as_of)
 
-    states = {i: timeframe_state(labels[i], as_of) for i in config.INTERVALS}
+    states = {i: timeframe_state(labels[i], as_of, profiles.get(i)) for i in config.INTERVALS}
     missing = [i for i, state in states.items() if state is None]
     if missing:
         raise ValueError(f"no closed candle yet at {as_of} for: {', '.join(missing)}")

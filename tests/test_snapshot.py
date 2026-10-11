@@ -65,6 +65,20 @@ def test_unfinished_daily_candle_is_not_reported(labels):
     assert state["regime"] == labels["1d"]["regime"].iloc[4]
 
 
+def test_regime_profile_explains_the_label_for_that_model(labels):
+    """The record carries what the current regime name means in each model."""
+    profile = {name: {"typical_rsi": 50.0, "volatility_vs_norm": 1.0,
+                      "share_of_training_time": 0.25, "is_most_volatile_state": name == "Bearish"}
+               for name in config.REGIMES}
+    as_of = START + pd.Timedelta(days=8)
+    record = snapshot.build_snapshot("TEST", as_of, labels,
+                                     profiles={"1d": profile, "4h": None, "1h": None,
+                                               "15m": None, "5m": None})
+    daily = record["timeframes"]["1d"]
+    assert daily["regime_profile"] == profile[daily["regime"]]
+    assert record["timeframes"]["4h"]["regime_profile"] is None
+
+
 def test_candles_in_regime_counts_the_current_run():
     frame = pd.DataFrame({
         "open_time": pd.date_range(START, periods=6, freq="1D"),
