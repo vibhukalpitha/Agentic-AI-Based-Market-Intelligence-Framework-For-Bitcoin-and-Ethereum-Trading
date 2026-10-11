@@ -1,7 +1,7 @@
-# Output of the Market Regime Engine (Component 02)
+# Output of the Market Regime Engine (Component 01)
 
 **Status: proposal, schema version 0.5.** The group has not yet agreed a common format.
-This is what Component 02 can deliver today; field names can be changed to fit the
+This is what Component 01 can deliver today; field names can be changed to fit the
 Fusion Intelligence Engine.
 
 ## What you get
@@ -12,14 +12,14 @@ start?* It describes the present state. It never contains a price forecast.
 
 ## How to get it
 
-From the command line:
+From the command line, **from inside the `component_01` folder**:
 
 ```
-.\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol BTCUSDT
-.\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol ETHUSDT --as-of 2025-03-01T12:00
+..\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol BTCUSDT
+..\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol ETHUSDT --as-of 2025-03-01T12:00
 ```
 
-From Python:
+From Python, with `component_01` as the working folder (or on the Python path):
 
 ```python
 from src.output.snapshot import build_snapshot
@@ -31,7 +31,8 @@ record = build_snapshot("ETHUSDT", "2025-03-01T12:00")    # any past moment (UTC
 `symbol` is `BTCUSDT` or `ETHUSDT`. A record for a past moment uses only candles that
 had closed by that moment, so it is exactly what the engine would have said then.
 
-Full examples: `results/sample_output_BTCUSDT.json` and `results/sample_output_ETHUSDT.json`.
+Full examples: `component_01/results/sample_output_BTCUSDT.json` and
+`component_01/results/sample_output_ETHUSDT.json`.
 
 ## Top-level fields
 
