@@ -39,6 +39,11 @@ CAVEATS = [
     "regime persisted got the higher score 73% of the time for BTC and 67% for ETH), but "
     "it is too confident at the top: when it said above 90%, the regime persisted about "
     "86-93% of the time for BTC and about 80% for ETH.",
+    "explanation.base_rate_regime_change is a training-period figure. In testing the order "
+    "of the patterns held (the Daily regime changed 16-18 percentage points more often "
+    "under 'Opposed' than under 'Aligned'), but every rate was higher than in training, "
+    "most for ETH. Read base rates as relative, not exact. Part of the difference between "
+    "patterns arises simply because faster timeframes react sooner than Daily.",
     "alignment_score did not anticipate Daily regime transitions in testing (H1 not "
     "supported); use it as a description of agreement, not as a warning signal.",
     "propagation.direction: 'bottom-up' flips were somewhat more durable than 'top-down' "

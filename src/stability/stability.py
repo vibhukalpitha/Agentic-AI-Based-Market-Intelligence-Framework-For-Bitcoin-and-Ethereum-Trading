@@ -100,6 +100,10 @@ def build_inputs(symbol: str) -> pd.DataFrame:
         propagation.labels_as_of(propagation.load_labels(symbol, i), close) == regime
         for i in faster])
     frame["agree_share"] = (agrees * weights).sum(axis=1) / weights.sum()
+    # The same agreement, one column per timeframe (used by Novelty 3, which
+    # learns the weights instead of fixing them).
+    for k, interval in enumerate(faster):
+        frame[f"agree_{interval}"] = agrees[:, k].astype(float)
 
     alignment = h1_precursor.daily_alignment(symbol)
     covered = alignment["coverage"] >= config.H1_MIN_DAY_COVERAGE
@@ -145,19 +149,22 @@ def log_loss(target: np.ndarray, probability: np.ndarray) -> float:
     return float(-np.mean(target * np.log(p) + (1 - target) * np.log(1 - p)))
 
 
-def cross_validate(train: pd.DataFrame) -> pd.DataFrame:
-    """Log loss of S1 and S2 on each later block, fitted on the blocks before it.
+def cross_validate(train: pd.DataFrame,
+                   models: dict[str, list[str]] | None = None) -> pd.DataFrame:
+    """Log loss of each model (S1 and S2 by default) on each later block,
+    fitted on the blocks before it.
 
     The last `horizon` rows before each validation block are left out of the
     fit, because their outcomes reach into that block.
     """
+    models = MODELS if models is None else models
     edges = np.linspace(0, len(train), config.STABILITY_CV_BLOCKS + 1).astype(int)
     rows = []
     for k in range(1, config.STABILITY_CV_BLOCKS):
         past = train.iloc[:edges[k] - config.STABILITY_HORIZON_DAYS]
         block = train.iloc[edges[k]:edges[k + 1]]
         row = {"fold": k, "fit_days": len(past), "validation_days": len(block)}
-        for name, signals in MODELS.items():
+        for name, signals in models.items():
             row[name] = log_loss(block["target"].to_numpy(), predict(fit(past, signals), block))
         rows.append(row)
     return pd.DataFrame(rows)

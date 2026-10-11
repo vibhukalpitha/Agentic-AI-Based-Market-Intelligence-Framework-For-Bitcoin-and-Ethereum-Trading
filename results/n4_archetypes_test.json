@@ -1,0 +1,113 @@
+{
+  "design": {
+    "period": "test",
+    "horizon_days": 3,
+    "block_days": 7,
+    "bootstraps": 2000,
+    "seed": 42
+  },
+  "BTCUSDT": {
+    "days": 1366,
+    "from": "2023-01-01",
+    "to": "2026-09-27",
+    "change_rate": 0.2349926793557833,
+    "by_archetype": [
+      {
+        "archetype": "Aligned",
+        "days": 223,
+        "share_of_days": 0.16325036603221083,
+        "training_base_rate": 0.07954545454545454,
+        "change_rate": 0.13901345291479822
+      },
+      {
+        "archetype": "Partly backed",
+        "days": 295,
+        "share_of_days": 0.21595900439238652,
+        "training_base_rate": 0.14427860696517414,
+        "change_rate": 0.12542372881355932
+      },
+      {
+        "archetype": "Fragmented",
+        "days": 444,
+        "share_of_days": 0.32503660322108346,
+        "training_base_rate": 0.23076923076923078,
+        "change_rate": 0.28378378378378377
+      },
+      {
+        "archetype": "Opposed",
+        "days": 404,
+        "share_of_days": 0.2957540263543192,
+        "training_base_rate": 0.24342105263157895,
+        "change_rate": 0.31435643564356436
+      }
+    ],
+    "brier_constant": 0.1816892079211413,
+    "brier_archetype": 0.1760937934221249,
+    "archetype_minus_constant": {
+      "brier_difference": -0.005595414499016357,
+      "ci_low": -0.008583083418998745,
+      "ci_high": -0.0025664667025309877
+    },
+    "opposed_minus_aligned": {
+      "difference": 0.17534298272876614,
+      "ci_low": 0.09905854498969772,
+      "ci_high": 0.2521134783599314
+    },
+    "rank_agreement_with_training": 0.7999999999999999,
+    "context_days_with_stability_score": 1365,
+    "context_brier_stability_score": 0.15079406656288089,
+    "context_brier_archetype_same_days": 0.17618378562399473
+  },
+  "ETHUSDT": {
+    "days": 1366,
+    "from": "2023-01-01",
+    "to": "2026-09-27",
+    "change_rate": 0.29502196193265007,
+    "by_archetype": [
+      {
+        "archetype": "Aligned",
+        "days": 303,
+        "share_of_days": 0.22181551976573938,
+        "training_base_rate": 0.0896551724137931,
+        "change_rate": 0.19471947194719472
+      },
+      {
+        "archetype": "Partly backed",
+        "days": 267,
+        "share_of_days": 0.19546120058565153,
+        "training_base_rate": 0.1386861313868613,
+        "change_rate": 0.2883895131086142
+      },
+      {
+        "archetype": "Fragmented",
+        "days": 363,
+        "share_of_days": 0.2657393850658858,
+        "training_base_rate": 0.16363636363636364,
+        "change_rate": 0.3140495867768595
+      },
+      {
+        "archetype": "Opposed",
+        "days": 433,
+        "share_of_days": 0.3169838945827233,
+        "training_base_rate": 0.21071428571428572,
+        "change_rate": 0.3533487297921478
+      }
+    ],
+    "brier_constant": 0.2255962387410964,
+    "brier_archetype": 0.2238592600481068,
+    "archetype_minus_constant": {
+      "brier_difference": -0.0017369786929896593,
+      "ci_low": -0.0041508829557093665,
+      "ci_high": 0.0007287302338358214
+    },
+    "opposed_minus_aligned": {
+      "difference": 0.1586292578449531,
+      "ci_low": 0.0845157922583831,
+      "ci_high": 0.23432718250338633
+    },
+    "rank_agreement_with_training": 1.0,
+    "context_days_with_stability_score": 1365,
+    "context_brier_stability_score": 0.1985521716225802,
+    "context_brier_archetype_same_days": 0.22351080226628756
+  }
+}

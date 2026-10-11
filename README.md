@@ -21,7 +21,8 @@ market state. It does not predict price.
 | M9 | Hypothesis tests H1 and H2 | Built and run |
 | Output | One JSON record per asset for the Fusion Engine | Built (proposal, see `docs/OUTPUT_FORMAT.md`) |
 | M6 | Regime Stability Score (probability the Daily regime holds 3 more days) | Built and evaluated |
-| M8 | Conflict archetypes with base rates, and the plain-language explanation | Built; test-period check pending |
+| M8 | Conflict archetypes with base rates, and the plain-language explanation | Built and tested |
+| Novelty 3 | Context-adaptive timeframe weights | Built; test-period check pending |
 | M7 | Historical similarity | Not built yet |
 
 ### Setup
@@ -94,6 +95,12 @@ signals) beats both baselines for both assets:
 
 It is well calibrated for BTC except at the top, and too confident for ETH at high values.
 The model was chosen on training data before this evaluation.
+
+**Conflict archetypes (Novelty 4), test period.** The four patterns carry information:
+the Daily regime changed within 3 days on 31% (BTC) and 35% (ETH) of "Opposed" days
+against 14% and 20% of "Aligned" days. Using the training base rates as a forecast beat
+a constant rate for BTC but not clearly for ETH, and every rate was higher in the test
+period than in training, so base rates are relative, not exact.
 
 The H1, H2 and H2b designs were fixed before their results were computed. The H2 placebo
 control was added after the H2 result was known and is reported as an additional check.

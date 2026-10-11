@@ -162,6 +162,12 @@ These come from this component's own tests (training data to 2022, tested on 202
    the time for BTC and 67% for ETH. But when the score was above 90%, the regime
    persisted about 86–93% of the time for BTC and only about 80% for ETH. Treat high
    values as "more settled than usual", not as an exact probability.
+3a. **`explanation.base_rate_regime_change` is a training-period figure; read it as
+   relative, not exact.** In testing the order of the patterns held: the Daily regime
+   changed 16–18 percentage points more often under `Opposed` than under `Aligned`. But
+   every rate was higher than in training (for ETH, `Opposed` 35% against 21%). Part of
+   the difference between patterns arises simply because faster timeframes react sooner
+   than Daily to the same price move.
 3b. **`alignment_score` is a description, not a warning.** It did not anticipate Daily
    regime changes in testing.
 4. **`bottom-up` changes lasted somewhat longer than `top-down` ones at the 1h and 15m
