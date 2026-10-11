@@ -1,0 +1,412 @@
+[
+  {
+    "symbol": "BTCUSDT",
+    "interval": "1d",
+    "train_candles": 1498,
+    "test_candles": 1369,
+    "converged": true,
+    "iterations": 122,
+    "log_likelihood_per_candle_train": -4.201946496047954,
+    "log_likelihood_per_candle_test": -5.165732959103411,
+    "test_minus_train": -0.9637864630554569,
+    "checks_passed": 5,
+    "checks": {
+      "bullish_highest_rsi": true,
+      "bearish_lowest_rsi": true,
+      "bullish_positive_return": true,
+      "bearish_negative_return": true,
+      "volatile_above_sideways": true
+    },
+    "test_profile": {
+      "Bearish": {
+        "rsi": 37.438567457869446,
+        "mean_return": -0.003364603112560196,
+        "volatility_vs_norm": 1.1050221321472573
+      },
+      "Bullish": {
+        "rsi": 68.36542843162177,
+        "mean_return": 0.005116447072399893,
+        "volatility_vs_norm": 0.8890138489575067
+      },
+      "Sideways": {
+        "rsi": 49.65973398380495,
+        "mean_return": 0.0008533119873194503,
+        "volatility_vs_norm": 0.780839079783586
+      },
+      "Volatile": {
+        "rsi": 51.55483826778246,
+        "mean_return": 0.0005003299591310643,
+        "volatility_vs_norm": 1.13223898200774
+      }
+    }
+  },
+  {
+    "symbol": "BTCUSDT",
+    "interval": "4h",
+    "train_candles": 9470,
+    "test_candles": 8214,
+    "converged": true,
+    "iterations": 49,
+    "log_likelihood_per_candle_train": -4.7132432655248175,
+    "log_likelihood_per_candle_test": -4.006737705777687,
+    "test_minus_train": 0.7065055597471304,
+    "checks_passed": 5,
+    "checks": {
+      "bullish_highest_rsi": true,
+      "bearish_lowest_rsi": true,
+      "bullish_positive_return": true,
+      "bearish_negative_return": true,
+      "volatile_above_sideways": true
+    },
+    "test_profile": {
+      "Bearish": {
+        "rsi": 36.252555173154896,
+        "mean_return": -0.0009415717557742576,
+        "volatility_vs_norm": 1.4395707577922057
+      },
+      "Bullish": {
+        "rsi": 66.84424295241068,
+        "mean_return": 0.0017110194539136205,
+        "volatility_vs_norm": 1.0137489284047572
+      },
+      "Sideways": {
+        "rsi": 48.54593806728065,
+        "mean_return": -9.440055554830943e-05,
+        "volatility_vs_norm": 0.724888185916023
+      },
+      "Volatile": {
+        "rsi": 48.526272110111236,
+        "mean_return": -0.00026137250273365766,
+        "volatility_vs_norm": 1.1607714537606475
+      }
+    }
+  },
+  {
+    "symbol": "BTCUSDT",
+    "interval": "1h",
+    "train_candles": 38122,
+    "test_candles": 32855,
+    "converged": true,
+    "iterations": 107,
+    "log_likelihood_per_candle_train": -4.500329614785778,
+    "log_likelihood_per_candle_test": -3.54061227439499,
+    "test_minus_train": 0.9597173403907875,
+    "checks_passed": 5,
+    "checks": {
+      "bullish_highest_rsi": true,
+      "bearish_lowest_rsi": true,
+      "bullish_positive_return": true,
+      "bearish_negative_return": true,
+      "volatile_above_sideways": true
+    },
+    "test_profile": {
+      "Bearish": {
+        "rsi": 40.54082336262339,
+        "mean_return": -0.00038335313033095763,
+        "volatility_vs_norm": 1.1282316406538855
+      },
+      "Bullish": {
+        "rsi": 62.714696519406175,
+        "mean_return": 0.0005650471261646214,
+        "volatility_vs_norm": 1.0742444858975457
+      },
+      "Sideways": {
+        "rsi": 50.72743170872906,
+        "mean_return": 2.516793290533336e-05,
+        "volatility_vs_norm": 0.6677366210951009
+      },
+      "Volatile": {
+        "rsi": 47.19861848237193,
+        "mean_return": -3.784478578517843e-05,
+        "volatility_vs_norm": 2.097252320086847
+      }
+    }
+  },
+  {
+    "symbol": "BTCUSDT",
+    "interval": "15m",
+    "train_candles": 69929,
+    "test_candles": 131419,
+    "converged": true,
+    "iterations": 90,
+    "log_likelihood_per_candle_train": -4.478261499633884,
+    "log_likelihood_per_candle_test": -3.8744202709475477,
+    "test_minus_train": 0.6038412286863366,
+    "checks_passed": 5,
+    "checks": {
+      "bullish_highest_rsi": true,
+      "bearish_lowest_rsi": true,
+      "bullish_positive_return": true,
+      "bearish_negative_return": true,
+      "volatile_above_sideways": true
+    },
+    "test_profile": {
+      "Bearish": {
+        "rsi": 36.02898673816301,
+        "mean_return": -0.00039935315731403633,
+        "volatility_vs_norm": 1.5386140644765811
+      },
+      "Bullish": {
+        "rsi": 64.39502021358459,
+        "mean_return": 0.00038433068719391126,
+        "volatility_vs_norm": 1.3306284156303447
+      },
+      "Sideways": {
+        "rsi": 50.13636019473407,
+        "mean_return": -6.846262217402201e-07,
+        "volatility_vs_norm": 0.5967196649191795
+      },
+      "Volatile": {
+        "rsi": 49.59905042951234,
+        "mean_return": 9.303889418518224e-06,
+        "volatility_vs_norm": 1.1694456363068089
+      }
+    }
+  },
+  {
+    "symbol": "BTCUSDT",
+    "interval": "5m",
+    "train_candles": 209982,
+    "test_candles": 394256,
+    "converged": false,
+    "iterations": 300,
+    "log_likelihood_per_candle_train": -4.3221767373463615,
+    "log_likelihood_per_candle_test": -4.320075559469389,
+    "test_minus_train": 0.0021011778769723932,
+    "checks_passed": 5,
+    "checks": {
+      "bullish_highest_rsi": true,
+      "bearish_lowest_rsi": true,
+      "bullish_positive_return": true,
+      "bearish_negative_return": true,
+      "volatile_above_sideways": true
+    },
+    "test_profile": {
+      "Bearish": {
+        "rsi": 40.102936949556906,
+        "mean_return": -0.00010337793339308789,
+        "volatility_vs_norm": 1.1986238440976427
+      },
+      "Bullish": {
+        "rsi": 58.67329362318601,
+        "mean_return": 8.872767277986874e-05,
+        "volatility_vs_norm": 1.1750487260242988
+      },
+      "Sideways": {
+        "rsi": 50.28238494815222,
+        "mean_return": -7.349863776788558e-09,
+        "volatility_vs_norm": 0.6104239494854596
+      },
+      "Volatile": {
+        "rsi": 52.59956919317511,
+        "mean_return": 5.2695443145296455e-05,
+        "volatility_vs_norm": 2.377407637555974
+      }
+    }
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "1d",
+    "train_candles": 1498,
+    "test_candles": 1369,
+    "converged": true,
+    "iterations": 67,
+    "log_likelihood_per_candle_train": -4.118214674390945,
+    "log_likelihood_per_candle_test": -7.034123918892628,
+    "test_minus_train": -2.915909244501683,
+    "checks_passed": 5,
+    "checks": {
+      "bullish_highest_rsi": true,
+      "bearish_lowest_rsi": true,
+      "bullish_positive_return": true,
+      "bearish_negative_return": true,
+      "volatile_above_sideways": true
+    },
+    "test_profile": {
+      "Bearish": {
+        "rsi": 37.36706935421471,
+        "mean_return": -0.005088475978097079,
+        "volatility_vs_norm": 1.2487300190414217
+      },
+      "Bullish": {
+        "rsi": 66.8700219225641,
+        "mean_return": 0.008779472836753833,
+        "volatility_vs_norm": 0.9026637873107995
+      },
+      "Sideways": {
+        "rsi": 48.083199176860745,
+        "mean_return": -0.00053950763572826,
+        "volatility_vs_norm": 0.7922988803558006
+      },
+      "Volatile": {
+        "rsi": 49.55935973428349,
+        "mean_return": -0.0038241617943988028,
+        "volatility_vs_norm": 1.1317842316977957
+      }
+    }
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "4h",
+    "train_candles": 9470,
+    "test_candles": 8214,
+    "converged": true,
+    "iterations": 98,
+    "log_likelihood_per_candle_train": -4.607700011823176,
+    "log_likelihood_per_candle_test": -4.6157824268834675,
+    "test_minus_train": -0.008082415060291837,
+    "checks_passed": 5,
+    "checks": {
+      "bullish_highest_rsi": true,
+      "bearish_lowest_rsi": true,
+      "bullish_positive_return": true,
+      "bearish_negative_return": true,
+      "volatile_above_sideways": true
+    },
+    "test_profile": {
+      "Bearish": {
+        "rsi": 35.66945937661863,
+        "mean_return": -0.0018203536842170966,
+        "volatility_vs_norm": 1.5802500033770048
+      },
+      "Bullish": {
+        "rsi": 65.54952496480941,
+        "mean_return": 0.0016957070827732157,
+        "volatility_vs_norm": 0.9868758235502448
+      },
+      "Sideways": {
+        "rsi": 50.091648363054894,
+        "mean_return": 4.775853000413628e-06,
+        "volatility_vs_norm": 0.7888822648994888
+      },
+      "Volatile": {
+        "rsi": 42.91271702465975,
+        "mean_return": -0.000634578203810817,
+        "volatility_vs_norm": 1.127203810462569
+      }
+    }
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "1h",
+    "train_candles": 38122,
+    "test_candles": 32855,
+    "converged": true,
+    "iterations": 162,
+    "log_likelihood_per_candle_train": -4.605674197672889,
+    "log_likelihood_per_candle_test": -4.243532449952746,
+    "test_minus_train": 0.36214174772014296,
+    "checks_passed": 5,
+    "checks": {
+      "bullish_highest_rsi": true,
+      "bearish_lowest_rsi": true,
+      "bullish_positive_return": true,
+      "bearish_negative_return": true,
+      "volatile_above_sideways": true
+    },
+    "test_profile": {
+      "Bearish": {
+        "rsi": 40.23021061644862,
+        "mean_return": -0.0005654748591365323,
+        "volatility_vs_norm": 1.1074264208565103
+      },
+      "Bullish": {
+        "rsi": 64.13386719600527,
+        "mean_return": 0.0008213876419062195,
+        "volatility_vs_norm": 1.0475626860707041
+      },
+      "Sideways": {
+        "rsi": 50.58869223147101,
+        "mean_return": 2.0441143173080413e-05,
+        "volatility_vs_norm": 0.7245073210530886
+      },
+      "Volatile": {
+        "rsi": 42.73375492763905,
+        "mean_return": -0.00044812710613595586,
+        "volatility_vs_norm": 2.046171162848805
+      }
+    }
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "15m",
+    "train_candles": 69929,
+    "test_candles": 131419,
+    "converged": true,
+    "iterations": 61,
+    "log_likelihood_per_candle_train": -4.479177770291377,
+    "log_likelihood_per_candle_test": -4.583044247370316,
+    "test_minus_train": -0.10386647707893903,
+    "checks_passed": 5,
+    "checks": {
+      "bullish_highest_rsi": true,
+      "bearish_lowest_rsi": true,
+      "bullish_positive_return": true,
+      "bearish_negative_return": true,
+      "volatile_above_sideways": true
+    },
+    "test_profile": {
+      "Bearish": {
+        "rsi": 40.82116548615357,
+        "mean_return": -0.0002003164492758717,
+        "volatility_vs_norm": 1.0952397421562254
+      },
+      "Bullish": {
+        "rsi": 62.54161642135947,
+        "mean_return": 0.0003352328473302178,
+        "volatility_vs_norm": 1.1135272571057087
+      },
+      "Sideways": {
+        "rsi": 51.12669834452601,
+        "mean_return": 2.976681962685904e-06,
+        "volatility_vs_norm": 0.6955902884132721
+      },
+      "Volatile": {
+        "rsi": 45.32403990709683,
+        "mean_return": -0.0001461617832890219,
+        "volatility_vs_norm": 2.191841912691914
+      }
+    }
+  },
+  {
+    "symbol": "ETHUSDT",
+    "interval": "5m",
+    "train_candles": 209982,
+    "test_candles": 394256,
+    "converged": true,
+    "iterations": 166,
+    "log_likelihood_per_candle_train": -4.309954057085021,
+    "log_likelihood_per_candle_test": -4.380078364493881,
+    "test_minus_train": -0.07012430740886,
+    "checks_passed": 5,
+    "checks": {
+      "bullish_highest_rsi": true,
+      "bearish_lowest_rsi": true,
+      "bullish_positive_return": true,
+      "bearish_negative_return": true,
+      "volatile_above_sideways": true
+    },
+    "test_profile": {
+      "Bearish": {
+        "rsi": 41.079741489093884,
+        "mean_return": -9.988165602590999e-05,
+        "volatility_vs_norm": 1.1891545198817843
+      },
+      "Bullish": {
+        "rsi": 60.79628602952812,
+        "mean_return": 0.00013776257947835087,
+        "volatility_vs_norm": 1.0846666221789576
+      },
+      "Sideways": {
+        "rsi": 50.24110976713477,
+        "mean_return": -4.82007204907826e-06,
+        "volatility_vs_norm": 0.6725901424049896
+      },
+      "Volatile": {
+        "rsi": 49.264180785062024,
+        "mean_return": -1.4913140616754368e-05,
+        "volatility_vs_norm": 2.317846301092454
+      }
+    }
+  }
+]

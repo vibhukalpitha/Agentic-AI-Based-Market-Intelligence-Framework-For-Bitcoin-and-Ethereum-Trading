@@ -21,10 +21,11 @@ import numpy as np
 import pandas as pd
 
 from src import config
+from src.explain import explainer
 from src.fusion import alignment, propagation
 from src.regime import describe
 
-SCHEMA_VERSION = "0.3"
+SCHEMA_VERSION = "0.4"
 PROBABILITY_COLUMNS = [f"p_{name.lower()}" for name in config.REGIMES]
 
 # Facts a consumer of this record must know to use it correctly.
@@ -200,10 +201,17 @@ def fusion_state(states: dict[str, dict]) -> dict:
 def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
                    labels: dict[str, pd.DataFrame] | None = None,
                    profiles: dict[str, dict] | None = None,
-                   stability: pd.DataFrame | None = None) -> dict:
-    """The full record for one asset at one moment (default: the latest data)."""
+                   stability: pd.DataFrame | None = None,
+                   archetypes: tuple[pd.DataFrame | None, dict | None] | None = None) -> dict:
+    """The full record for one asset at one moment (default: the latest data).
+
+    labels, profiles, stability and archetypes are read from the saved files
+    when not given; tests pass them in directly.
+    """
     if stability is None and labels is None:
         stability = load_stability(symbol)
+    if archetypes is None:
+        archetypes = explainer.load_archetypes(symbol) if labels is None else (None, None)
     labels = load_all_labels(symbol) if labels is None else labels
     if profiles is None:
         profiles = {i: describe.load_profiles(symbol, i) for i in config.INTERVALS}
@@ -216,6 +224,23 @@ def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
     if missing:
         raise ValueError(f"no closed candle yet at {as_of} for: {', '.join(missing)}")
 
+    propagation_block = {i: latest_flip(labels, i, as_of) for i in config.INTERVALS}
+    stability_block = stability_state(stability, labels["1d"], as_of)
+
+    # The archetype is that of the last Daily candle closed at `as_of`, and the
+    # explanation describes the faster timeframes as they stood at that close.
+    archetype_table, base_rates = archetypes
+    daily_row = labels["1d"].iloc[_position(labels["1d"], as_of)]
+    last_daily = daily_row["open_time"]
+    archetype_row = (archetype_table.loc[last_daily]
+                     if archetype_table is not None and last_daily in archetype_table.index
+                     else None)
+    close = np.array([daily_row["known_time"]], dtype="datetime64[ns]")
+    faster_at_close = {i: propagation.labels_as_of(labels[i], close)[0]
+                       for i in config.INTERVALS[1:]}
+    if any(regime is None for regime in faster_at_close.values()):
+        faster_at_close = None
+
     return {
         "schema_version": SCHEMA_VERSION,
         "component": "market_regime_engine",
@@ -223,9 +248,11 @@ def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
         "as_of": _iso(as_of),
         "timeframes": states,
         "fusion": fusion_state(states),
-        "propagation": {i: latest_flip(labels, i, as_of) for i in config.INTERVALS},
-        "stability": stability_state(stability, labels["1d"], as_of),
-        "explanation": None,     # plain-language text with base rates - added with M8
+        "propagation": propagation_block,
+        "stability": stability_block,
+        "explanation": explainer.build(symbol, states, stability_block, propagation_block,
+                                       archetype_row, base_rates, faster_at_close,
+                                       str(pd.Timestamp(last_daily).date())),
         "caveats": CAVEATS,
     }
 

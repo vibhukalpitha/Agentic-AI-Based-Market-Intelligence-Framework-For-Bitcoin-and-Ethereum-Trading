@@ -255,6 +255,17 @@ STABILITY_CV_BLOCKS = 5
 STABILITY_BLOCK_DAYS = 7
 
 # --------------------------------------------------------------------------
+# Novelty 4 / M8 - conflict archetypes with base rates, and the explanation
+# Archetype rules fixed on 11 Oct 2026 from how often each pattern OCCURS in
+# the training period (no outcome was looked at), before any test-period result.
+# --------------------------------------------------------------------------
+EXPLAIN_DIR = DATA_DIR / "explain"
+
+# "Opposed" needs this many of the four faster timeframes to share one regime
+# that differs from Daily's; "Aligned" needs this many to share Daily's.
+ARCHETYPE_MAJORITY = 3
+
+# --------------------------------------------------------------------------
 # Reproducibility
 # --------------------------------------------------------------------------
 RANDOM_SEED = 42

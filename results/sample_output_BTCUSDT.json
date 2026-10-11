@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.3",
+  "schema_version": "0.4",
   "component": "market_regime_engine",
   "symbol": "BTCUSDT",
   "as_of": "2026-09-30T23:59:59.999Z",
@@ -171,7 +171,24 @@
     "in_training_period": false,
     "baseline_always": 0.8103
   },
-  "explanation": null,
+  "explanation": {
+    "archetype": "Opposed",
+    "archetype_definition": "at least three of the four faster timeframes agree on one regime that differs from Daily's",
+    "daily_close": "2026-09-30",
+    "faster_timeframes_at_close": {
+      "4h": "Sideways",
+      "1h": "Sideways",
+      "15m": "Sideways",
+      "5m": "Sideways"
+    },
+    "faster_timeframes_agreeing": 0,
+    "opposing_regime": "Sideways",
+    "base_rate_regime_change": 0.2434,
+    "base_rate_days": 152,
+    "overall_rate_regime_change": 0.1912,
+    "horizon_days": 3,
+    "text": "BTCUSDT: the Daily regime is Bullish and has held for 13 days. At the last Daily close (2026-09-30), none of the four faster timeframes was in that regime: the 4-hour, 1-hour, 15-minute and 5-minute were Sideways. This is the \"Opposed\" pattern: at least three of the four faster timeframes agree on one regime that differs from Daily's. In the training period (2021-2022) the Daily regime changed within 3 days on 24% of the 152 days with this pattern, against 19% of all days. The stability score puts the chance that Bullish holds for 3 more days at 89%. The current Daily regime began on 2026-09-18 as a top-down change: no faster timeframe had turned Bullish before it."
+  },
   "caveats": [
     "confidence is the model's own probability for its current regime; it is above 0.99 about 75% of the time and should not be read as a calibrated accuracy.",
     "each timeframe has its own independent model, so a regime name is not guaranteed to mean exactly the same thing at every timeframe. 'Volatile' is the more active of the two non-directional states, not always the most volatile one; check regime_profile.",

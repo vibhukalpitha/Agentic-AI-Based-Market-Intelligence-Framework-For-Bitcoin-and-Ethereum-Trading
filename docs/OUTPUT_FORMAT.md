@@ -1,6 +1,6 @@
 # Output of the Market Regime Engine (Component 02)
 
-**Status: proposal, schema version 0.3.** The group has not yet agreed a common format.
+**Status: proposal, schema version 0.4.** The group has not yet agreed a common format.
 This is what Component 02 can deliver today; field names can be changed to fit the
 Fusion Intelligence Engine.
 
@@ -45,7 +45,7 @@ Full examples: `results/sample_output_BTCUSDT.json` and `results/sample_output_E
 | `fusion` | object | The five timeframes combined. See below. |
 | `propagation` | object | Where the latest regime change at each timeframe started. See below. |
 | `stability` | object or null | Regime Stability Score. See below. `null` where no score exists (before 2021). |
-| `explanation` | null | Plain-language explanation. **Not built yet**; currently always `null`. |
+| `explanation` | object or null | Named disagreement pattern, its historical base rate, and a plain-language summary. See below. |
 | `caveats` | list of text | Limits a consumer must respect. See the last section. |
 
 ## `timeframes`
@@ -103,6 +103,38 @@ How settled the current Daily regime is (new in version 0.3):
 The score comes from the Daily model's own signals: its confidence, how long the regime
 has lasted, its transition probability and volatility. It describes the present state
 only; it does not say which regime would come next and it is not a price forecast.
+
+## `explanation`
+
+A diagnosis of the pattern between the timeframes, with evidence (new in version 0.4):
+
+| Field | Type | Meaning |
+|---|---|---|
+| `archetype` | text | The named pattern at the last Daily close: `Aligned`, `Partly backed`, `Fragmented` or `Opposed`. |
+| `archetype_definition` | text | The rule that defines the pattern. |
+| `daily_close` | date | The Daily close the pattern refers to. |
+| `faster_timeframes_at_close` | object | The regime of 4h, 1h, 15m and 5m at that close. |
+| `faster_timeframes_agreeing` | whole number 0–4 | How many of those were in the Daily regime. |
+| `opposing_regime` | text or null | For `Opposed`: the regime at least three faster timeframes shared. |
+| `base_rate_regime_change` | number 0–1 | Share of training-period days with this pattern on which the Daily regime changed within `horizon_days`. |
+| `base_rate_days` | whole number | How many training days the base rate rests on. |
+| `overall_rate_regime_change` | number 0–1 | The same rate over all training days, for comparison. |
+| `horizon_days` | whole number | Always 3. |
+| `text` | text | The summary in plain language. |
+
+The four patterns:
+
+| Pattern | Rule |
+|---|---|
+| `Aligned` | At least three of the four faster timeframes are in the Daily regime. |
+| `Partly backed` | Exactly two are. |
+| `Opposed` | At least three agree on one other regime, so Daily stands alone. |
+| `Fragmented` | At most one backs Daily and the others do not agree with each other. |
+
+The pattern and its base rate always refer to the last Daily close, because the base
+rates were measured at Daily closes. If the faster timeframes have moved since, the text
+says so. The explanation describes the present state; it never states what the next
+regime will be and never mentions price.
 
 ## `propagation`
 

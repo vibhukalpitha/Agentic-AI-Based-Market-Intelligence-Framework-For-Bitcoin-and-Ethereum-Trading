@@ -21,7 +21,8 @@ market state. It does not predict price.
 | M9 | Hypothesis tests H1 and H2 | Built and run |
 | Output | One JSON record per asset for the Fusion Engine | Built (proposal, see `docs/OUTPUT_FORMAT.md`) |
 | M6 | Regime Stability Score (probability the Daily regime holds 3 more days) | Built and evaluated |
-| M7, M8 | Historical similarity, explanation | Not built yet |
+| M8 | Conflict archetypes with base rates, and the plain-language explanation | Built; test-period check pending |
+| M7 | Historical similarity | Not built yet |
 
 ### Setup
 
