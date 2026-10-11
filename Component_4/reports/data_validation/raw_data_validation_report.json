@@ -1,0 +1,133 @@
+{
+    "validation_date_utc": "2026-10-11T20:10:57.258207+00:00",
+    "datasets": {
+        "BTCUSDT": {
+            "timestamp_validation": {
+                "total_rows": 2980800,
+                "first_timestamp": "2020-01-01T00:00:00+00:00",
+                "last_timestamp": "2025-08-31T23:59:00+00:00",
+                "duplicate_timestamps": 0,
+                "non_minute_intervals": 0
+            },
+            "numeric_quality": {
+                "total_rows": 2980800,
+                "missing_values": {
+                    "open": 0,
+                    "high": 0,
+                    "low": 0,
+                    "close": 0,
+                    "volume": 0,
+                    "quote_volume": 0,
+                    "num_trades": 0,
+                    "taker_buy_base_vol": 0,
+                    "taker_buy_quote_vol": 0,
+                    "taker_sell_base_vol": 0,
+                    "taker_sell_quote_vol": 0,
+                    "mark_open": 11575,
+                    "mark_high": 11575,
+                    "mark_low": 11575,
+                    "mark_close": 11575,
+                    "index_open": 17340,
+                    "index_high": 17340,
+                    "index_low": 17340,
+                    "index_close": 17340
+                },
+                "non_finite_values": {
+                    "open": 0,
+                    "high": 0,
+                    "low": 0,
+                    "close": 0,
+                    "volume": 0,
+                    "quote_volume": 0,
+                    "num_trades": 0,
+                    "taker_buy_base_vol": 0,
+                    "taker_buy_quote_vol": 0,
+                    "taker_sell_base_vol": 0,
+                    "taker_sell_quote_vol": 0,
+                    "mark_open": 0,
+                    "mark_high": 0,
+                    "mark_low": 0,
+                    "mark_close": 0,
+                    "index_open": 0,
+                    "index_high": 0,
+                    "index_low": 0,
+                    "index_close": 0
+                },
+                "negative_activity_values": {
+                    "volume": 0,
+                    "quote_volume": 0,
+                    "num_trades": 0,
+                    "taker_buy_base_vol": 0,
+                    "taker_buy_quote_vol": 0,
+                    "taker_sell_base_vol": 0,
+                    "taker_sell_quote_vol": 0
+                },
+                "invalid_ohlc_rows": 0
+            }
+        },
+        "ETHUSDT": {
+            "timestamp_validation": {
+                "total_rows": 2980800,
+                "first_timestamp": "2020-01-01T00:00:00+00:00",
+                "last_timestamp": "2025-08-31T23:59:00+00:00",
+                "duplicate_timestamps": 0,
+                "non_minute_intervals": 0
+            },
+            "numeric_quality": {
+                "total_rows": 2980800,
+                "missing_values": {
+                    "open": 0,
+                    "high": 0,
+                    "low": 0,
+                    "close": 0,
+                    "volume": 0,
+                    "quote_volume": 0,
+                    "num_trades": 0,
+                    "taker_buy_base_vol": 0,
+                    "taker_buy_quote_vol": 0,
+                    "taker_sell_base_vol": 0,
+                    "taker_sell_quote_vol": 0,
+                    "mark_open": 2946,
+                    "mark_high": 2946,
+                    "mark_low": 2946,
+                    "mark_close": 2946,
+                    "index_open": 4381,
+                    "index_high": 4381,
+                    "index_low": 4381,
+                    "index_close": 4381
+                },
+                "non_finite_values": {
+                    "open": 0,
+                    "high": 0,
+                    "low": 0,
+                    "close": 0,
+                    "volume": 0,
+                    "quote_volume": 0,
+                    "num_trades": 0,
+                    "taker_buy_base_vol": 0,
+                    "taker_buy_quote_vol": 0,
+                    "taker_sell_base_vol": 0,
+                    "taker_sell_quote_vol": 0,
+                    "mark_open": 0,
+                    "mark_high": 0,
+                    "mark_low": 0,
+                    "mark_close": 0,
+                    "index_open": 0,
+                    "index_high": 0,
+                    "index_low": 0,
+                    "index_close": 0
+                },
+                "negative_activity_values": {
+                    "volume": 0,
+                    "quote_volume": 0,
+                    "num_trades": 0,
+                    "taker_buy_base_vol": 0,
+                    "taker_buy_quote_vol": 0,
+                    "taker_sell_base_vol": 0,
+                    "taker_sell_quote_vol": 0
+                },
+                "invalid_ohlc_rows": 0
+            }
+        }
+    }
+}
