@@ -72,7 +72,8 @@ def describe_faster(faster: dict[str, str], daily_regime: str, past: bool) -> st
 
 def build(symbol: str, timeframes: dict, stability: dict | None, propagation: dict,
           archetype_row: pd.Series | None, rates: dict | None,
-          faster_at_close: dict[str, str] | None, close_date: str | None) -> dict | None:
+          faster_at_close: dict[str, str] | None, close_date: str | None,
+          similar: dict | None = None) -> dict | None:
     """The `explanation` block of the output record, or None if no archetype
     is available for the last Daily close."""
     if archetype_row is None or rates is None or faster_at_close is None:
@@ -111,6 +112,14 @@ def build(symbol: str, timeframes: dict, stability: dict | None, propagation: di
         sentences.append(
             f"The current Daily regime began on {flip['flip_candle_open'][:10]} as a "
             f"{flip['direction']} change: {origin}.")
+    if similar is not None:
+        same, total = similar["matches_in_same_regime"], len(similar["matches"])
+        closest = similar["matches"][0]
+        sentences.append(
+            f"Of the {total} past {similar['window_days']}-day stretches most similar to the "
+            f"last {similar['window_days']} days, {same} ended in the same regime as today "
+            f"(the closest ended on {closest['window_end']}, when the regime was "
+            f"{closest['regime_then']}).")
     profile = daily.get("regime_profile")
     if profile is not None and daily["regime"] == "Volatile" and not profile["is_most_volatile_state"]:
         sentences.append(

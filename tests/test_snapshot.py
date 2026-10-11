@@ -50,7 +50,8 @@ def test_snapshot_is_valid_json_with_the_documented_blocks(labels):
     record = snapshot.build_snapshot("TEST", START + pd.Timedelta(days=8), labels)
     assert json.loads(json.dumps(record)) == record
     assert set(record) == {"schema_version", "component", "symbol", "as_of", "timeframes",
-                           "fusion", "propagation", "stability", "explanation", "caveats"}
+                           "fusion", "propagation", "stability", "explanation",
+                           "similar_history", "caveats"}
     assert list(record["timeframes"]) == config.INTERVALS
     assert 0 <= record["fusion"]["alignment_score"] <= 100
     assert (sorted(record["fusion"]["timeframes_agreeing"]

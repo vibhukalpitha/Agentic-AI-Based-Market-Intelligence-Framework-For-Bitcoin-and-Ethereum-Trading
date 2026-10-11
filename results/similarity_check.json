@@ -1,0 +1,18 @@
+[
+  {
+    "symbol": "BTCUSDT",
+    "window_days": 10,
+    "query_days": 196,
+    "closest_match_same_regime": 0.8316326530612245,
+    "random_past_stretch_same_regime": 0.25752541010163227,
+    "median_distance": 1.0545733958966923
+  },
+  {
+    "symbol": "ETHUSDT",
+    "window_days": 10,
+    "query_days": 196,
+    "closest_match_same_regime": 0.7193877551020408,
+    "random_past_stretch_same_regime": 0.251963524268888,
+    "median_distance": 1.1707263090627302
+  }
+]

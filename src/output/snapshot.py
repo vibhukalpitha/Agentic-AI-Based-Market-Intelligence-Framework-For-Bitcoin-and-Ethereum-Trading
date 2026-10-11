@@ -24,8 +24,9 @@ from src import config
 from src.explain import explainer
 from src.fusion import alignment, propagation
 from src.regime import describe
+from src.similarity import dtw_match
 
-SCHEMA_VERSION = "0.4"
+SCHEMA_VERSION = "0.5"
 PROBABILITY_COLUMNS = [f"p_{name.lower()}" for name in config.REGIMES]
 
 # Facts a consumer of this record must know to use it correctly.
@@ -44,6 +45,9 @@ CAVEATS = [
     "under 'Opposed' than under 'Aligned'), but every rate was higher than in training, "
     "most for ETH. Read base rates as relative, not exact. Part of the difference between "
     "patterns arises simply because faster timeframes react sooner than Daily.",
+    "similar_history is supporting evidence for the present regime label only. It says "
+    "when the last days looked most alike and what the regime was then; it deliberately "
+    "says nothing about what followed those past stretches.",
     "alignment_score did not anticipate Daily regime transitions in testing (H1 not "
     "supported); use it as a description of agreement, not as a warning signal.",
     "propagation.direction: 'bottom-up' flips were somewhat more durable than 'top-down' "
@@ -207,7 +211,8 @@ def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
                    labels: dict[str, pd.DataFrame] | None = None,
                    profiles: dict[str, dict] | None = None,
                    stability: pd.DataFrame | None = None,
-                   archetypes: tuple[pd.DataFrame | None, dict | None] | None = None) -> dict:
+                   archetypes: tuple[pd.DataFrame | None, dict | None] | None = None,
+                   similarity: tuple[pd.DataFrame, np.ndarray] | None = None) -> dict:
     """The full record for one asset at one moment (default: the latest data).
 
     labels, profiles, stability and archetypes are read from the saved files
@@ -217,6 +222,8 @@ def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
         stability = load_stability(symbol)
     if archetypes is None:
         archetypes = explainer.load_archetypes(symbol) if labels is None else (None, None)
+    if similarity is None and labels is None:
+        similarity = dtw_match.load_daily(symbol)
     labels = load_all_labels(symbol) if labels is None else labels
     if profiles is None:
         profiles = {i: describe.load_profiles(symbol, i) for i in config.INTERVALS}
@@ -245,6 +252,8 @@ def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
                        for i in config.INTERVALS[1:]}
     if any(regime is None for regime in faster_at_close.values()):
         faster_at_close = None
+    similar_block = (dtw_match.similar_history(*similarity, last_daily)
+                     if similarity is not None else None)
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -257,7 +266,8 @@ def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
         "stability": stability_block,
         "explanation": explainer.build(symbol, states, stability_block, propagation_block,
                                        archetype_row, base_rates, faster_at_close,
-                                       str(pd.Timestamp(last_daily).date())),
+                                       str(pd.Timestamp(last_daily).date()), similar_block),
+        "similar_history": similar_block,
         "caveats": CAVEATS,
     }
 

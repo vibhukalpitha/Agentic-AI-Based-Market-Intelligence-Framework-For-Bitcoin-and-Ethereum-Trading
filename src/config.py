@@ -153,10 +153,13 @@ PERSISTENCE_CANDIDATES = [1, 2, 3, 5, 7]
 # --------------------------------------------------------------------------
 FUSION_DIR = DATA_DIR / "fusion"        # M4 output: alignment time series
 
-# PROPOSED starting weights: slower timeframes count more because their
-# regimes are steadier. Novelty 3 later replaces these with learned,
-# context-dependent weights. When a timeframe is left out (Daily, for H1) the
-# formula divides by the sum of the remaining weights, so no rescaling is needed.
+# Fixed weights: slower timeframes count more because their regimes are
+# steadier. Novelty 3 tested whether weights learned from data, or weights that
+# change with market volatility, do better. They do not (see
+# src/fusion/adaptive_weights.py and results/n3_adaptive_weights_test.json),
+# so these fixed weights are RETAINED on evidence. When a timeframe is left
+# out (Daily, for H1) the formula divides by the sum of the remaining weights,
+# so no rescaling is needed.
 TIMEFRAME_WEIGHTS = {"1d": 0.30, "4h": 0.25, "1h": 0.20, "15m": 0.15, "5m": 0.10}
 
 # Timeframes used for the H1 alignment score. Daily is excluded because Daily
@@ -264,6 +267,15 @@ EXPLAIN_DIR = DATA_DIR / "explain"
 # "Opposed" needs this many of the four faster timeframes to share one regime
 # that differs from Daily's; "Aligned" needs this many to share Daily's.
 ARCHETYPE_MAJORITY = 3
+
+# --------------------------------------------------------------------------
+# M7 - historical similarity (supporting evidence only)
+# --------------------------------------------------------------------------
+# Length of the stretch that is compared, in Daily candles. Ten days is about
+# the median life of a Daily regime (9 days), so a stretch covers one regime
+# and the approach into it.
+SIMILARITY_WINDOW_DAYS = 10
+SIMILARITY_MATCHES = 3          # how many past stretches are reported
 
 # --------------------------------------------------------------------------
 # Reproducibility

@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.4",
+  "schema_version": "0.5",
   "component": "market_regime_engine",
   "symbol": "BTCUSDT",
   "as_of": "2026-09-30T23:59:59.999Z",
@@ -187,13 +187,40 @@
     "base_rate_days": 152,
     "overall_rate_regime_change": 0.1912,
     "horizon_days": 3,
-    "text": "BTCUSDT: the Daily regime is Bullish and has held for 13 days. At the last Daily close (2026-09-30), none of the four faster timeframes was in that regime: the 4-hour, 1-hour, 15-minute and 5-minute were Sideways. This is the \"Opposed\" pattern: at least three of the four faster timeframes agree on one regime that differs from Daily's. In the training period (2021-2022) the Daily regime changed within 3 days on 24% of the 152 days with this pattern, against 19% of all days. The stability score puts the chance that Bullish holds for 3 more days at 89%. The current Daily regime began on 2026-09-18 as a top-down change: no faster timeframe had turned Bullish before it."
+    "text": "BTCUSDT: the Daily regime is Bullish and has held for 13 days. At the last Daily close (2026-09-30), none of the four faster timeframes was in that regime: the 4-hour, 1-hour, 15-minute and 5-minute were Sideways. This is the \"Opposed\" pattern: at least three of the four faster timeframes agree on one regime that differs from Daily's. In the training period (2021-2022) the Daily regime changed within 3 days on 24% of the 152 days with this pattern, against 19% of all days. The stability score puts the chance that Bullish holds for 3 more days at 89%. The current Daily regime began on 2026-09-18 as a top-down change: no faster timeframe had turned Bullish before it. Of the 3 past 10-day stretches most similar to the last 10 days, 3 ended in the same regime as today (the closest ended on 2020-08-14, when the regime was Bullish)."
+  },
+  "similar_history": {
+    "window_days": 10,
+    "window_end": "2026-09-30",
+    "regime_now": "Bullish",
+    "matches": [
+      {
+        "window_start": "2020-08-05",
+        "window_end": "2020-08-14",
+        "distance": 1.106,
+        "regime_then": "Bullish"
+      },
+      {
+        "window_start": "2023-02-17",
+        "window_end": "2023-02-26",
+        "distance": 1.153,
+        "regime_then": "Bullish"
+      },
+      {
+        "window_start": "2020-01-14",
+        "window_end": "2020-01-23",
+        "distance": 1.187,
+        "regime_then": "Bullish"
+      }
+    ],
+    "matches_in_same_regime": 3
   },
   "caveats": [
     "confidence is the model's own probability for its current regime; it is above 0.99 about 75% of the time and should not be read as a calibrated accuracy.",
     "each timeframe has its own independent model, so a regime name is not guaranteed to mean exactly the same thing at every timeframe. 'Volatile' is the more active of the two non-directional states, not always the most volatile one; check regime_profile.",
     "stability.probability_regime_persists ranks days usefully (in testing a day whose regime persisted got the higher score 73% of the time for BTC and 67% for ETH), but it is too confident at the top: when it said above 90%, the regime persisted about 86-93% of the time for BTC and about 80% for ETH.",
     "explanation.base_rate_regime_change is a training-period figure. In testing the order of the patterns held (the Daily regime changed 16-18 percentage points more often under 'Opposed' than under 'Aligned'), but every rate was higher than in training, most for ETH. Read base rates as relative, not exact. Part of the difference between patterns arises simply because faster timeframes react sooner than Daily.",
+    "similar_history is supporting evidence for the present regime label only. It says when the last days looked most alike and what the regime was then; it deliberately says nothing about what followed those past stretches.",
     "alignment_score did not anticipate Daily regime transitions in testing (H1 not supported); use it as a description of agreement, not as a warning signal.",
     "propagation.direction: 'bottom-up' flips were somewhat more durable than 'top-down' flips at the 1h and 15m timeframes in testing. At the Daily timeframe the difference could not be separated from a background effect, so do not rely on it there."
   ]

@@ -1,6 +1,6 @@
 # Output of the Market Regime Engine (Component 02)
 
-**Status: proposal, schema version 0.4.** The group has not yet agreed a common format.
+**Status: proposal, schema version 0.5.** The group has not yet agreed a common format.
 This is what Component 02 can deliver today; field names can be changed to fit the
 Fusion Intelligence Engine.
 
@@ -46,6 +46,7 @@ Full examples: `results/sample_output_BTCUSDT.json` and `results/sample_output_E
 | `propagation` | object | Where the latest regime change at each timeframe started. See below. |
 | `stability` | object or null | Regime Stability Score. See below. `null` where no score exists (before 2021). |
 | `explanation` | object or null | Named disagreement pattern, its historical base rate, and a plain-language summary. See below. |
+| `similar_history` | object or null | The past stretches most like the last 10 days. See below. |
 | `caveats` | list of text | Limits a consumer must respect. See the last section. |
 
 ## `timeframes`
@@ -149,6 +150,23 @@ One entry per timeframe, describing the flip that began its current regime
 | `faster_timeframes` | whole number | How many faster timeframes exist below this one (the maximum possible depth). |
 | `direction` | text | `bottom-up` (depth ≥ 1: the change was already present below), `top-down` (depth 0: this timeframe moved first), or `not_applicable` for `5m`. |
 | `adopted_by_slower` | text | Whether the next slower timeframe took up the change: `already_there`, `adopted`, `pending`, `failed`, or `not_applicable` for `1d`. A change counts as adopted if the slower timeframe shows it within 3 of its own candles. |
+
+## `similar_history`
+
+Supporting evidence for the present Daily regime label (new in version 0.5):
+
+| Field | Type | Meaning |
+|---|---|---|
+| `window_days` | whole number | Length of the stretch compared. Always 10. |
+| `window_end` | date | Last day of the current stretch (the last closed Daily candle). |
+| `regime_now` | text | The Daily regime on that day. |
+| `matches` | list | The three most similar earlier stretches, closest first. Each has `window_start`, `window_end`, `distance` (average distance per day; smaller is more alike) and `regime_then` (the Daily regime on its last day). |
+| `matches_in_same_regime` | whole number 0–3 | How many of the three ended in the same regime as now. |
+
+Similarity is measured on the nine model features with dynamic time warping. A match
+always ended before the current stretch began, and the three matches do not overlap.
+**This block says nothing about what happened after a past stretch**, by design: it
+supports the present label and is not evidence about what comes next.
 
 ## Caveats — please read before using the numbers
 

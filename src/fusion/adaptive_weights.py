@@ -1,6 +1,14 @@
-"""Novelty 3 - Context-adaptive timeframe weighting.
+"""Novelty 3 - A method for, and test of, context-adaptive timeframe weighting.
 
 Run:  python -m src.fusion.adaptive_weights      (fits on the training period only)
+
+RESULT (test period 2023-2026, src/experiments/n3_adaptive_weights.py): NOT
+SUPPORTED. Context-adaptive weights were no better than fixed weights (Brier
+difference +0.0028 for BTC and +0.0013 for ETH, both intervals including
+zero), and weights learned without context were no better either. The fixed
+weights in src/config.py are therefore retained. The 4-hour timeframe carries
+almost all of the learned weight. This module is kept because the method and
+the test are the contribution: it shows the question was asked properly.
 
 The claim. The weight a timeframe deserves is not fixed: in a calm market the
 fast timeframes are mostly noise, and in an active market the slow ones are

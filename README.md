@@ -22,8 +22,8 @@ market state. It does not predict price.
 | Output | One JSON record per asset for the Fusion Engine | Built (proposal, see `docs/OUTPUT_FORMAT.md`) |
 | M6 | Regime Stability Score (probability the Daily regime holds 3 more days) | Built and evaluated |
 | M8 | Conflict archetypes with base rates, and the plain-language explanation | Built and tested |
-| Novelty 3 | Context-adaptive timeframe weights | Built; test-period check pending |
-| M7 | Historical similarity | Not built yet |
+| Novelty 3 | A method for, and test of, context-adaptive timeframe weights | Built and tested: not supported, so the fixed weights are retained |
+| M7 | Historical similarity (the past stretches most like the last 10 days) | Built |
 
 ### Setup
 
@@ -101,6 +101,12 @@ the Daily regime changed within 3 days on 31% (BTC) and 35% (ETH) of "Opposed" d
 against 14% and 20% of "Aligned" days. Using the training base rates as a forecast beat
 a constant rate for BTC but not clearly for ETH, and every rate was higher in the test
 period than in training, so base rates are relative, not exact.
+
+**Context-adaptive weights (Novelty 3), test period. Not supported.** Weights learned
+per timeframe, and weights learned per timeframe and volatility context, were no better
+than the fixed weights at judging whether the Daily regime would hold (Brier, adaptive
+minus fixed: BTC +0.0028, ETH +0.0013; both intervals include zero). The fixed weights
+are kept. The 4-hour timeframe carries almost all of the learned weight.
 
 The H1, H2 and H2b designs were fixed before their results were computed. The H2 placebo
 control was added after the H2 result was known and is reported as an additional check.

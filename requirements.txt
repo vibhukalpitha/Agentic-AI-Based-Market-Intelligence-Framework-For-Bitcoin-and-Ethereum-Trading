@@ -9,4 +9,5 @@ matplotlib==3.11.2
 pytest==9.1.1
 # Not used yet - installed for the planned comparison models (Random Forest).
 scikit-learn==1.9.1
-# tslearn is needed only for M7 (DTW similarity, Phase 5) - add it then.
+# tslearn is NOT needed: the DTW distance for M7 is written out in
+# src/similarity/dtw_match.py, like the indicators.
