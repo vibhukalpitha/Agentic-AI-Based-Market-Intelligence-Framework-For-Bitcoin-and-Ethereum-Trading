@@ -1,0 +1,13 @@
+metric,value
+Dimensions,42580 rows x 52 columns
+Date Range,2020-09-01 00:00:00+00:00 to 2025-07-12 23:00:00+00:00
+Duplicate Timestamps,0
+Total Hours Span vs Rows,"Expected: 42624, Actual: 42580, Gaps in index: 44"
+Constant Columns,symbol
+GLD_Volume Synthetic Forward-Filled Rows,13884 rows (32.61%)
+Interpolated BTC Hourly Bars (from Binance Outages),19 rows
+Zero Open Interest Rows,43 rows (genuine exchange initializations / outages)
+Zero BTC Quote Volume Rows,3 rows (coincides exactly with maintenance)
+BTC Garman-Klass Volatility NaNs,"23 (23 expected burn-in periods, 0 negative values inside sqrt)"
+Open Interest Z-score Formula,"Normalized rolling level Z = (OI_t - mean_24(OI))/std_24(OI), not a change (delta)"
+"OFI Domain Violations (outside [-1, 1])","BTC: 0, ETH: 0"

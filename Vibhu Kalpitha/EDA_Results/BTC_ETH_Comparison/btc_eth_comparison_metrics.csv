@@ -1,0 +1,7 @@
+Metric,Value,p_value
+Full Sample Pearson Return Correlation,0.83561,0.00e+00
+Full Sample Spearman Rank Correlation,0.82134,0.00e+00
+BTC Annualized Vol (Hourly Std * sqrt(8760)),0.6163,N/A
+ETH Annualized Vol (Hourly Std * sqrt(8760)),0.7987,N/A
+BTC Excess Kurtosis,15.29,N/A
+ETH Excess Kurtosis,14.40,N/A
