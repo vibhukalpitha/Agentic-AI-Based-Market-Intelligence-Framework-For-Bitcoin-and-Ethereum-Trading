@@ -22,3 +22,14 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+
+# Component 3 Data & Large Files
+component_03/backend/data/
+*.csv
+*.zip
+*.parquet
+
+# Model Weights (Except small production exports if needed)
+component_03/backend/models/*.pt
+component_03/backend/models/*.pkl
