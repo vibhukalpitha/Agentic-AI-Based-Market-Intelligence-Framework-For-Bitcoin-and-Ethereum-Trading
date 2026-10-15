@@ -1,0 +1,423 @@
+{
+  "generated_at_utc": "2026-10-15T15:45:26.366500+00:00",
+  "phase": 2,
+  "parameters": {
+    "left_bars": 3,
+    "right_bars": 3,
+    "cluster_tolerance_atr": 0.5,
+    "min_confirmed_swings": 2,
+    "lookback_15m_days": 30,
+    "lookback_1h_days": 90,
+    "lookback_4h_days": 180,
+    "padding_atr": 0.1,
+    "padding_price_cap_fraction": 0.01,
+    "max_zone_width_fraction": 0.05
+  },
+  "parameter_status": "provisional research assumptions; not optimized",
+  "rules": {
+    "swings": "Strict unique extrema; high before low for same pivot; confirming candle availability and ATR",
+    "reference_atr": "Frozen from first swing confirmation ATR",
+    "matching_tolerance": "cluster_tolerance_atr * min(first_reference_atr, new_confirmation_atr)",
+    "compactness": "Updated diameter <= cluster_tolerance_atr * minimum confirmation ATR of all members",
+    "ties": "Nearest existing midpoint, earliest first confirmation, lexicographic cluster ID",
+    "eligibility": "Elapsed confirmation time since latest evidence <= timeframe lookback; expiry is not invalidation",
+    "boundaries": "[min_price-padding, max_price+padding]; padding=min(padding_atr*minimum_member_atr, padding_price_cap_fraction*min_price)",
+    "width_cap": "positive finite boundaries and width <= max_zone_width_fraction * observed midpoint",
+    "invalid_atr": "Keep confirmed swing in audit output; exclude it from grouping; never fill ATR",
+    "availability": "confirmed_at_utc is original zone creation; available_at_utc is availability of this version",
+    "history": "Zone event rows are immutable states at event_at_utc; snapshot_as_of_utc marks end-of-input snapshots",
+    "scope": "Historical candidates only; no lifecycle or present-day validity assessment"
+  },
+  "schemas": {
+    "swings": [
+      "swing_id",
+      "symbol",
+      "source_timeframe",
+      "swing_type",
+      "swing_price",
+      "swing_time_utc",
+      "confirmed_at_utc",
+      "atr_at_confirmation"
+    ],
+    "zone_events": [
+      "event_type",
+      "event_at_utc",
+      "event_sequence",
+      "evidence_swing_id",
+      "zone_id",
+      "cluster_id",
+      "symbol",
+      "source_timeframe",
+      "zone_family",
+      "origin_type",
+      "lower_price",
+      "upper_price",
+      "formation_start_utc",
+      "confirmed_at_utc",
+      "available_at_utc",
+      "confirmed_swing_count",
+      "cluster_reference_atr",
+      "cluster_method",
+      "candidate_status",
+      "observed_min_price",
+      "observed_max_price",
+      "minimum_member_atr",
+      "diameter_limit",
+      "padding_price",
+      "latest_evidence_at_utc"
+    ],
+    "snapshots": [
+      "zone_id",
+      "cluster_id",
+      "symbol",
+      "source_timeframe",
+      "zone_family",
+      "origin_type",
+      "lower_price",
+      "upper_price",
+      "formation_start_utc",
+      "confirmed_at_utc",
+      "available_at_utc",
+      "confirmed_swing_count",
+      "cluster_reference_atr",
+      "cluster_method",
+      "candidate_status",
+      "observed_min_price",
+      "observed_max_price",
+      "minimum_member_atr",
+      "diameter_limit",
+      "padding_price",
+      "latest_evidence_at_utc",
+      "snapshot_as_of_utc"
+    ]
+  },
+  "tests": {
+    "tests_run": 38,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true
+  },
+  "datasets": [
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "15m",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\15m\\BTCUSDT_15m_features.csv",
+      "input_rows": 198720,
+      "confirmed_swing_high_count": 19800,
+      "confirmed_swing_low_count": 19622,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "provisional_cluster_count": 2340,
+      "total_cluster_count": 11351,
+      "candidate_zones_created": 9011,
+      "zone_update_count": 19059,
+      "matching_eligible_groups_at_end": 234,
+      "matching_groups_examined": 78078,
+      "groups_archived_from_matching": 11117,
+      "swings_grouped": 39421,
+      "swings_skipped_unusable_atr": 1,
+      "lookback_days": 30.0,
+      "timestamp_checks": {
+        "status": "PASS",
+        "rows_checked": 198720,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "checks": [
+          "aware UTC grid",
+          "exact interval spacing",
+          "close-time availability"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "ohlc_rows_checked": 198720,
+        "snapshot_zones_checked": 9011,
+        "event_states_checked": 28070,
+        "rejected_swings": 0
+      },
+      "output_paths": {
+        "snapshot": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_15m.csv",
+        "swings": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_15m_swings.csv",
+        "zone_events": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_15m_zone_events.csv"
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no ATR imputation was used",
+        "swings_skipped_unusable_atr: 1; swings remain in the swing audit CSV"
+      ],
+      "anomalies": {
+        "invalid_atr_rows": 0,
+        "invalid_boundaries_skipped": 0
+      }
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "15m",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\15m\\ETHUSDT_15m_features.csv",
+      "input_rows": 198720,
+      "confirmed_swing_high_count": 19691,
+      "confirmed_swing_low_count": 19698,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "provisional_cluster_count": 2220,
+      "total_cluster_count": 11260,
+      "candidate_zones_created": 9040,
+      "zone_update_count": 19087,
+      "matching_eligible_groups_at_end": 224,
+      "matching_groups_examined": 75628,
+      "groups_archived_from_matching": 11036,
+      "swings_grouped": 39387,
+      "swings_skipped_unusable_atr": 2,
+      "lookback_days": 30.0,
+      "timestamp_checks": {
+        "status": "PASS",
+        "rows_checked": 198720,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "checks": [
+          "aware UTC grid",
+          "exact interval spacing",
+          "close-time availability"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "ohlc_rows_checked": 198720,
+        "snapshot_zones_checked": 9040,
+        "event_states_checked": 28127,
+        "rejected_swings": 0
+      },
+      "output_paths": {
+        "snapshot": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_15m.csv",
+        "swings": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_15m_swings.csv",
+        "zone_events": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_15m_zone_events.csv"
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no ATR imputation was used",
+        "swings_skipped_unusable_atr: 2; swings remain in the swing audit CSV"
+      ],
+      "anomalies": {
+        "invalid_atr_rows": 0,
+        "invalid_boundaries_skipped": 0
+      }
+    },
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "1h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\1h\\BTCUSDT_1h_features.csv",
+      "input_rows": 49680,
+      "confirmed_swing_high_count": 5099,
+      "confirmed_swing_low_count": 5025,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "provisional_cluster_count": 722,
+      "total_cluster_count": 3245,
+      "candidate_zones_created": 2523,
+      "zone_update_count": 4354,
+      "matching_eligible_groups_at_end": 162,
+      "matching_groups_examined": 17008,
+      "groups_archived_from_matching": 3083,
+      "swings_grouped": 10122,
+      "swings_skipped_unusable_atr": 2,
+      "lookback_days": 90.0,
+      "timestamp_checks": {
+        "status": "PASS",
+        "rows_checked": 49680,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "checks": [
+          "aware UTC grid",
+          "exact interval spacing",
+          "close-time availability"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "ohlc_rows_checked": 49680,
+        "snapshot_zones_checked": 2523,
+        "event_states_checked": 6877,
+        "rejected_swings": 0
+      },
+      "output_paths": {
+        "snapshot": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_1h.csv",
+        "swings": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_1h_swings.csv",
+        "zone_events": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_1h_zone_events.csv"
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no ATR imputation was used",
+        "swings_skipped_unusable_atr: 2; swings remain in the swing audit CSV"
+      ],
+      "anomalies": {
+        "invalid_atr_rows": 0,
+        "invalid_boundaries_skipped": 0
+      }
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "1h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\1h\\ETHUSDT_1h_features.csv",
+      "input_rows": 49680,
+      "confirmed_swing_high_count": 5008,
+      "confirmed_swing_low_count": 4991,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "provisional_cluster_count": 733,
+      "total_cluster_count": 3211,
+      "candidate_zones_created": 2478,
+      "zone_update_count": 4309,
+      "matching_eligible_groups_at_end": 196,
+      "matching_groups_examined": 16618,
+      "groups_archived_from_matching": 3015,
+      "swings_grouped": 9998,
+      "swings_skipped_unusable_atr": 1,
+      "lookback_days": 90.0,
+      "timestamp_checks": {
+        "status": "PASS",
+        "rows_checked": 49680,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "checks": [
+          "aware UTC grid",
+          "exact interval spacing",
+          "close-time availability"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "ohlc_rows_checked": 49680,
+        "snapshot_zones_checked": 2478,
+        "event_states_checked": 6787,
+        "rejected_swings": 0
+      },
+      "output_paths": {
+        "snapshot": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_1h.csv",
+        "swings": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_1h_swings.csv",
+        "zone_events": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_1h_zone_events.csv"
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no ATR imputation was used",
+        "swings_skipped_unusable_atr: 1; swings remain in the swing audit CSV"
+      ],
+      "anomalies": {
+        "invalid_atr_rows": 0,
+        "invalid_boundaries_skipped": 0
+      }
+    },
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "4h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\4h\\BTCUSDT_4h_features.csv",
+      "input_rows": 12420,
+      "confirmed_swing_high_count": 1285,
+      "confirmed_swing_low_count": 1287,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "provisional_cluster_count": 270,
+      "total_cluster_count": 966,
+      "candidate_zones_created": 696,
+      "zone_update_count": 909,
+      "matching_eligible_groups_at_end": 99,
+      "matching_groups_examined": 3254,
+      "groups_archived_from_matching": 867,
+      "swings_grouped": 2571,
+      "swings_skipped_unusable_atr": 1,
+      "lookback_days": 180.0,
+      "timestamp_checks": {
+        "status": "PASS",
+        "rows_checked": 12420,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "checks": [
+          "aware UTC grid",
+          "exact interval spacing",
+          "close-time availability"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "ohlc_rows_checked": 12420,
+        "snapshot_zones_checked": 696,
+        "event_states_checked": 1605,
+        "rejected_swings": 0
+      },
+      "output_paths": {
+        "snapshot": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_4h.csv",
+        "swings": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_4h_swings.csv",
+        "zone_events": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_4h_zone_events.csv"
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no ATR imputation was used",
+        "swings_skipped_unusable_atr: 1; swings remain in the swing audit CSV"
+      ],
+      "anomalies": {
+        "invalid_atr_rows": 0,
+        "invalid_boundaries_skipped": 0
+      }
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "4h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\4h\\ETHUSDT_4h_features.csv",
+      "input_rows": 12420,
+      "confirmed_swing_high_count": 1234,
+      "confirmed_swing_low_count": 1247,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "provisional_cluster_count": 256,
+      "total_cluster_count": 951,
+      "candidate_zones_created": 695,
+      "zone_update_count": 834,
+      "matching_eligible_groups_at_end": 108,
+      "matching_groups_examined": 3181,
+      "groups_archived_from_matching": 843,
+      "swings_grouped": 2480,
+      "swings_skipped_unusable_atr": 1,
+      "lookback_days": 180.0,
+      "timestamp_checks": {
+        "status": "PASS",
+        "rows_checked": 12420,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "checks": [
+          "aware UTC grid",
+          "exact interval spacing",
+          "close-time availability"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "ohlc_rows_checked": 12420,
+        "snapshot_zones_checked": 695,
+        "event_states_checked": 1529,
+        "rejected_swings": 0
+      },
+      "output_paths": {
+        "snapshot": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_4h.csv",
+        "swings": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_4h_swings.csv",
+        "zone_events": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_4h_zone_events.csv"
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no ATR imputation was used",
+        "swings_skipped_unusable_atr: 1; swings remain in the swing audit CSV"
+      ],
+      "anomalies": {
+        "invalid_atr_rows": 0,
+        "invalid_boundaries_skipped": 0
+      }
+    }
+  ],
+  "warnings": [
+    "BTCUSDT 15m: missing_atr_rows: 13; no ATR imputation was used",
+    "BTCUSDT 15m: swings_skipped_unusable_atr: 1; swings remain in the swing audit CSV",
+    "ETHUSDT 15m: missing_atr_rows: 13; no ATR imputation was used",
+    "ETHUSDT 15m: swings_skipped_unusable_atr: 2; swings remain in the swing audit CSV",
+    "BTCUSDT 1h: missing_atr_rows: 13; no ATR imputation was used",
+    "BTCUSDT 1h: swings_skipped_unusable_atr: 2; swings remain in the swing audit CSV",
+    "ETHUSDT 1h: missing_atr_rows: 13; no ATR imputation was used",
+    "ETHUSDT 1h: swings_skipped_unusable_atr: 1; swings remain in the swing audit CSV",
+    "BTCUSDT 4h: missing_atr_rows: 13; no ATR imputation was used",
+    "BTCUSDT 4h: swings_skipped_unusable_atr: 1; swings remain in the swing audit CSV",
+    "ETHUSDT 4h: missing_atr_rows: 13; no ATR imputation was used",
+    "ETHUSDT 4h: swings_skipped_unusable_atr: 1; swings remain in the swing audit CSV"
+  ]
+}
