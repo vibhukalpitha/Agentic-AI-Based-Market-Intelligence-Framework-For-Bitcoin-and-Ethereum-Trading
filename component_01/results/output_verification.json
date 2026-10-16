@@ -1,0 +1,24 @@
+{
+  "BTCUSDT": {
+    "moments": 300,
+    "future_checks": 25,
+    "records_with_problems": 0,
+    "blocks_present": {
+      "stability": 299,
+      "explanation": 300,
+      "similar_history": 300
+    },
+    "first_failures": []
+  },
+  "ETHUSDT": {
+    "moments": 300,
+    "future_checks": 25,
+    "records_with_problems": 0,
+    "blocks_present": {
+      "stability": 298,
+      "explanation": 300,
+      "similar_history": 300
+    },
+    "first_failures": []
+  }
+}
