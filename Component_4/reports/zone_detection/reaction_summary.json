@@ -1,0 +1,507 @@
+{
+  "phase": 4,
+  "generated_at_utc": "2026-10-16T00:29:33.989469+00:00",
+  "parameters": {
+    "wick_ratio_min": 0.5,
+    "close_location_min": 0.3,
+    "wick_atr_min": 0.25,
+    "min_separation_bars": 3,
+    "cluster_tolerance_atr": 0.5,
+    "min_independent_rejections": 2,
+    "lookback_15m_days": 30,
+    "lookback_1h_days": 90,
+    "lookback_4h_days": 180,
+    "padding_atr": 0.1,
+    "padding_price_cap_fraction": 0.01,
+    "max_zone_width_fraction": 0.05
+  },
+  "parameter_status": "Provisional research assumptions, not optimized trading rules",
+  "rules": {
+    "bullish": "lower_wick_ratio >= wick_ratio_min AND CLV >= close_location_min AND lower_wick/ATR >= wick_atr_min; anchor=low",
+    "bearish": "upper_wick_ratio >= wick_ratio_min AND CLV <= -close_location_min AND upper_wick/ATR >= wick_atr_min; anchor=high",
+    "raw_counts": "Completed candles satisfying all conditions, including valid ATR, before cooldown/grouping",
+    "features": "Stored features audited against OHLC (rel_tol=1e-8, abs_tol=1e-9); body_ratio audited only, not an extra threshold; no imputation",
+    "nearby_area": "Distance from new anchor to observed group [min,max] <= cluster_tolerance_atr * min(frozen_reference_ATR, new_ATR)",
+    "cooldown": "Suppress if ANY eligible nearby same-direction group has new_bar_index-last_accepted_bar_index < min_separation_bars; no other group or new group can bypass this",
+    "suppression": "Preserve the first accepted evidence; suppressed candles do not change group state, cooldown or lookback clocks",
+    "separation_example": "At separation=3: accept i, suppress nearby i+1 and i+2, permit i+3; all input candles count, not just rejection candles",
+    "reference_atr": "Frozen at the first accepted rejection; subsequent ATR cannot increase its matching allowance",
+    "compactness": "Updated anchor diameter <= cluster_tolerance_atr * minimum ATR across all accepted members",
+    "matching_ties": "Nearest existing midpoint, earliest first availability, lexicographic zone ID",
+    "time_eligibility": "Elapsed UTC time since latest accepted evidence <= timeframe lookback; expiry archives matching only, not zone validity",
+    "boundaries": "Reuse Phase 2 helper: [min_anchor-padding,max_anchor+padding], padding=min(padding_atr*minimum_member_ATR,padding_price_cap_fraction*min_anchor); width <= max_zone_width_fraction*midpoint",
+    "event_timestamps": "formation_start=first accepted candle opening; confirmed_at=original creation close; available_at=event_at=trigger candle close for this version",
+    "event_history": "Append immutable create/update rows within each batch; stable IDs; --overwrite explicitly regenerates files"
+  },
+  "schema": [
+    "zone_id",
+    "symbol",
+    "source_timeframe",
+    "zone_family",
+    "origin_type",
+    "lower_price",
+    "upper_price",
+    "formation_start_utc",
+    "confirmed_at_utc",
+    "available_at_utc",
+    "independent_rejection_count",
+    "cluster_reference_atr",
+    "event_type",
+    "event_at_utc",
+    "trigger_candle_time_utc",
+    "trigger_rejection_price",
+    "trigger_wick_ratio",
+    "trigger_close_location_value",
+    "trigger_wick_atr",
+    "candidate_status",
+    "observed_min_price",
+    "observed_max_price",
+    "minimum_member_atr",
+    "diameter_limit",
+    "padding_price",
+    "trigger_atr",
+    "event_sequence"
+  ],
+  "tests": {
+    "tests_run": 94,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true
+  },
+  "datasets": [
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "15m",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\15m\\BTCUSDT_15m_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\BTCUSDT_15m.csv",
+      "input_candle_count": 198720,
+      "raw_rejections": {
+        "bullish": 21235,
+        "bearish": 19616
+      },
+      "independent_accepted_rejections": {
+        "bullish": 18649,
+        "bearish": 17344
+      },
+      "suppressed_near_duplicates": {
+        "bullish": 2586,
+        "bearish": 2272
+      },
+      "candidate_zones_created": 8489,
+      "zone_update_count": 16581,
+      "output_event_rows": 25070,
+      "total_group_count": 10923,
+      "grouping_eligible_at_end": 235,
+      "archived_group_count": 10688,
+      "provisional_group_count_including_archived": 2434,
+      "missing_feature_values": {
+        "atr": 13,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 16,
+        "upper_wick_ratio": 16,
+        "body_ratio": 16,
+        "close_location_value": 16
+      },
+      "invalid_feature_values": {
+        "atr": 0,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 0,
+        "upper_wick_ratio": 0,
+        "body_ratio": 0,
+        "close_location_value": 0
+      },
+      "zero_range_rows": 16,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 198720,
+        "invalid_rows": 0,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "event_rows_checked": 25070
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "rejected_matching_attempts": 0,
+        "rejected_events": 0
+      },
+      "warnings": [
+        "missing_atr: 13; no imputation",
+        "missing_lower_wick_ratio: 16; no imputation",
+        "missing_upper_wick_ratio: 16; no imputation",
+        "missing_body_ratio: 16; no imputation",
+        "missing_close_location_value: 16; no imputation",
+        "zero_range_rows: 16; no rejection qualification"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "15m",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\15m\\ETHUSDT_15m_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\ETHUSDT_15m.csv",
+      "input_candle_count": 198720,
+      "raw_rejections": {
+        "bullish": 21286,
+        "bearish": 18964
+      },
+      "independent_accepted_rejections": {
+        "bullish": 18629,
+        "bearish": 16731
+      },
+      "suppressed_near_duplicates": {
+        "bullish": 2657,
+        "bearish": 2233
+      },
+      "candidate_zones_created": 8328,
+      "zone_update_count": 16350,
+      "output_event_rows": 24678,
+      "total_group_count": 10682,
+      "grouping_eligible_at_end": 215,
+      "archived_group_count": 10467,
+      "provisional_group_count_including_archived": 2354,
+      "missing_feature_values": {
+        "atr": 13,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 10,
+        "upper_wick_ratio": 10,
+        "body_ratio": 10,
+        "close_location_value": 10
+      },
+      "invalid_feature_values": {
+        "atr": 0,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 0,
+        "upper_wick_ratio": 0,
+        "body_ratio": 0,
+        "close_location_value": 0
+      },
+      "zero_range_rows": 10,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 198720,
+        "invalid_rows": 0,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "event_rows_checked": 24678
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "rejected_matching_attempts": 0,
+        "rejected_events": 0
+      },
+      "warnings": [
+        "missing_atr: 13; no imputation",
+        "missing_lower_wick_ratio: 10; no imputation",
+        "missing_upper_wick_ratio: 10; no imputation",
+        "missing_body_ratio: 10; no imputation",
+        "missing_close_location_value: 10; no imputation",
+        "zero_range_rows: 10; no rejection qualification"
+      ]
+    },
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "1h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\1h\\BTCUSDT_1h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\BTCUSDT_1h.csv",
+      "input_candle_count": 49680,
+      "raw_rejections": {
+        "bullish": 5503,
+        "bearish": 4735
+      },
+      "independent_accepted_rejections": {
+        "bullish": 4859,
+        "bearish": 4190
+      },
+      "suppressed_near_duplicates": {
+        "bullish": 644,
+        "bearish": 545
+      },
+      "candidate_zones_created": 2309,
+      "zone_update_count": 3679,
+      "output_event_rows": 5988,
+      "total_group_count": 3061,
+      "grouping_eligible_at_end": 162,
+      "archived_group_count": 2899,
+      "provisional_group_count_including_archived": 752,
+      "missing_feature_values": {
+        "atr": 13,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 1,
+        "upper_wick_ratio": 1,
+        "body_ratio": 1,
+        "close_location_value": 1
+      },
+      "invalid_feature_values": {
+        "atr": 0,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 0,
+        "upper_wick_ratio": 0,
+        "body_ratio": 0,
+        "close_location_value": 0
+      },
+      "zero_range_rows": 1,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 49680,
+        "invalid_rows": 0,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "event_rows_checked": 5988
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "rejected_matching_attempts": 0,
+        "rejected_events": 0
+      },
+      "warnings": [
+        "missing_atr: 13; no imputation",
+        "missing_lower_wick_ratio: 1; no imputation",
+        "missing_upper_wick_ratio: 1; no imputation",
+        "missing_body_ratio: 1; no imputation",
+        "missing_close_location_value: 1; no imputation",
+        "zero_range_rows: 1; no rejection qualification"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "1h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\1h\\ETHUSDT_1h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\ETHUSDT_1h.csv",
+      "input_candle_count": 49680,
+      "raw_rejections": {
+        "bullish": 5468,
+        "bearish": 4679
+      },
+      "independent_accepted_rejections": {
+        "bullish": 4791,
+        "bearish": 4129
+      },
+      "suppressed_near_duplicates": {
+        "bullish": 677,
+        "bearish": 550
+      },
+      "candidate_zones_created": 2269,
+      "zone_update_count": 3645,
+      "output_event_rows": 5914,
+      "total_group_count": 3006,
+      "grouping_eligible_at_end": 185,
+      "archived_group_count": 2821,
+      "provisional_group_count_including_archived": 737,
+      "missing_feature_values": {
+        "atr": 13,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 1,
+        "upper_wick_ratio": 1,
+        "body_ratio": 1,
+        "close_location_value": 1
+      },
+      "invalid_feature_values": {
+        "atr": 0,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 0,
+        "upper_wick_ratio": 0,
+        "body_ratio": 0,
+        "close_location_value": 0
+      },
+      "zero_range_rows": 1,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 49680,
+        "invalid_rows": 0,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "event_rows_checked": 5914
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "rejected_matching_attempts": 0,
+        "rejected_events": 0
+      },
+      "warnings": [
+        "missing_atr: 13; no imputation",
+        "missing_lower_wick_ratio: 1; no imputation",
+        "missing_upper_wick_ratio: 1; no imputation",
+        "missing_body_ratio: 1; no imputation",
+        "missing_close_location_value: 1; no imputation",
+        "zero_range_rows: 1; no rejection qualification"
+      ]
+    },
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "4h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\4h\\BTCUSDT_4h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\BTCUSDT_4h.csv",
+      "input_candle_count": 12420,
+      "raw_rejections": {
+        "bullish": 1343,
+        "bearish": 1076
+      },
+      "independent_accepted_rejections": {
+        "bullish": 1185,
+        "bearish": 966
+      },
+      "suppressed_near_duplicates": {
+        "bullish": 158,
+        "bearish": 110
+      },
+      "candidate_zones_created": 605,
+      "zone_update_count": 669,
+      "output_event_rows": 1274,
+      "total_group_count": 877,
+      "grouping_eligible_at_end": 89,
+      "archived_group_count": 788,
+      "provisional_group_count_including_archived": 272,
+      "missing_feature_values": {
+        "atr": 13,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 0,
+        "upper_wick_ratio": 0,
+        "body_ratio": 0,
+        "close_location_value": 0
+      },
+      "invalid_feature_values": {
+        "atr": 0,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 0,
+        "upper_wick_ratio": 0,
+        "body_ratio": 0,
+        "close_location_value": 0
+      },
+      "zero_range_rows": 0,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 12420,
+        "invalid_rows": 0,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "event_rows_checked": 1274
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "rejected_matching_attempts": 1,
+        "rejected_events": 0
+      },
+      "warnings": [
+        "missing_atr: 13; no imputation",
+        "Some events or matching attempts failed the boundary safeguards; see boundary_checks"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "4h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\4h\\ETHUSDT_4h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\ETHUSDT_4h.csv",
+      "input_candle_count": 12420,
+      "raw_rejections": {
+        "bullish": 1338,
+        "bearish": 1117
+      },
+      "independent_accepted_rejections": {
+        "bullish": 1193,
+        "bearish": 983
+      },
+      "suppressed_near_duplicates": {
+        "bullish": 145,
+        "bearish": 134
+      },
+      "candidate_zones_created": 596,
+      "zone_update_count": 692,
+      "output_event_rows": 1288,
+      "total_group_count": 888,
+      "grouping_eligible_at_end": 101,
+      "archived_group_count": 787,
+      "provisional_group_count_including_archived": 292,
+      "missing_feature_values": {
+        "atr": 13,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 0,
+        "upper_wick_ratio": 0,
+        "body_ratio": 0,
+        "close_location_value": 0
+      },
+      "invalid_feature_values": {
+        "atr": 0,
+        "lower_wick": 0,
+        "upper_wick": 0,
+        "lower_wick_ratio": 0,
+        "upper_wick_ratio": 0,
+        "body_ratio": 0,
+        "close_location_value": 0
+      },
+      "zero_range_rows": 0,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 12420,
+        "invalid_rows": 0,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "event_rows_checked": 1288
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "rejected_matching_attempts": 3,
+        "rejected_events": 0
+      },
+      "warnings": [
+        "missing_atr: 13; no imputation",
+        "Some events or matching attempts failed the boundary safeguards; see boundary_checks"
+      ]
+    }
+  ],
+  "output_summary_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\reports\\zone_detection\\reaction_summary.json",
+  "limitations": [
+    "Cooldown approximates independent visits; it does not establish that price exited and re-entered an area",
+    "Repeated rejections three or more bars apart can still belong to one prolonged visit",
+    "Nearby group cooldown can suppress evidence that might represent a separate nearby area; thresholds depend on ATR and provisional grouping",
+    "Only zone creation/update events are saved; raw/provisional evidence is reproducible from immutable inputs and parameters, not stored in extra audit files",
+    "No active-zone snapshot, lifecycle, future reaction labels, strength prediction, merging or scenario generation",
+    "Malformed OHLC/timestamps fail with a CSV line reference; failure may leave partial generated outputs and writes no new success summary"
+  ],
+  "warnings": [
+    "BTCUSDT 15m: missing_atr: 13; no imputation",
+    "BTCUSDT 15m: missing_lower_wick_ratio: 16; no imputation",
+    "BTCUSDT 15m: missing_upper_wick_ratio: 16; no imputation",
+    "BTCUSDT 15m: missing_body_ratio: 16; no imputation",
+    "BTCUSDT 15m: missing_close_location_value: 16; no imputation",
+    "BTCUSDT 15m: zero_range_rows: 16; no rejection qualification",
+    "ETHUSDT 15m: missing_atr: 13; no imputation",
+    "ETHUSDT 15m: missing_lower_wick_ratio: 10; no imputation",
+    "ETHUSDT 15m: missing_upper_wick_ratio: 10; no imputation",
+    "ETHUSDT 15m: missing_body_ratio: 10; no imputation",
+    "ETHUSDT 15m: missing_close_location_value: 10; no imputation",
+    "ETHUSDT 15m: zero_range_rows: 10; no rejection qualification",
+    "BTCUSDT 1h: missing_atr: 13; no imputation",
+    "BTCUSDT 1h: missing_lower_wick_ratio: 1; no imputation",
+    "BTCUSDT 1h: missing_upper_wick_ratio: 1; no imputation",
+    "BTCUSDT 1h: missing_body_ratio: 1; no imputation",
+    "BTCUSDT 1h: missing_close_location_value: 1; no imputation",
+    "BTCUSDT 1h: zero_range_rows: 1; no rejection qualification",
+    "ETHUSDT 1h: missing_atr: 13; no imputation",
+    "ETHUSDT 1h: missing_lower_wick_ratio: 1; no imputation",
+    "ETHUSDT 1h: missing_upper_wick_ratio: 1; no imputation",
+    "ETHUSDT 1h: missing_body_ratio: 1; no imputation",
+    "ETHUSDT 1h: missing_close_location_value: 1; no imputation",
+    "ETHUSDT 1h: zero_range_rows: 1; no rejection qualification",
+    "BTCUSDT 4h: missing_atr: 13; no imputation",
+    "BTCUSDT 4h: Some events or matching attempts failed the boundary safeguards; see boundary_checks",
+    "ETHUSDT 4h: missing_atr: 13; no imputation",
+    "ETHUSDT 4h: Some events or matching attempts failed the boundary safeguards; see boundary_checks"
+  ]
+}
