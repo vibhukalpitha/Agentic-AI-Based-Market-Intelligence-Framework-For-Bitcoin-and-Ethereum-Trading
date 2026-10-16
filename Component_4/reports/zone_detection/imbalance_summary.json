@@ -1,0 +1,403 @@
+{
+  "phase": 3,
+  "generated_at_utc": "2026-10-15T23:05:44.639467+00:00",
+  "parameters": {
+    "displacement_body_atr_min": 1.0,
+    "displacement_body_ratio_min": 0.6,
+    "include_displacement_body": true
+  },
+  "parameter_status": "Provisional research assumptions, not validated trading rules",
+  "rules": {
+    "bullish_fvg": "C3.low > C1.high; [C1.high, C3.low] at C3 close",
+    "bearish_fvg": "C3.high < C1.low; [C3.high, C1.low] at C3 close",
+    "displacement": "Directionally aligned C2 body with abs(close-open)/C2 ATR >= body_atr_min and C2 body_ratio >= body_ratio_min",
+    "normalization": "Both displacement and FVG width use C2 ATR; atr_normalized_body is audited against the signed formula; body_ratio is reused",
+    "precision": "Feature consistency comparison rel_tol=1e-8, abs_tol=1e-10; geometry and threshold comparisons remain strict/inclusive respectively",
+    "missing_data": "No imputation; unusable evidence cannot qualify displacement but valid strict FVG geometry remains eligible",
+    "input_errors": "Invalid OHLC or nonconsecutive/malformed timestamps fail the run with a CSV line reference",
+    "event_policy": "Body at own close; later aligned FVG confirmation shares ID without rewriting prior events; --fvg-only emits creations only",
+    "counting": "Count create rows or distinct zone_id for independent candidates, not every event row",
+    "ordering": "Chronological availability; at one close, prior-middle FVG precedes current-candle body"
+  },
+  "schema": [
+    "zone_id",
+    "symbol",
+    "source_timeframe",
+    "zone_family",
+    "imbalance_type",
+    "direction",
+    "lower_price",
+    "upper_price",
+    "formation_start_utc",
+    "available_at_utc",
+    "reference_candle_time_utc",
+    "gap_width",
+    "gap_width_atr",
+    "displacement_body_atr",
+    "displacement_body_ratio",
+    "aligned_displacement",
+    "candidate_status",
+    "c1_time_utc",
+    "c2_time_utc",
+    "c3_time_utc",
+    "reference_atr",
+    "reference_atr_available_at_utc",
+    "zone_width",
+    "event_type",
+    "candidate_created_at_utc"
+  ],
+  "field_meanings": {
+    "zone_id": "Deterministic independent-candidate identity; a later aligned FVG confirmation reuses the body ID",
+    "symbol/source_timeframe": "Input asset and candle interval; no cross-asset or cross-timeframe detection",
+    "zone_family/imbalance_type/direction": "imbalance; bullish_fvg, bearish_fvg or displacement_body; bullish or bearish",
+    "lower_price/upper_price": "Interval known at this event; exact FVG gap or impulse body without padding",
+    "formation_start_utc": "C1 opening for FVG; impulse opening for displacement body",
+    "available_at_utc": "Availability of this row: C3 close for FVG, impulse close for body",
+    "candidate_created_at_utc": "Original independent-candidate creation time; unchanged by FVG confirmation",
+    "reference_candle_time_utc": "Impulse candle opening (C2 for FVG)",
+    "c1_time_utc/c2_time_utc/c3_time_utc": "Three candle openings for FVG; only impulse/c2 populated for body",
+    "reference_atr/reference_atr_available_at_utc": "Impulse candle ATR and its close time; never C3 ATR for FVG evidence",
+    "gap_width/gap_width_atr": "FVG upper-lower and gap/C2 ATR; blank for body; normalized value blank for unusable ATR",
+    "zone_width": "upper_price-lower_price for every row, including displacement body",
+    "displacement_body_atr/displacement_body_ratio": "Absolute impulse body/impulse ATR, and validated Phase 1 body_ratio; valid weak/opposed values retained",
+    "aligned_displacement": "FVG direction matches strong impulse; false on body creation because no FVG is known then",
+    "candidate_status": "candidate; no fill, mitigation, lifecycle or validity conclusion",
+    "event_type": "create or fvg_confirmation; confirmation adds FVG evidence without a second independent creation"
+  },
+  "limitations": [
+    "OHLC bodies are provisional interval proxies, not verified liquidity voids",
+    "FVG geometry is an OHLC pattern, not evidence of market inefficiency or future price response",
+    "To preserve immediate displacement knowledge and avoid duplicate independent IDs, default CSVs include FVG confirmation rows as well as creations",
+    "Body-only counts are as-of-input-end counts, not a historical feature; the final impulse may acquire FVG evidence after the dataset ends",
+    "No fill, mitigation, invalidation, zone merging, strength, outcome or scenario inference",
+    "A failed input validation can leave partial generated files; failures return nonzero and no new success summary is written"
+  ],
+  "tests": {
+    "tests_run": 62,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true
+  },
+  "datasets": [
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "15m",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\15m\\BTCUSDT_15m_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\BTCUSDT_15m.csv",
+      "input_candle_count": 198720,
+      "bullish_fvg_count": 19213,
+      "bearish_fvg_count": 17630,
+      "fvg_with_aligned_displacement_count": 11092,
+      "displacement_body_creation_count": 16214,
+      "displacement_only_candidate_count_as_of_end": 5122,
+      "linked_fvg_confirmation_count": 11092,
+      "unique_candidate_count": 41965,
+      "output_event_rows": 53057,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "invalid_data_counts": {
+        "invalid_body_ratio_rows": 0,
+        "invalid_atr_normalized_body_rows": 0,
+        "atr_normalized_body_mismatch_rows": 0,
+        "nonfinite_derived_body_atr_rows": 0
+      },
+      "zero_range_rows": 16,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 198720,
+        "event_rows_checked": 53057,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "invalid_timestamp_rows": 0,
+        "checks": [
+          "aware UTC interval grid",
+          "consecutive candles",
+          "close-time availability",
+          "chronological events"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "input_rows_checked": 198720,
+        "event_rows_checked": 53057
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no input values were filled or changed",
+        "missing_body_ratio_rows: 16; no input values were filled or changed",
+        "zero_range_rows: 16; no input values were filled or changed",
+        "missing_atr_normalized_body_rows: 13; no input values were filled or changed"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "15m",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\15m\\ETHUSDT_15m_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\ETHUSDT_15m.csv",
+      "input_candle_count": 198720,
+      "bullish_fvg_count": 19341,
+      "bearish_fvg_count": 17732,
+      "fvg_with_aligned_displacement_count": 11285,
+      "displacement_body_creation_count": 16167,
+      "displacement_only_candidate_count_as_of_end": 4882,
+      "linked_fvg_confirmation_count": 11285,
+      "unique_candidate_count": 41955,
+      "output_event_rows": 53240,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "invalid_data_counts": {
+        "invalid_body_ratio_rows": 0,
+        "invalid_atr_normalized_body_rows": 0,
+        "atr_normalized_body_mismatch_rows": 0,
+        "nonfinite_derived_body_atr_rows": 0
+      },
+      "zero_range_rows": 10,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 198720,
+        "event_rows_checked": 53240,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "invalid_timestamp_rows": 0,
+        "checks": [
+          "aware UTC interval grid",
+          "consecutive candles",
+          "close-time availability",
+          "chronological events"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "input_rows_checked": 198720,
+        "event_rows_checked": 53240
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no input values were filled or changed",
+        "missing_body_ratio_rows: 10; no input values were filled or changed",
+        "zero_range_rows: 10; no input values were filled or changed",
+        "missing_atr_normalized_body_rows: 13; no input values were filled or changed"
+      ]
+    },
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "1h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\1h\\BTCUSDT_1h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\BTCUSDT_1h.csv",
+      "input_candle_count": 49680,
+      "bullish_fvg_count": 4288,
+      "bearish_fvg_count": 3845,
+      "fvg_with_aligned_displacement_count": 2751,
+      "displacement_body_creation_count": 3891,
+      "displacement_only_candidate_count_as_of_end": 1140,
+      "linked_fvg_confirmation_count": 2751,
+      "unique_candidate_count": 9273,
+      "output_event_rows": 12024,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "invalid_data_counts": {
+        "invalid_body_ratio_rows": 0,
+        "invalid_atr_normalized_body_rows": 0,
+        "atr_normalized_body_mismatch_rows": 0,
+        "nonfinite_derived_body_atr_rows": 0
+      },
+      "zero_range_rows": 1,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 49680,
+        "event_rows_checked": 12024,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "invalid_timestamp_rows": 0,
+        "checks": [
+          "aware UTC interval grid",
+          "consecutive candles",
+          "close-time availability",
+          "chronological events"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "input_rows_checked": 49680,
+        "event_rows_checked": 12024
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no input values were filled or changed",
+        "missing_body_ratio_rows: 1; no input values were filled or changed",
+        "zero_range_rows: 1; no input values were filled or changed",
+        "missing_atr_normalized_body_rows: 13; no input values were filled or changed"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "1h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\1h\\ETHUSDT_1h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\ETHUSDT_1h.csv",
+      "input_candle_count": 49680,
+      "bullish_fvg_count": 4581,
+      "bearish_fvg_count": 4059,
+      "fvg_with_aligned_displacement_count": 3008,
+      "displacement_body_creation_count": 4005,
+      "displacement_only_candidate_count_as_of_end": 997,
+      "linked_fvg_confirmation_count": 3008,
+      "unique_candidate_count": 9637,
+      "output_event_rows": 12645,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "invalid_data_counts": {
+        "invalid_body_ratio_rows": 0,
+        "invalid_atr_normalized_body_rows": 0,
+        "atr_normalized_body_mismatch_rows": 0,
+        "nonfinite_derived_body_atr_rows": 0
+      },
+      "zero_range_rows": 1,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 49680,
+        "event_rows_checked": 12645,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "invalid_timestamp_rows": 0,
+        "checks": [
+          "aware UTC interval grid",
+          "consecutive candles",
+          "close-time availability",
+          "chronological events"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "input_rows_checked": 49680,
+        "event_rows_checked": 12645
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no input values were filled or changed",
+        "missing_body_ratio_rows: 1; no input values were filled or changed",
+        "zero_range_rows: 1; no input values were filled or changed",
+        "missing_atr_normalized_body_rows: 13; no input values were filled or changed"
+      ]
+    },
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "4h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\4h\\BTCUSDT_4h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\BTCUSDT_4h.csv",
+      "input_candle_count": 12420,
+      "bullish_fvg_count": 1145,
+      "bearish_fvg_count": 942,
+      "fvg_with_aligned_displacement_count": 836,
+      "displacement_body_creation_count": 1097,
+      "displacement_only_candidate_count_as_of_end": 261,
+      "linked_fvg_confirmation_count": 836,
+      "unique_candidate_count": 2348,
+      "output_event_rows": 3184,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "invalid_data_counts": {
+        "invalid_body_ratio_rows": 0,
+        "invalid_atr_normalized_body_rows": 0,
+        "atr_normalized_body_mismatch_rows": 0,
+        "nonfinite_derived_body_atr_rows": 0
+      },
+      "zero_range_rows": 0,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 12420,
+        "event_rows_checked": 3184,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "invalid_timestamp_rows": 0,
+        "checks": [
+          "aware UTC interval grid",
+          "consecutive candles",
+          "close-time availability",
+          "chronological events"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "input_rows_checked": 12420,
+        "event_rows_checked": 3184
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no input values were filled or changed",
+        "missing_atr_normalized_body_rows: 13; no input values were filled or changed"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "4h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\4h\\ETHUSDT_4h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\ETHUSDT_4h.csv",
+      "input_candle_count": 12420,
+      "bullish_fvg_count": 1235,
+      "bearish_fvg_count": 1023,
+      "fvg_with_aligned_displacement_count": 831,
+      "displacement_body_creation_count": 1107,
+      "displacement_only_candidate_count_as_of_end": 276,
+      "linked_fvg_confirmation_count": 831,
+      "unique_candidate_count": 2534,
+      "output_event_rows": 3365,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "invalid_data_counts": {
+        "invalid_body_ratio_rows": 0,
+        "invalid_atr_normalized_body_rows": 0,
+        "atr_normalized_body_mismatch_rows": 0,
+        "nonfinite_derived_body_atr_rows": 0
+      },
+      "zero_range_rows": 0,
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 12420,
+        "event_rows_checked": 3365,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00",
+        "invalid_timestamp_rows": 0,
+        "checks": [
+          "aware UTC interval grid",
+          "consecutive candles",
+          "close-time availability",
+          "chronological events"
+        ]
+      },
+      "price_boundary_checks": {
+        "status": "PASS",
+        "invalid_ohlc_rows": 0,
+        "input_rows_checked": 12420,
+        "event_rows_checked": 3365
+      },
+      "warnings": [
+        "missing_atr_rows: 13; no input values were filled or changed",
+        "missing_atr_normalized_body_rows: 13; no input values were filled or changed"
+      ]
+    }
+  ],
+  "output_summary_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\reports\\zone_detection\\imbalance_summary.json",
+  "warnings": [
+    "BTCUSDT 15m: missing_atr_rows: 13; no input values were filled or changed",
+    "BTCUSDT 15m: missing_body_ratio_rows: 16; no input values were filled or changed",
+    "BTCUSDT 15m: zero_range_rows: 16; no input values were filled or changed",
+    "BTCUSDT 15m: missing_atr_normalized_body_rows: 13; no input values were filled or changed",
+    "ETHUSDT 15m: missing_atr_rows: 13; no input values were filled or changed",
+    "ETHUSDT 15m: missing_body_ratio_rows: 10; no input values were filled or changed",
+    "ETHUSDT 15m: zero_range_rows: 10; no input values were filled or changed",
+    "ETHUSDT 15m: missing_atr_normalized_body_rows: 13; no input values were filled or changed",
+    "BTCUSDT 1h: missing_atr_rows: 13; no input values were filled or changed",
+    "BTCUSDT 1h: missing_body_ratio_rows: 1; no input values were filled or changed",
+    "BTCUSDT 1h: zero_range_rows: 1; no input values were filled or changed",
+    "BTCUSDT 1h: missing_atr_normalized_body_rows: 13; no input values were filled or changed",
+    "ETHUSDT 1h: missing_atr_rows: 13; no input values were filled or changed",
+    "ETHUSDT 1h: missing_body_ratio_rows: 1; no input values were filled or changed",
+    "ETHUSDT 1h: zero_range_rows: 1; no input values were filled or changed",
+    "ETHUSDT 1h: missing_atr_normalized_body_rows: 13; no input values were filled or changed",
+    "BTCUSDT 4h: missing_atr_rows: 13; no input values were filled or changed",
+    "BTCUSDT 4h: missing_atr_normalized_body_rows: 13; no input values were filled or changed",
+    "ETHUSDT 4h: missing_atr_rows: 13; no input values were filled or changed",
+    "ETHUSDT 4h: missing_atr_normalized_body_rows: 13; no input values were filled or changed"
+  ]
+}
