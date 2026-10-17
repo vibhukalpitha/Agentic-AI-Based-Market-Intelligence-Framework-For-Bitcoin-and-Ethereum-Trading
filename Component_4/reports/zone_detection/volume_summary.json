@@ -1,0 +1,372 @@
+{
+  "phase": 5,
+  "method": "uniform_ohlcv_range_allocation",
+  "method_name": "OHLCV-based estimated volume-at-price proxy",
+  "generated_at_utc": "2026-10-16T00:52:21.272052+00:00",
+  "parameters": {
+    "profile_window_bars": 100,
+    "profile_stride_bars": 20,
+    "profile_bins": 40,
+    "peak_relative_volume_min": 1.5,
+    "max_candidates_per_profile": 3
+  },
+  "parameter_status": "Provisional research assumptions, not optimized trading settings",
+  "rules": {
+    "allocation": "Base volume * overlap_width/(high-low); no residual correction or renormalization",
+    "point_candles": "Whole volume into [left,right); exact internal edge goes right, profile maximum goes into the last bin",
+    "windows": "First profile after W completed candles, then every S candles; latest W candles only, no partial window or EOF flush",
+    "availability": "Final included candle available_at_utc; no later candles or later ATR",
+    "peaks": "One region per contiguous run strictly above the histogram mean; its maximum bin must reach peak_relative_volume_min; equal maxima use leftmost bin; edge peaks allowed",
+    "ranking": "Estimated area volume descending, peak/mean descending, lower bin index ascending; at most max_candidates_per_profile",
+    "flat_histogram": "All bins equal within relative tolerance 1e-12 yields no candidates",
+    "conservation": {
+      "rel_tol": 1e-09,
+      "abs_tol_base_units": 1e-10,
+      "policy": "Check every allocatable profile; fail on mismatch; flat-price or unrepresentable grids skipped explicitly"
+    },
+    "degenerate_profiles": "No observations for zero price span, zero total volume, unrepresentable grids, or no qualifying area; reason counters may overlap",
+    "invalid_inputs": "Malformed/nonconsecutive time, invalid prices or missing/negative/nonfinite volume fail with CSV line; no input imputation",
+    "reference_atr": "Final candle ATR is metadata only; missing/invalid values are blank, not used to reject or rank areas"
+  },
+  "schema": [
+    "zone_id",
+    "symbol",
+    "source_timeframe",
+    "zone_family",
+    "lower_price",
+    "upper_price",
+    "profile_start_utc",
+    "available_at_utc",
+    "estimated_volume",
+    "profile_total_volume",
+    "volume_share",
+    "relative_bin_volume",
+    "reference_atr",
+    "bin_width",
+    "candidate_status",
+    "method",
+    "profile_end_utc",
+    "profile_id",
+    "candidate_rank",
+    "peak_bin_index",
+    "number_of_bins_in_zone",
+    "volume_unit"
+  ],
+  "field_meanings": {
+    "zone_id/profile_id/candidate_rank": "Deterministic asset/timeframe/profile-availability identity with 1-based rank; no cross-profile tracking",
+    "profile_start_utc": "First included candle opening timestamp",
+    "profile_end_utc": "Last included candle opening timestamp (not its completion)",
+    "available_at_utc": "Last included candle completion; actual decision time",
+    "estimated_volume/profile_total_volume/volume_unit": "Area allocation estimate and input window base-volume total, in BTC or ETH",
+    "volume_share": "Estimated area volume / total input base volume",
+    "relative_bin_volume": "Selected peak bin estimated volume / whole-profile mean bin estimated volume; not area/mean",
+    "reference_atr": "ATR from the last included completed candle",
+    "bin_width": "Nominal (window maximum high - minimum low) / profile_bins; actual float edges bound intervals",
+    "peak_bin_index/number_of_bins_in_zone": "0-based selected peak index and count of contiguous included bins",
+    "lower_price/upper_price": "Observed profile bin edges; positive interval width without fixed-dollar padding",
+    "zone_family/candidate_status/method": "volume_derived / candidate / uniform_ohlcv_range_allocation"
+  },
+  "limitations": [
+    "OHLCV-based estimate, not true trade-level exchange Volume Profile or actual execution-price volume",
+    "Uniform range allocation is an unverified assumption; OHLCV does not reveal intrabar trade-price distribution",
+    "Does not identify actual liquidity, institutional orders or verified high-volume nodes",
+    "Changing rolling bins and overlapping windows produce correlated observations, not independent reactions or confirmed durable zones",
+    "Bins at or below the mean separate areas; distinct peaks connected above the mean share one area",
+    "No directional trading role, strength, lifecycle, future outcomes, cross-profile merging or scenario inference",
+    "Input or conservation failure returns nonzero and can leave partial generated CSVs; no new success summary is written"
+  ],
+  "tests": {
+    "tests_run": 124,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true
+  },
+  "datasets": [
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "15m",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\15m\\BTCUSDT_15m_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\BTCUSDT_15m.csv",
+      "volume_unit": "BTC",
+      "input_candle_count": 198720,
+      "profiles_calculated": 9932,
+      "expected_profile_count": 9932,
+      "candidate_observations": 14216,
+      "no_candidate_profiles": 8,
+      "flat_price_span_profiles": 0,
+      "zero_total_volume_profiles": 0,
+      "flat_histogram_profiles": 0,
+      "unrepresentable_price_grid_profiles": 0,
+      "zero_range_candles": 16,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "profiles_missing_reference_atr": 0,
+      "conservation": {
+        "conservation_checked_profiles": 9932,
+        "conservation_skipped_profiles": 0,
+        "conservation_error_profiles": 0,
+        "max_absolute_conservation_error": 4.656612873077393e-10,
+        "max_relative_conservation_error": 2.4862899386580546e-16
+      },
+      "invalid_input_counts": {
+        "timestamps": 0,
+        "prices": 0,
+        "base_volume": 0
+      },
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 198720,
+        "observation_rows_checked": 14216,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "observation_rows_checked": 14216
+      },
+      "warnings": [
+        "missing_atr_rows: 13"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "15m",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\15m\\ETHUSDT_15m_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\ETHUSDT_15m.csv",
+      "volume_unit": "ETH",
+      "input_candle_count": 198720,
+      "profiles_calculated": 9932,
+      "expected_profile_count": 9932,
+      "candidate_observations": 14545,
+      "no_candidate_profiles": 0,
+      "flat_price_span_profiles": 0,
+      "zero_total_volume_profiles": 0,
+      "flat_histogram_profiles": 0,
+      "unrepresentable_price_grid_profiles": 0,
+      "zero_range_candles": 10,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "profiles_missing_reference_atr": 0,
+      "conservation": {
+        "conservation_checked_profiles": 9932,
+        "conservation_skipped_profiles": 0,
+        "conservation_error_profiles": 0,
+        "max_absolute_conservation_error": 3.725290298461914e-09,
+        "max_relative_conservation_error": 2.7431664461703204e-16
+      },
+      "invalid_input_counts": {
+        "timestamps": 0,
+        "prices": 0,
+        "base_volume": 0
+      },
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 198720,
+        "observation_rows_checked": 14545,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "observation_rows_checked": 14545
+      },
+      "warnings": [
+        "missing_atr_rows: 13"
+      ]
+    },
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "1h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\1h\\BTCUSDT_1h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\BTCUSDT_1h.csv",
+      "volume_unit": "BTC",
+      "input_candle_count": 49680,
+      "profiles_calculated": 2480,
+      "expected_profile_count": 2480,
+      "candidate_observations": 3822,
+      "no_candidate_profiles": 0,
+      "flat_price_span_profiles": 0,
+      "zero_total_volume_profiles": 0,
+      "flat_histogram_profiles": 0,
+      "unrepresentable_price_grid_profiles": 0,
+      "zero_range_candles": 1,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "profiles_missing_reference_atr": 0,
+      "conservation": {
+        "conservation_checked_profiles": 2480,
+        "conservation_skipped_profiles": 0,
+        "conservation_error_profiles": 0,
+        "max_absolute_conservation_error": 9.313225746154785e-10,
+        "max_relative_conservation_error": 2.211963084248652e-16
+      },
+      "invalid_input_counts": {
+        "timestamps": 0,
+        "prices": 0,
+        "base_volume": 0
+      },
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 49680,
+        "observation_rows_checked": 3822,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "observation_rows_checked": 3822
+      },
+      "warnings": [
+        "missing_atr_rows: 13"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "1h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\1h\\ETHUSDT_1h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\ETHUSDT_1h.csv",
+      "volume_unit": "ETH",
+      "input_candle_count": 49680,
+      "profiles_calculated": 2480,
+      "expected_profile_count": 2480,
+      "candidate_observations": 3872,
+      "no_candidate_profiles": 1,
+      "flat_price_span_profiles": 0,
+      "zero_total_volume_profiles": 0,
+      "flat_histogram_profiles": 0,
+      "unrepresentable_price_grid_profiles": 0,
+      "zero_range_candles": 1,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "profiles_missing_reference_atr": 0,
+      "conservation": {
+        "conservation_checked_profiles": 2480,
+        "conservation_skipped_profiles": 0,
+        "conservation_error_profiles": 0,
+        "max_absolute_conservation_error": 7.450580596923828e-09,
+        "max_relative_conservation_error": 2.211359871077987e-16
+      },
+      "invalid_input_counts": {
+        "timestamps": 0,
+        "prices": 0,
+        "base_volume": 0
+      },
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 49680,
+        "observation_rows_checked": 3872,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "observation_rows_checked": 3872
+      },
+      "warnings": [
+        "missing_atr_rows: 13"
+      ]
+    },
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "4h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\4h\\BTCUSDT_4h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\BTCUSDT_4h.csv",
+      "volume_unit": "BTC",
+      "input_candle_count": 12420,
+      "profiles_calculated": 617,
+      "expected_profile_count": 617,
+      "candidate_observations": 971,
+      "no_candidate_profiles": 0,
+      "flat_price_span_profiles": 0,
+      "zero_total_volume_profiles": 0,
+      "flat_histogram_profiles": 0,
+      "unrepresentable_price_grid_profiles": 0,
+      "zero_range_candles": 0,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "profiles_missing_reference_atr": 0,
+      "conservation": {
+        "conservation_checked_profiles": 617,
+        "conservation_skipped_profiles": 0,
+        "conservation_error_profiles": 0,
+        "max_absolute_conservation_error": 1.862645149230957e-09,
+        "max_relative_conservation_error": 2.1721351563574884e-16
+      },
+      "invalid_input_counts": {
+        "timestamps": 0,
+        "prices": 0,
+        "base_volume": 0
+      },
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 12420,
+        "observation_rows_checked": 971,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "observation_rows_checked": 971
+      },
+      "warnings": [
+        "missing_atr_rows: 13"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "4h",
+      "input_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\4h\\ETHUSDT_4h_features.csv",
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\ETHUSDT_4h.csv",
+      "volume_unit": "ETH",
+      "input_candle_count": 12420,
+      "profiles_calculated": 617,
+      "expected_profile_count": 617,
+      "candidate_observations": 976,
+      "no_candidate_profiles": 0,
+      "flat_price_span_profiles": 0,
+      "zero_total_volume_profiles": 0,
+      "flat_histogram_profiles": 0,
+      "unrepresentable_price_grid_profiles": 0,
+      "zero_range_candles": 0,
+      "missing_atr_rows": 13,
+      "invalid_atr_rows": 0,
+      "profiles_missing_reference_atr": 0,
+      "conservation": {
+        "conservation_checked_profiles": 617,
+        "conservation_skipped_profiles": 0,
+        "conservation_error_profiles": 0,
+        "max_absolute_conservation_error": 2.9802322387695312e-08,
+        "max_relative_conservation_error": 2.198578974589966e-16
+      },
+      "invalid_input_counts": {
+        "timestamps": 0,
+        "prices": 0,
+        "base_volume": 0
+      },
+      "timestamp_checks": {
+        "status": "PASS",
+        "input_rows_checked": 12420,
+        "observation_rows_checked": 976,
+        "first_open_utc": "2020-01-01T00:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_checks": {
+        "status": "PASS",
+        "observation_rows_checked": 976
+      },
+      "warnings": [
+        "missing_atr_rows: 13"
+      ]
+    }
+  ],
+  "output_summary_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\reports\\zone_detection\\volume_summary.json",
+  "warnings": [
+    "BTCUSDT 15m: missing_atr_rows: 13",
+    "ETHUSDT 15m: missing_atr_rows: 13",
+    "BTCUSDT 1h: missing_atr_rows: 13",
+    "ETHUSDT 1h: missing_atr_rows: 13",
+    "BTCUSDT 4h: missing_atr_rows: 13",
+    "ETHUSDT 4h: missing_atr_rows: 13"
+  ]
+}
