@@ -1,0 +1,1037 @@
+{
+  "phase": 6,
+  "generated_at_utc": "2026-10-17T05:20:24.787235+00:00",
+  "parameters": {
+    "overlap_15m_days": 30,
+    "overlap_1h_days": 90,
+    "overlap_4h_days": 180
+  },
+  "parameter_status": "Provisional overlap-search recency assumptions; not lifecycle or trading rules",
+  "source_mapping": {
+    "structural": "*_zone_events.csv only; original cluster confirmation and event boundaries; frozen cluster_reference_atr",
+    "imbalance": "imbalance_type -> origin_type; body confirmation null; FVG confirmation at C3 close; shared source ID retained; reference_atr is C2 ATR",
+    "reaction": "Create/update history; original independent-rejection cluster confirmation; frozen cluster_reference_atr",
+    "volume_derived": "profile_observation; profile_start -> formation; confirmation/origin/sequence null; final-candle reference_atr; no directional role"
+  },
+  "schema": [
+    "registry_zone_id",
+    "source_zone_id",
+    "symbol",
+    "source_timeframe",
+    "zone_family",
+    "origin_type",
+    "lower_price",
+    "upper_price",
+    "formation_start_utc",
+    "confirmed_at_utc",
+    "available_at_utc",
+    "event_type",
+    "candidate_status",
+    "source_reference_atr",
+    "overlapping_candidate_count",
+    "overlapping_family_count",
+    "overlap_family_flags",
+    "source_event_sequence",
+    "source_file",
+    "source_row"
+  ],
+  "rules": {
+    "ordering": "availability, create/update/fvg_confirmation/profile_observation priority, source ID, source sequence (null sorts as 0), family, CSV row",
+    "same_timestamp": "Install ALL simultaneous versions before querying; each row compares its interval with the final simultaneous versions of OTHER identities; duplicate same-ID same-time events fail",
+    "non_volume_eligibility": "Latest source event within timeframe recency, including equality; expiry excludes overlap searches only; later updates can re-enter searches without a validity claim",
+    "volume_eligibility": "Only the latest scheduled completed profile from Phase 5's validated input calendar; empty profiles clear older evidence; after coverage ends apply at most one-stride freshness",
+    "volume_calendar": "Phase 5 first input opening + window*interval, then stride*interval; only calendar metadata is used, never future prices or future candidate presence",
+    "overlap": "min(upper_A,upper_B) > max(lower_A,lower_B); strict positive width, self excluded by qualified identity",
+    "candidate_count": "Distinct matching OTHER identities, including same-family IDs; latest-profile volume areas remain correlated observations, not independent evidence",
+    "family_count_and_flags": "OTHER detector families only, excluding the row's own family; volume_derived appears at most once; flags are pipe-separated in structural/imbalance/reaction/volume_derived order",
+    "nulls": "Volume confirmation/origin and absent original source sequences are null; displacement creation confirmation is null; no zero/fake timestamps",
+    "traceability": "source_file is project-relative; source_row is the 1-based CSV line including header; source_event_sequence is original only, null when not supplied",
+    "history": "Every original event remains an immutable registry row; candidate_status is candidate, never active/valid; no blind interval merging"
+  },
+  "source_report_paths": {
+    "structural": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\reports\\zone_detection\\structural_summary.json",
+    "imbalance": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\reports\\zone_detection\\imbalance_summary.json",
+    "reaction": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\reports\\zone_detection\\reaction_summary.json",
+    "volume_derived": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\reports\\zone_detection\\volume_summary.json"
+  },
+  "tests": {
+    "tests_run": 152,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true
+  },
+  "datasets": [
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "15m",
+      "input_paths": {
+        "structural": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_15m_zone_events.csv",
+        "imbalance": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\BTCUSDT_15m.csv",
+        "reaction": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\BTCUSDT_15m.csv",
+        "volume_derived": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\BTCUSDT_15m.csv"
+      },
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\BTCUSDT_15m.csv",
+      "source_event_rows_by_family": {
+        "structural": 28070,
+        "imbalance": 53057,
+        "reaction": 25070,
+        "volume_derived": 14216
+      },
+      "unique_source_candidates_by_family": {
+        "structural": 9011,
+        "imbalance": 41965,
+        "reaction": 8489,
+        "volume_derived": 14216
+      },
+      "unified_event_rows": 120413,
+      "unified_identity_count": 73681,
+      "deduplicated_non_volume_identity_count": 59465,
+      "correlated_volume_observation_identity_count": 14216,
+      "statistically_independent_evidence_count": null,
+      "fvg_confirmation_mapping_count": 11092,
+      "cluster_update_counts": {
+        "structural": 19059,
+        "reaction": 16581
+      },
+      "volume_profile_observation_count": 14216,
+      "count_reconciliation": {
+        "status": "PASS",
+        "checks": {
+          "structural_updates": {
+            "actual": 19059,
+            "expected": 19059
+          },
+          "structural_event_rows": {
+            "actual": 28070,
+            "expected": 28070
+          },
+          "structural_source_identities": {
+            "actual": 9011,
+            "expected": 9011
+          },
+          "fvg_confirmations": {
+            "actual": 11092,
+            "expected": 11092
+          },
+          "bullish_fvgs": {
+            "actual": 19213,
+            "expected": 19213
+          },
+          "bearish_fvgs": {
+            "actual": 17630,
+            "expected": 17630
+          },
+          "body_creations": {
+            "actual": 16214,
+            "expected": 16214
+          },
+          "imbalance_event_rows": {
+            "actual": 53057,
+            "expected": 53057
+          },
+          "imbalance_source_identities": {
+            "actual": 41965,
+            "expected": 41965
+          },
+          "reaction_updates": {
+            "actual": 16581,
+            "expected": 16581
+          },
+          "reaction_event_rows": {
+            "actual": 25070,
+            "expected": 25070
+          },
+          "reaction_source_identities": {
+            "actual": 8489,
+            "expected": 8489
+          },
+          "volume_profiles_with_observations": {
+            "actual": 9924,
+            "expected": 9924
+          },
+          "volume_derived_event_rows": {
+            "actual": 14216,
+            "expected": 14216
+          },
+          "volume_derived_source_identities": {
+            "actual": 14216,
+            "expected": 14216
+          }
+        }
+      },
+      "timestamp_validation": {
+        "status": "PASS",
+        "event_rows_checked": 120413,
+        "timestamp_batches": 93085,
+        "first_available_utc": "2020-01-01T01:30:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_validation": {
+        "status": "PASS",
+        "event_rows_checked": 120413,
+        "invalid_intervals": 0
+      },
+      "identity_and_sequence_checks": {
+        "status": "PASS",
+        "duplicate_creation_or_observation_ids": 0,
+        "malformed_sequences": 0,
+        "id_qualification": "symbol:timeframe:family:source_zone_id"
+      },
+      "overlap_metadata": {
+        "events_with_geometric_overlap": 118779,
+        "events_with_other_family_overlap": 117141,
+        "max_overlapping_candidates": 628,
+        "max_other_overlapping_families": 3,
+        "max_overlap_eligible_identities": 1172,
+        "overlap_comparisons": 112144750,
+        "non_volume_eligibility_expirations": 58345,
+        "volume_observations_replaced_or_expired": 14215
+      },
+      "identities_with_cross_family_overlap": 71295,
+      "null_source_field_counts_by_family": {
+        "structural": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "imbalance": {
+          "origin_type": 0,
+          "confirmed_at_utc": 16214,
+          "source_reference_atr": 3,
+          "source_event_sequence": 53057
+        },
+        "reaction": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "volume_derived": {
+          "origin_type": 14216,
+          "confirmed_at_utc": 14216,
+          "source_reference_atr": 0,
+          "source_event_sequence": 14216
+        }
+      },
+      "warnings": [
+        "Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+        "Identity counts are not counts of independent market reactions; volume observations are rolling and correlated"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "15m",
+      "input_paths": {
+        "structural": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_15m_zone_events.csv",
+        "imbalance": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\ETHUSDT_15m.csv",
+        "reaction": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\ETHUSDT_15m.csv",
+        "volume_derived": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\ETHUSDT_15m.csv"
+      },
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\ETHUSDT_15m.csv",
+      "source_event_rows_by_family": {
+        "structural": 28127,
+        "imbalance": 53240,
+        "reaction": 24678,
+        "volume_derived": 14545
+      },
+      "unique_source_candidates_by_family": {
+        "structural": 9040,
+        "imbalance": 41955,
+        "reaction": 8328,
+        "volume_derived": 14545
+      },
+      "unified_event_rows": 120590,
+      "unified_identity_count": 73868,
+      "deduplicated_non_volume_identity_count": 59323,
+      "correlated_volume_observation_identity_count": 14545,
+      "statistically_independent_evidence_count": null,
+      "fvg_confirmation_mapping_count": 11285,
+      "cluster_update_counts": {
+        "structural": 19087,
+        "reaction": 16350
+      },
+      "volume_profile_observation_count": 14545,
+      "count_reconciliation": {
+        "status": "PASS",
+        "checks": {
+          "structural_updates": {
+            "actual": 19087,
+            "expected": 19087
+          },
+          "structural_event_rows": {
+            "actual": 28127,
+            "expected": 28127
+          },
+          "structural_source_identities": {
+            "actual": 9040,
+            "expected": 9040
+          },
+          "fvg_confirmations": {
+            "actual": 11285,
+            "expected": 11285
+          },
+          "bullish_fvgs": {
+            "actual": 19341,
+            "expected": 19341
+          },
+          "bearish_fvgs": {
+            "actual": 17732,
+            "expected": 17732
+          },
+          "body_creations": {
+            "actual": 16167,
+            "expected": 16167
+          },
+          "imbalance_event_rows": {
+            "actual": 53240,
+            "expected": 53240
+          },
+          "imbalance_source_identities": {
+            "actual": 41955,
+            "expected": 41955
+          },
+          "reaction_updates": {
+            "actual": 16350,
+            "expected": 16350
+          },
+          "reaction_event_rows": {
+            "actual": 24678,
+            "expected": 24678
+          },
+          "reaction_source_identities": {
+            "actual": 8328,
+            "expected": 8328
+          },
+          "volume_profiles_with_observations": {
+            "actual": 9932,
+            "expected": 9932
+          },
+          "volume_derived_event_rows": {
+            "actual": 14545,
+            "expected": 14545
+          },
+          "volume_derived_source_identities": {
+            "actual": 14545,
+            "expected": 14545
+          }
+        }
+      },
+      "timestamp_validation": {
+        "status": "PASS",
+        "event_rows_checked": 120590,
+        "timestamp_batches": 92772,
+        "first_available_utc": "2020-01-01T01:30:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_validation": {
+        "status": "PASS",
+        "event_rows_checked": 120590,
+        "invalid_intervals": 0
+      },
+      "identity_and_sequence_checks": {
+        "status": "PASS",
+        "duplicate_creation_or_observation_ids": 0,
+        "malformed_sequences": 0,
+        "id_qualification": "symbol:timeframe:family:source_zone_id"
+      },
+      "overlap_metadata": {
+        "events_with_geometric_overlap": 118719,
+        "events_with_other_family_overlap": 116980,
+        "max_overlapping_candidates": 459,
+        "max_other_overlapping_families": 3,
+        "max_overlap_eligible_identities": 1182,
+        "overlap_comparisons": 112144949,
+        "non_volume_eligibility_expirations": 58361,
+        "volume_observations_replaced_or_expired": 14544
+      },
+      "identities_with_cross_family_overlap": 71304,
+      "null_source_field_counts_by_family": {
+        "structural": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "imbalance": {
+          "origin_type": 0,
+          "confirmed_at_utc": 16167,
+          "source_reference_atr": 3,
+          "source_event_sequence": 53240
+        },
+        "reaction": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "volume_derived": {
+          "origin_type": 14545,
+          "confirmed_at_utc": 14545,
+          "source_reference_atr": 0,
+          "source_event_sequence": 14545
+        }
+      },
+      "warnings": [
+        "Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+        "Identity counts are not counts of independent market reactions; volume observations are rolling and correlated"
+      ]
+    },
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "1h",
+      "input_paths": {
+        "structural": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_1h_zone_events.csv",
+        "imbalance": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\BTCUSDT_1h.csv",
+        "reaction": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\BTCUSDT_1h.csv",
+        "volume_derived": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\BTCUSDT_1h.csv"
+      },
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\BTCUSDT_1h.csv",
+      "source_event_rows_by_family": {
+        "structural": 6877,
+        "imbalance": 12024,
+        "reaction": 5988,
+        "volume_derived": 3822
+      },
+      "unique_source_candidates_by_family": {
+        "structural": 2523,
+        "imbalance": 9273,
+        "reaction": 2309,
+        "volume_derived": 3822
+      },
+      "unified_event_rows": 28711,
+      "unified_identity_count": 17927,
+      "deduplicated_non_volume_identity_count": 14105,
+      "correlated_volume_observation_identity_count": 3822,
+      "statistically_independent_evidence_count": null,
+      "fvg_confirmation_mapping_count": 2751,
+      "cluster_update_counts": {
+        "structural": 4354,
+        "reaction": 3679
+      },
+      "volume_profile_observation_count": 3822,
+      "count_reconciliation": {
+        "status": "PASS",
+        "checks": {
+          "structural_updates": {
+            "actual": 4354,
+            "expected": 4354
+          },
+          "structural_event_rows": {
+            "actual": 6877,
+            "expected": 6877
+          },
+          "structural_source_identities": {
+            "actual": 2523,
+            "expected": 2523
+          },
+          "fvg_confirmations": {
+            "actual": 2751,
+            "expected": 2751
+          },
+          "bullish_fvgs": {
+            "actual": 4288,
+            "expected": 4288
+          },
+          "bearish_fvgs": {
+            "actual": 3845,
+            "expected": 3845
+          },
+          "body_creations": {
+            "actual": 3891,
+            "expected": 3891
+          },
+          "imbalance_event_rows": {
+            "actual": 12024,
+            "expected": 12024
+          },
+          "imbalance_source_identities": {
+            "actual": 9273,
+            "expected": 9273
+          },
+          "reaction_updates": {
+            "actual": 3679,
+            "expected": 3679
+          },
+          "reaction_event_rows": {
+            "actual": 5988,
+            "expected": 5988
+          },
+          "reaction_source_identities": {
+            "actual": 2309,
+            "expected": 2309
+          },
+          "volume_profiles_with_observations": {
+            "actual": 2480,
+            "expected": 2480
+          },
+          "volume_derived_event_rows": {
+            "actual": 3822,
+            "expected": 3822
+          },
+          "volume_derived_source_identities": {
+            "actual": 3822,
+            "expected": 3822
+          }
+        }
+      },
+      "timestamp_validation": {
+        "status": "PASS",
+        "event_rows_checked": 28711,
+        "timestamp_batches": 22134,
+        "first_available_utc": "2020-01-01T03:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_validation": {
+        "status": "PASS",
+        "event_rows_checked": 28711,
+        "invalid_intervals": 0
+      },
+      "identity_and_sequence_checks": {
+        "status": "PASS",
+        "duplicate_creation_or_observation_ids": 0,
+        "malformed_sequences": 0,
+        "id_qualification": "symbol:timeframe:family:source_zone_id"
+      },
+      "overlap_metadata": {
+        "events_with_geometric_overlap": 28106,
+        "events_with_other_family_overlap": 27671,
+        "max_overlapping_candidates": 265,
+        "max_other_overlapping_families": 3,
+        "max_overlap_eligible_identities": 778,
+        "overlap_comparisons": 18676739,
+        "non_volume_eligibility_expirations": 13358,
+        "volume_observations_replaced_or_expired": 3821
+      },
+      "identities_with_cross_family_overlap": 17174,
+      "null_source_field_counts_by_family": {
+        "structural": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "imbalance": {
+          "origin_type": 0,
+          "confirmed_at_utc": 3891,
+          "source_reference_atr": 2,
+          "source_event_sequence": 12024
+        },
+        "reaction": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "volume_derived": {
+          "origin_type": 3822,
+          "confirmed_at_utc": 3822,
+          "source_reference_atr": 0,
+          "source_event_sequence": 3822
+        }
+      },
+      "warnings": [
+        "Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+        "Identity counts are not counts of independent market reactions; volume observations are rolling and correlated"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "1h",
+      "input_paths": {
+        "structural": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_1h_zone_events.csv",
+        "imbalance": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\ETHUSDT_1h.csv",
+        "reaction": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\ETHUSDT_1h.csv",
+        "volume_derived": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\ETHUSDT_1h.csv"
+      },
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\ETHUSDT_1h.csv",
+      "source_event_rows_by_family": {
+        "structural": 6787,
+        "imbalance": 12645,
+        "reaction": 5914,
+        "volume_derived": 3872
+      },
+      "unique_source_candidates_by_family": {
+        "structural": 2478,
+        "imbalance": 9637,
+        "reaction": 2269,
+        "volume_derived": 3872
+      },
+      "unified_event_rows": 29218,
+      "unified_identity_count": 18256,
+      "deduplicated_non_volume_identity_count": 14384,
+      "correlated_volume_observation_identity_count": 3872,
+      "statistically_independent_evidence_count": null,
+      "fvg_confirmation_mapping_count": 3008,
+      "cluster_update_counts": {
+        "structural": 4309,
+        "reaction": 3645
+      },
+      "volume_profile_observation_count": 3872,
+      "count_reconciliation": {
+        "status": "PASS",
+        "checks": {
+          "structural_updates": {
+            "actual": 4309,
+            "expected": 4309
+          },
+          "structural_event_rows": {
+            "actual": 6787,
+            "expected": 6787
+          },
+          "structural_source_identities": {
+            "actual": 2478,
+            "expected": 2478
+          },
+          "fvg_confirmations": {
+            "actual": 3008,
+            "expected": 3008
+          },
+          "bullish_fvgs": {
+            "actual": 4581,
+            "expected": 4581
+          },
+          "bearish_fvgs": {
+            "actual": 4059,
+            "expected": 4059
+          },
+          "body_creations": {
+            "actual": 4005,
+            "expected": 4005
+          },
+          "imbalance_event_rows": {
+            "actual": 12645,
+            "expected": 12645
+          },
+          "imbalance_source_identities": {
+            "actual": 9637,
+            "expected": 9637
+          },
+          "reaction_updates": {
+            "actual": 3645,
+            "expected": 3645
+          },
+          "reaction_event_rows": {
+            "actual": 5914,
+            "expected": 5914
+          },
+          "reaction_source_identities": {
+            "actual": 2269,
+            "expected": 2269
+          },
+          "volume_profiles_with_observations": {
+            "actual": 2479,
+            "expected": 2479
+          },
+          "volume_derived_event_rows": {
+            "actual": 3872,
+            "expected": 3872
+          },
+          "volume_derived_source_identities": {
+            "actual": 3872,
+            "expected": 3872
+          }
+        }
+      },
+      "timestamp_validation": {
+        "status": "PASS",
+        "event_rows_checked": 29218,
+        "timestamp_batches": 22465,
+        "first_available_utc": "2020-01-01T03:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_validation": {
+        "status": "PASS",
+        "event_rows_checked": 29218,
+        "invalid_intervals": 0
+      },
+      "identity_and_sequence_checks": {
+        "status": "PASS",
+        "duplicate_creation_or_observation_ids": 0,
+        "malformed_sequences": 0,
+        "id_qualification": "symbol:timeframe:family:source_zone_id"
+      },
+      "overlap_metadata": {
+        "events_with_geometric_overlap": 28565,
+        "events_with_other_family_overlap": 28011,
+        "max_overlapping_candidates": 280,
+        "max_other_overlapping_families": 3,
+        "max_overlap_eligible_identities": 762,
+        "overlap_comparisons": 19383026,
+        "non_volume_eligibility_expirations": 13661,
+        "volume_observations_replaced_or_expired": 3870
+      },
+      "identities_with_cross_family_overlap": 17419,
+      "null_source_field_counts_by_family": {
+        "structural": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "imbalance": {
+          "origin_type": 0,
+          "confirmed_at_utc": 4005,
+          "source_reference_atr": 2,
+          "source_event_sequence": 12645
+        },
+        "reaction": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "volume_derived": {
+          "origin_type": 3872,
+          "confirmed_at_utc": 3872,
+          "source_reference_atr": 0,
+          "source_event_sequence": 3872
+        }
+      },
+      "warnings": [
+        "Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+        "Identity counts are not counts of independent market reactions; volume observations are rolling and correlated"
+      ]
+    },
+    {
+      "symbol": "BTCUSDT",
+      "source_timeframe": "4h",
+      "input_paths": {
+        "structural": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\BTCUSDT_4h_zone_events.csv",
+        "imbalance": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\BTCUSDT_4h.csv",
+        "reaction": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\BTCUSDT_4h.csv",
+        "volume_derived": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\BTCUSDT_4h.csv"
+      },
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\BTCUSDT_4h.csv",
+      "source_event_rows_by_family": {
+        "structural": 1605,
+        "imbalance": 3184,
+        "reaction": 1274,
+        "volume_derived": 971
+      },
+      "unique_source_candidates_by_family": {
+        "structural": 696,
+        "imbalance": 2348,
+        "reaction": 605,
+        "volume_derived": 971
+      },
+      "unified_event_rows": 7034,
+      "unified_identity_count": 4620,
+      "deduplicated_non_volume_identity_count": 3649,
+      "correlated_volume_observation_identity_count": 971,
+      "statistically_independent_evidence_count": null,
+      "fvg_confirmation_mapping_count": 836,
+      "cluster_update_counts": {
+        "structural": 909,
+        "reaction": 669
+      },
+      "volume_profile_observation_count": 971,
+      "count_reconciliation": {
+        "status": "PASS",
+        "checks": {
+          "structural_updates": {
+            "actual": 909,
+            "expected": 909
+          },
+          "structural_event_rows": {
+            "actual": 1605,
+            "expected": 1605
+          },
+          "structural_source_identities": {
+            "actual": 696,
+            "expected": 696
+          },
+          "fvg_confirmations": {
+            "actual": 836,
+            "expected": 836
+          },
+          "bullish_fvgs": {
+            "actual": 1145,
+            "expected": 1145
+          },
+          "bearish_fvgs": {
+            "actual": 942,
+            "expected": 942
+          },
+          "body_creations": {
+            "actual": 1097,
+            "expected": 1097
+          },
+          "imbalance_event_rows": {
+            "actual": 3184,
+            "expected": 3184
+          },
+          "imbalance_source_identities": {
+            "actual": 2348,
+            "expected": 2348
+          },
+          "reaction_updates": {
+            "actual": 669,
+            "expected": 669
+          },
+          "reaction_event_rows": {
+            "actual": 1274,
+            "expected": 1274
+          },
+          "reaction_source_identities": {
+            "actual": 605,
+            "expected": 605
+          },
+          "volume_profiles_with_observations": {
+            "actual": 617,
+            "expected": 617
+          },
+          "volume_derived_event_rows": {
+            "actual": 971,
+            "expected": 971
+          },
+          "volume_derived_source_identities": {
+            "actual": 971,
+            "expected": 971
+          }
+        }
+      },
+      "timestamp_validation": {
+        "status": "PASS",
+        "event_rows_checked": 7034,
+        "timestamp_batches": 5498,
+        "first_available_utc": "2020-01-02T04:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_validation": {
+        "status": "PASS",
+        "event_rows_checked": 7034,
+        "invalid_intervals": 0
+      },
+      "identity_and_sequence_checks": {
+        "status": "PASS",
+        "duplicate_creation_or_observation_ids": 0,
+        "malformed_sequences": 0,
+        "id_qualification": "symbol:timeframe:family:source_zone_id"
+      },
+      "overlap_metadata": {
+        "events_with_geometric_overlap": 6765,
+        "events_with_other_family_overlap": 6593,
+        "max_overlapping_candidates": 147,
+        "max_other_overlapping_families": 3,
+        "max_overlap_eligible_identities": 389,
+        "overlap_comparisons": 2297376,
+        "non_volume_eligibility_expirations": 3276,
+        "volume_observations_replaced_or_expired": 969
+      },
+      "identities_with_cross_family_overlap": 4315,
+      "null_source_field_counts_by_family": {
+        "structural": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "imbalance": {
+          "origin_type": 0,
+          "confirmed_at_utc": 1097,
+          "source_reference_atr": 3,
+          "source_event_sequence": 3184
+        },
+        "reaction": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "volume_derived": {
+          "origin_type": 971,
+          "confirmed_at_utc": 971,
+          "source_reference_atr": 0,
+          "source_event_sequence": 971
+        }
+      },
+      "warnings": [
+        "Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+        "Identity counts are not counts of independent market reactions; volume observations are rolling and correlated"
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "source_timeframe": "4h",
+      "input_paths": {
+        "structural": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\structural\\ETHUSDT_4h_zone_events.csv",
+        "imbalance": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\imbalance\\ETHUSDT_4h.csv",
+        "reaction": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\reaction\\ETHUSDT_4h.csv",
+        "volume_derived": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\volume\\ETHUSDT_4h.csv"
+      },
+      "output_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\ETHUSDT_4h.csv",
+      "source_event_rows_by_family": {
+        "structural": 1529,
+        "imbalance": 3365,
+        "reaction": 1288,
+        "volume_derived": 976
+      },
+      "unique_source_candidates_by_family": {
+        "structural": 695,
+        "imbalance": 2534,
+        "reaction": 596,
+        "volume_derived": 976
+      },
+      "unified_event_rows": 7158,
+      "unified_identity_count": 4801,
+      "deduplicated_non_volume_identity_count": 3825,
+      "correlated_volume_observation_identity_count": 976,
+      "statistically_independent_evidence_count": null,
+      "fvg_confirmation_mapping_count": 831,
+      "cluster_update_counts": {
+        "structural": 834,
+        "reaction": 692
+      },
+      "volume_profile_observation_count": 976,
+      "count_reconciliation": {
+        "status": "PASS",
+        "checks": {
+          "structural_updates": {
+            "actual": 834,
+            "expected": 834
+          },
+          "structural_event_rows": {
+            "actual": 1529,
+            "expected": 1529
+          },
+          "structural_source_identities": {
+            "actual": 695,
+            "expected": 695
+          },
+          "fvg_confirmations": {
+            "actual": 831,
+            "expected": 831
+          },
+          "bullish_fvgs": {
+            "actual": 1235,
+            "expected": 1235
+          },
+          "bearish_fvgs": {
+            "actual": 1023,
+            "expected": 1023
+          },
+          "body_creations": {
+            "actual": 1107,
+            "expected": 1107
+          },
+          "imbalance_event_rows": {
+            "actual": 3365,
+            "expected": 3365
+          },
+          "imbalance_source_identities": {
+            "actual": 2534,
+            "expected": 2534
+          },
+          "reaction_updates": {
+            "actual": 692,
+            "expected": 692
+          },
+          "reaction_event_rows": {
+            "actual": 1288,
+            "expected": 1288
+          },
+          "reaction_source_identities": {
+            "actual": 596,
+            "expected": 596
+          },
+          "volume_profiles_with_observations": {
+            "actual": 617,
+            "expected": 617
+          },
+          "volume_derived_event_rows": {
+            "actual": 976,
+            "expected": 976
+          },
+          "volume_derived_source_identities": {
+            "actual": 976,
+            "expected": 976
+          }
+        }
+      },
+      "timestamp_validation": {
+        "status": "PASS",
+        "event_rows_checked": 7158,
+        "timestamp_batches": 5523,
+        "first_available_utc": "2020-01-02T04:00:00+00:00",
+        "last_available_utc": "2025-09-01T00:00:00+00:00"
+      },
+      "boundary_validation": {
+        "status": "PASS",
+        "event_rows_checked": 7158,
+        "invalid_intervals": 0
+      },
+      "identity_and_sequence_checks": {
+        "status": "PASS",
+        "duplicate_creation_or_observation_ids": 0,
+        "malformed_sequences": 0,
+        "id_qualification": "symbol:timeframe:family:source_zone_id"
+      },
+      "overlap_metadata": {
+        "events_with_geometric_overlap": 6879,
+        "events_with_other_family_overlap": 6655,
+        "max_overlapping_candidates": 176,
+        "max_other_overlapping_families": 3,
+        "max_overlap_eligible_identities": 410,
+        "overlap_comparisons": 2443801,
+        "non_volume_eligibility_expirations": 3473,
+        "volume_observations_replaced_or_expired": 975
+      },
+      "identities_with_cross_family_overlap": 4454,
+      "null_source_field_counts_by_family": {
+        "structural": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "imbalance": {
+          "origin_type": 0,
+          "confirmed_at_utc": 1107,
+          "source_reference_atr": 2,
+          "source_event_sequence": 3365
+        },
+        "reaction": {
+          "origin_type": 0,
+          "confirmed_at_utc": 0,
+          "source_reference_atr": 0,
+          "source_event_sequence": 0
+        },
+        "volume_derived": {
+          "origin_type": 976,
+          "confirmed_at_utc": 976,
+          "source_reference_atr": 0,
+          "source_event_sequence": 976
+        }
+      },
+      "warnings": [
+        "Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+        "Identity counts are not counts of independent market reactions; volume observations are rolling and correlated"
+      ]
+    }
+  ],
+  "output_summary_path": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\reports\\zone_detection\\registry_summary.json",
+  "limitations": [
+    "Geometric overlap is descriptive metadata, not confidence, confluence strength, statistical independence or prediction",
+    "No lifecycle, survival, invalidation, mitigation, market reaction labels or cross-timeframe inference",
+    "One asset/timeframe is read once into normalized events for sorting; overlap searches scan only the bounded recency/profile eligible dictionary, not all historical identities",
+    "Prefix invariance requires complete same-timestamp batches across all families; adding omitted events at an already processed time is not appending future data",
+    "Phase 5 input coverage and window/stride reports are required to recognize empty profiles without changing detectors or importing snapshots",
+    "Input/report/sequence failure returns nonzero and may leave partial new CSVs; no new success summary is written"
+  ],
+  "warnings": [
+    "BTCUSDT 15m: Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+    "BTCUSDT 15m: Identity counts are not counts of independent market reactions; volume observations are rolling and correlated",
+    "ETHUSDT 15m: Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+    "ETHUSDT 15m: Identity counts are not counts of independent market reactions; volume observations are rolling and correlated",
+    "BTCUSDT 1h: Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+    "BTCUSDT 1h: Identity counts are not counts of independent market reactions; volume observations are rolling and correlated",
+    "ETHUSDT 1h: Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+    "ETHUSDT 1h: Identity counts are not counts of independent market reactions; volume observations are rolling and correlated",
+    "BTCUSDT 4h: Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+    "BTCUSDT 4h: Identity counts are not counts of independent market reactions; volume observations are rolling and correlated",
+    "ETHUSDT 4h: Nullable confirmation/origin/sequence fields retain source-specific meanings; null is not a failed detection",
+    "ETHUSDT 4h: Identity counts are not counts of independent market reactions; volume observations are rolling and correlated"
+  ]
+}
