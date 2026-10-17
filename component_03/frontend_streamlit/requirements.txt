@@ -1,0 +1,7 @@
+streamlit>=1.50
+plotly>=5.20
+numpy
+pandas
+pyarrow
+torch>=2.2
+xgboost>=3.2.0

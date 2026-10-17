@@ -1,0 +1,8 @@
+services:
+  c03:
+    build: .
+    ports: ["8000:8000"]
+    volumes: ["./export:/export:ro"]
+    environment:
+      C03_MODE: live        # or: replay
+    restart: unless-stopped

@@ -33,3 +33,12 @@ component_03/backend/data/
 # Model Weights (Except small production exports if needed)
 component_03/backend/models/*.pt
 component_03/backend/models/*.pkl
+
+.pytest_cache/
+__pycache__/
+
+component_03/backend/engine_export_v1/
+component_03/backend/conformal_tables_v1.npz
+component_03/frontend_streamlit/__pycache__/
+component_03/frontend_streamlit/.pytest_cache/
+component_03/frontend_streamlit/data/*_dash.json
