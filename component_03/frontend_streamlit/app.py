@@ -802,9 +802,9 @@ def render_xai(v):
         a, b = st.columns([1, 1.3])
         a.plotly_chart(ring_fig(sc, COL[v.mx]), width='stretch', config=dict(displayModeBar=False), key='x_ring')
         with b:
-            label('Integrity state')
+            label('Episode state (at its peak)')
             st.markdown(pill(v.mx, lvl_txt(v)), unsafe_allow_html=True)
-            st.caption(f'{j.sym}\n\n{hhmm(j, v.s)} – {hhmm(j, v.e)} UTC ({v.len} min)')
+            st.caption(f'{j.sym}\n\n{hhmm(j, v.s)} – {hhmm(j, v.e)} UTC ({v.len} min)\n\nThe state of this episode at its strongest minute, not of the current minute (see Overview).')
     with h2.container(border=True):
         st.markdown('**Key takeaway**')
         st.markdown(take)
@@ -921,7 +921,7 @@ def render_unc(v, vis):
         r1, r2 = st.columns([1, 1.2])
         r1.plotly_chart(ring_fig(sc, COL[v.mx]), width='stretch', config=dict(displayModeBar=False), key='u_ring')
         with r2:
-            label('Integrity state')
+            label('Episode state (at its peak)')
             st.markdown(pill(v.mx, lvl_txt(v)), unsafe_allow_html=True)
             st.caption(f'{j.sym} · {hhmm(j, v.s)} UTC')
     c = st.columns(3)
@@ -1155,6 +1155,51 @@ def ensure_scored(B, upto):
         LE.advance_all(B, upto)
 
 
+def render_data_checks():
+    """try-it panel: what the system does with missing, garbage or impossible input. Checks only; nothing here is scored or stored."""
+    paths = engine_paths()
+    with st.expander('What happens with missing or garbage data? (try it)'):
+        if paths is None:
+            st.caption('This panel needs the engine folder (backend) next to the dashboard.')
+            return
+        if str(paths[0]) not in sys.path:
+            sys.path.insert(0, str(paths[0]))
+        from c03_engine import validate as V
+        st.markdown('Every minute is checked **before** the trained models see it. A minute that fails is shown as **NO DATA** with the reason, '
+                    'it never enters the models\' memory, and it is never shown as NORMAL. The next valid minute is scored as if it had never arrived.')
+        st.markdown('##### 1 · Try one minute')
+        j = CUR()
+        k = max(j.first, min(ss().i, j.n - 1))
+        real = [float(j.df.loc[k, f]) for f in V.FEATS] if hasattr(j, 'df') else None
+        presets = {'A normal minute (copied from the recording)': real, 'All six values are 0': [0.0] * 6, 'An empty value (NaN)': [float('nan')] + (real or [0.0] * 6)[1:],
+                   'Infinity': [(real or [0.0] * 6)[0], float('inf')] + (real or [0.0] * 6)[2:], 'A negative number of large trades': (real or [0.0] * 6)[:5] + [-5.0],
+                   'Price range of 90 % in one minute': (real or [0.0] * 6)[:2] + [0.9] + (real or [0.0] * 6)[3:], 'An absurd volume spike (1e12)': (real or [0.0] * 6)[:4] + [1e12, (real or [0.0] * 6)[5]],
+                   'Text instead of numbers': ['abc'] * 6, 'Only three numbers': [1.0, 2.0, 3.0], 'I will type my own numbers': None}
+        pick = st.selectbox('Input', list(presets), key='dq_pick')
+        vec = presets[pick]
+        if vec is None:
+            raw = st.text_input('Six numbers separated by commas: ' + ', '.join(V.FEATS), value='0.0008, 0.12, 0.0033, 12, 0.4, 3', key='dq_text')
+            vec = [x.strip() for x in raw.split(',')] if raw.strip() else []
+        else:
+            st.caption('Values: ' + ', '.join(str(x) for x in vec))
+        probs = V.check_features(vec)
+        if probs:
+            st.error('**Rejected: shown as NO DATA.** The models do not see this minute.')
+            for p_ in probs:
+                st.markdown(f"- {p_['text']}" + (f" ({p_['detail']})" if p_.get('detail') else ''))
+        else:
+            st.success('**Accepted.** This minute would be scored by the trained models.')
+        st.markdown('##### 2 · Try a file')
+        up = st.file_uploader('Drop any file (a CSV of minutes, or anything else, even a picture)', key='dq_file')
+        if up is not None:
+            rep = V.inspect_csv(up.name, up.getvalue())
+            (st.success if rep['ok'] else st.error)(('Usable file' if rep['ok'] else 'This file cannot be used') + (f" · detected format: {rep['kind'].replace('_', ' ')} · {rep['rows']:,} rows" if rep['kind'] else ''))
+            for f_ in rep['findings']:
+                {'error': st.error, 'warn': st.warning, 'info': st.info}[f_['level']](f_['text'])
+            st.caption('The file is only checked here; nothing is scored or stored.')
+        st.caption('Limits are physical sanity limits (at least 5 times the largest value in the Aug 2024 data), never used to tune a model.')
+
+
 def render(data_dir=None):
     """Entry point: draws the whole component. Use inside a tab of the 4-component platform."""
     t_run = time.time()
@@ -1194,7 +1239,10 @@ def render(data_dir=None):
     c[6].button('Next Alert ▶', width='stretch', on_click=lambda: jump_alert(1))
     c[7].button('⚡ Jump to Aug 5 (stress day)', width='stretch', on_click=jump_aug)
     st.slider('Replay position', j.first, j.n - 1, int(s.i), key=f'seek{s.ver}', on_change=on_seek, label_visibility='collapsed')
-    st.caption(f'{s.i - j.first + 1} / {j.n - j.first} bars scored · {tstr(j, s.i)}')
+    nbad = sum(1 for k in getattr(j, 'bad', {}) if k <= s.i)
+    st.caption(f'{s.i - j.first + 1 - nbad} / {j.n - j.first} bars scored · {tstr(j, s.i)}' + (f' · {nbad} minute(s) skipped: invalid data' if nbad else ' · data checks: every minute so far passed'))
+    if s.i in getattr(j, 'bad', {}):
+        st.warning('**No score for this minute (NO DATA).** ' + ' '.join(j.bad[s.i]) + ' The models did not see it, and it is not shown as NORMAL. The next valid minute is scored as if this one never arrived.')
     if s.toast:
         st.toast(s.toast)
         s.toast = None
@@ -1210,6 +1258,7 @@ def render(data_dir=None):
         render_unc(v, vis)
     with t4:
         render_hist(j, i)
+    render_data_checks()
     render_provenance(B)
     # replay engine: advance, then rerun
     if s.playing:

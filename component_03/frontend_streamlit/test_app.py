@@ -53,3 +53,33 @@ def test_stored_mode_fallback():
     assert not at.exception and len(at.tabs) == 4
     btn(at, 'Aug 5').click().run()
     assert not at.exception and '2024-08-05' in at.session_state['_B']['BTCUSDT'].ts[at.session_state['i'] + 30]
+
+
+# ---------------------------------------------------------------------------- bad data (viva: "what happens with garbage / missing data")
+@pytest.mark.skipif(not LIVE, reason='backend/export not found')
+def test_bad_minute_in_the_recording_is_skipped_and_shown():
+    import numpy as np
+    at = fresh()
+    j = at.session_state['_B']['BTCUSDT']
+    k = j.done + 1
+    j.df.loc[k, 'trade_flow_imbalance'] = np.nan                    # one empty value inside the recording
+    at.session_state['i'] = k
+    at.run()
+    assert not at.exception and k in j.bad and j.state[k] == 0 and np.isnan(j.fusion[k]) and np.isnan(j.integ[k])
+    assert any('No score for this minute' in w.value for w in at.warning)
+    assert any('skipped' in c.value for c in at.caption)
+    at.session_state['i'] = k + 1
+    at.run()
+    assert not at.exception and np.isfinite(j.fusion[k + 1]) and (k + 1) not in j.bad       # the next valid minute is scored normally
+
+
+@pytest.mark.skipif(not LIVE, reason='backend/export not found')
+def test_data_check_panel_rejects_garbage_and_accepts_a_real_minute():
+    at = fresh()
+    sb = next(s for s in at.selectbox if s.key == 'dq_pick')
+    sb.select('All six values are 0').run()
+    assert not at.exception and any('Rejected' in e.value for e in at.error)
+    next(s for s in at.selectbox if s.key == 'dq_pick').select('Text instead of numbers').run()
+    assert not at.exception and any('Rejected' in e.value for e in at.error)
+    next(s for s in at.selectbox if s.key == 'dq_pick').select('A normal minute (copied from the recording)').run()
+    assert not at.exception and any('Accepted' in s_.value for s_ in at.success) and not any('Rejected' in e.value for e in at.error)

@@ -98,6 +98,9 @@ class LiveSymbol(SimpleNamespace):
     def _one(self, k):
         row = self.df.iloc[k]
         status, _ = self.svc.on_bar(row[self.feats].to_numpy('float64'), row.ts, {'close': float(row.close)})
+        if status['state'] == 'NO_DATA':        # the minute failed the input checks: it was not given to the models and is not shown as NORMAL
+            self.bad[k] = [p['text'] for p in status['data_quality']['problems']]
+            return
         r = self.cap['r']
         self.state[k] = STATE_NUM[r['state']]
         self.fusion[k] = np.nan if r['fusion'] is None else r['fusion']
@@ -174,7 +177,7 @@ def make_live(ex, sym, cal=None):
         dt=pd.to_datetime(pd.Series(ts), utc=True).dt.tz_localize(None).to_numpy(), t0=int(pd.Timestamp(ts[0]).value // 60_000_000_000),
         close=df.close.to_numpy('float64'), fusion=nan(), thr_alert=nan(), thr_watch=nan(), ae=nan(), xgb=nan(), tr=nan(), c_ae=nan(), c_xgb=nan(), c_tr=nan(), c_shared=nan(),
         plev=nan(), integ=nan(), unus_engine=nan(), state=np.zeros(n, int), agree=np.full(n, -1), conf=[None] * n, xai={}, reasons={}, features=feats,
-        eps=[], alert_eps=[], _eps=[], _o=None, wmap={'15m': {}, '1h': {}}, cal=cal, _ev={}, _evid={}, t_engine=0.0,
+        eps=[], alert_eps=[], _eps=[], _o=None, bad={}, wmap={'15m': {}, '1h': {}}, cal=cal, _ev={}, _evid={}, t_engine=0.0,
         bandA=100.0 * (1 - qa), bandW=100.0 * (1 - qw), conf_labels=ex.decl['unc']['labels'], thr_windows=ex.decl['mh']['thresholds'][sym],
         alert_budget_per_day=cfg.get('alert_budget_per_day', 2), bundle_version='live engine (trained models run in this session)')
     return j

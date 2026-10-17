@@ -4,6 +4,7 @@ from collections import defaultdict
 import numpy as np, websockets
 from .features import FeatureBuilder, LARGE, ORDER
 from .service import iso
+from .validate import check_bar, problem
 
 WS_URL = os.environ.get('C03_BINANCE_WS', 'wss://stream.binance.com:9443/stream')
 REST_URL = os.environ.get('C03_BINANCE_REST', 'https://api.binance.com')
@@ -59,8 +60,17 @@ async def run_live(ex, S, hub, fresh):
         await score(sym, k)
 
     async def score(sym, k):
-        k = dict(k); k['large_count'] = counts.pop((sym, k['open_ms']), k.get('large_count', 0)); f = fb[sym].push(k)
-        if f is None: return
+        k = dict(k); k['large_count'] = counts.pop((sym, k['open_ms']), k.get('large_count', 0))
+        bad = check_bar(k)                      # a bar that fails the checks is never scored and never shown as NORMAL; the 15-bar history is re-built from clean bars
+        if bad:
+            fb[sym] = FeatureBuilder(sym); last_open[sym] = k['open_ms']
+            for e in (await asyncio.to_thread(svc[sym].reject, ms_iso(k['open_ms']), bad, None, k))[1]: await hub.send(e)
+            return
+        f = fb[sym].push(k)
+        if f is None:
+            last_open[sym] = k['open_ms']
+            for e in (await asyncio.to_thread(svc[sym].reject, ms_iso(k['open_ms']), [problem('rebuilding_features')], None, k))[1]: await hub.send(e)
+            return
         status, events = await asyncio.to_thread(svc[sym].on_bar, np.asarray(f, 'float64'), ms_iso(k['open_ms']), k); last_open[sym] = k['open_ms']; S['last_bar'] = time.time()
         for e in events: await hub.send(e)
 

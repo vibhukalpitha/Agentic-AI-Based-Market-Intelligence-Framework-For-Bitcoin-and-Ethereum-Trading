@@ -1,0 +1,22 @@
+{
+  "machine": {
+    "cpu": "Intel64 Family 6 Model 142 Stepping 12, GenuineIntel",
+    "cores": 8,
+    "python": "3.11.9",
+    "os": "Windows-10-10.0.26200-SP0"
+  },
+  "symbol": "BTCUSDT",
+  "bar_interval_ms": 60000,
+  "load_export_sha256_check_s": 0.07,
+  "warmup_1500_bars_s": 0.66,
+  "engine_per_bar": {
+    "n": 1000,
+    "median_ms": 51.52,
+    "p95_ms": 56.65,
+    "p99_ms": 67.43,
+    "max_ms": 216.77
+  },
+  "share_of_bar_interval_pct": 0.112,
+  "bars_per_second_possible": 19.4,
+  "replay_jump_estimate_s_per_1000_bars": 51.5
+}
