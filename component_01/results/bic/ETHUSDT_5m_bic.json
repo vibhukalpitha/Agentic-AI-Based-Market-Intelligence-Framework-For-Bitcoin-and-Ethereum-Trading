@@ -1,0 +1,79 @@
+{
+  "symbol": "ETHUSDT",
+  "interval": "5m",
+  "train_candles": 209982,
+  "restarts": 10,
+  "max_iterations": 300,
+  "state_candidates": [
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "bic": [
+    {
+      "covariance": "diag",
+      "states": 2,
+      "log_likelihood": -2186689.668442534,
+      "bic": 4373857.273191646
+    },
+    {
+      "covariance": "diag",
+      "states": 3,
+      "log_likelihood": -1983157.0975967988,
+      "bic": 3967073.9913732857
+    },
+    {
+      "covariance": "diag",
+      "states": 4,
+      "log_likelihood": -1804145.6324655449,
+      "bic": 3609357.4305380713
+    },
+    {
+      "covariance": "diag",
+      "states": 5,
+      "log_likelihood": -1690758.7050808235,
+      "bic": 3382914.4547501053
+    },
+    {
+      "covariance": "diag",
+      "states": 6,
+      "log_likelihood": -1607327.960894126,
+      "bic": 3216408.354912371
+    },
+    {
+      "covariance": "full",
+      "states": 2,
+      "log_likelihood": -1246165.1249759,
+      "bic": 2493690.530208983
+    },
+    {
+      "covariance": "full",
+      "states": 3,
+      "log_likelihood": -1056328.0964702938,
+      "bic": 2114739.5050461837
+    },
+    {
+      "covariance": "full",
+      "states": 4,
+      "log_likelihood": -905012.7728158684,
+      "bic": 1812856.3991399286
+    },
+    {
+      "covariance": "full",
+      "states": 5,
+      "log_likelihood": -804118.9472437009,
+      "bic": 1611840.7989523732
+    },
+    {
+      "covariance": "full",
+      "states": 6,
+      "log_likelihood": -728957.2315109367,
+      "bic": 1462313.9279978082
+    }
+  ],
+  "saved_model_bic": 1812856.3991378457,
+  "best_full_covariance_states": 6,
+  "minutes": 215.4
+}

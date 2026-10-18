@@ -131,7 +131,7 @@ The four patterns:
 | `Aligned` | At least three of the four faster timeframes are in the Daily regime. |
 | `Partly backed` | Exactly two are. |
 | `Opposed` | At least three agree on one other regime, so Daily stands alone. |
-| `Fragmented` | At most one backs Daily and the others do not agree with each other. |
+| `Fragmented` | At most one backs Daily, and no three agree on any single other regime. It is the remaining case, so two of the others may still agree. |
 
 The pattern and its base rate always refer to the last Daily close, because the base
 rates were measured at Daily closes. If the faster timeframes have moved since, the text

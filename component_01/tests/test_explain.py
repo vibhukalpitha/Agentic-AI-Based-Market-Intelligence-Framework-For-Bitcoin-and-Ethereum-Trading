@@ -24,6 +24,16 @@ def test_each_archetype_rule():
     assert list(opposing) == [None, None, None, "Sideways", "Sideways", None]
 
 
+def test_fragmented_allows_two_others_to_agree():
+    """Fragmented is the remaining case: two non-backing timeframes may share a
+    regime, as long as no three do (the 2025-03-01 BTC pattern)."""
+    daily = np.array(["Bearish"])
+    faster = np.array([["Bearish", "Volatile", "Volatile", "Bullish"]])
+    name, n_agree, opposing = archetypes.classify(daily, faster)
+    assert (name[0], n_agree[0], opposing[0]) == ("Fragmented", 1, None)
+    assert "no three agree on any single other regime" in archetypes.DEFINITIONS["Fragmented"]
+
+
 def test_every_day_gets_exactly_one_archetype():
     rng = np.random.default_rng(config.RANDOM_SEED)
     daily = rng.choice(config.REGIMES, 2000)

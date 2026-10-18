@@ -9,7 +9,8 @@ archetypes by a fixed rule:
   Aligned        at least 3 of the 4 are in the Daily regime
   Partly backed  exactly 2 are in the Daily regime
   Opposed        at least 3 of the 4 agree on ONE OTHER regime (Daily stands alone)
-  Fragmented     at most 1 backs Daily, and the others do not agree with each other
+  Fragmented     at most 1 backs Daily, and no 3 agree on any single other regime
+                 (the remaining case; two of the others may still agree)
 
 The rule was fixed from how often each pattern occurs in the training period,
 so that every archetype has enough days. No outcome was used to draw the lines.
@@ -35,8 +36,8 @@ ARCHETYPES = ["Aligned", "Partly backed", "Fragmented", "Opposed"]
 DEFINITIONS = {
     "Aligned": "at least three of the four faster timeframes are in the same regime as Daily",
     "Partly backed": "exactly two of the four faster timeframes are in the same regime as Daily",
-    "Fragmented": "at most one faster timeframe backs Daily, and the others do not agree "
-                  "with each other",
+    "Fragmented": "at most one faster timeframe backs Daily, and no three agree on any "
+                  "single other regime",
     "Opposed": "at least three of the four faster timeframes agree on one regime that "
                "differs from Daily's",
 }
