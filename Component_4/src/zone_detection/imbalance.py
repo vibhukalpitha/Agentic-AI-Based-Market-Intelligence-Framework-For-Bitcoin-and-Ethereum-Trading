@@ -146,10 +146,10 @@ def read_candles(path: Path, timeframe: str, stats: Counter) -> Iterator[Feature
                     stats["invalid_body_ratio_rows"] += 1
                     ratio = None
                 source_body_atr = feature_number(row["atr_normalized_body"], "atr_normalized_body", stats)
-                if source_body_atr is not None and atr is not None:
-                    if not math.isclose(source_body_atr, (close - opening) / atr,
-                                        rel_tol=1e-8, abs_tol=1e-10):
-                        stats["atr_normalized_body_mismatch_rows"] += 1
+                if (source_body_atr is not None and atr is not None
+                        and not math.isclose(source_body_atr, (close - opening) / atr,
+                                             rel_tol=1e-8, abs_tol=1e-10)):
+                    stats["atr_normalized_body_mismatch_rows"] += 1
                 candle = FeatureCandle(timestamp, available, opening, high, low, close, atr, ratio)
                 if atr is not None and body_atr(candle) is None:
                     stats["nonfinite_derived_body_atr_rows"] += 1
@@ -197,7 +197,8 @@ def fvg_candidate(c1: FeatureCandle, c2: FeatureCandle, c3: FeatureCandle,
     else:
         return None
     gap = upper - lower
-    normalized = gap / c2.atr if positive(c2.atr) else None
+    reference_atr = c2.atr if positive(c2.atr) else None
+    normalized = gap / reference_atr if reference_atr is not None else None
     if normalized is not None and not math.isfinite(normalized):
         normalized = None
     kind = f"{direction}_fvg"
@@ -206,7 +207,7 @@ def fvg_candidate(c1: FeatureCandle, c2: FeatureCandle, c3: FeatureCandle,
         "imbalance", kind, direction, lower, upper, iso(c1.timestamp), iso(c3.available_at),
         iso(c2.timestamp), gap, normalized, body_atr(c2), c2.body_ratio,
         displacement_direction(c2, config) == direction, "candidate", iso(c1.timestamp),
-        iso(c2.timestamp), iso(c3.timestamp), c2.atr if positive(c2.atr) else None,
+        iso(c2.timestamp), iso(c3.timestamp), reference_atr,
         iso(c2.available_at), gap, "create", iso(c3.available_at),
     )))
 
@@ -308,28 +309,24 @@ def process_dataset(symbol: str, timeframe: str, source: Path, output: Path,
                 raise ValueError("Invalid candidate availability")
             previous_event_time = available
             writer.writerow(event)
-            stats["output_event_rows"] += 1
-            stats[event["imbalance_type"] + "_count"] += 1
-            stats[event["event_type"] + "_count"] += 1
+            stats.update(("output_event_rows", event["imbalance_type"] + "_count",
+                          event["event_type"] + "_count"))
             if event["imbalance_type"] != "displacement_body" and event["aligned_displacement"]:
                 stats["fvg_with_aligned_displacement_count"] += 1
     if first_open is None:
         raise ValueError(f"Empty input: {source}")
-    body_only = stats["displacement_body_count"] - stats["fvg_confirmation_count"]
-    warnings = []
-    for name in ("missing_atr_rows", "invalid_atr_rows", "missing_body_ratio_rows",
-                 "invalid_body_ratio_rows", "zero_range_rows", "missing_atr_normalized_body_rows",
-                 "invalid_atr_normalized_body_rows", "atr_normalized_body_mismatch_rows",
-                 "nonfinite_derived_body_atr_rows"):
-        if stats[name]:
-            warnings.append(f"{name}: {stats[name]}; no input values were filled or changed")
+    warnings = [f"{name}: {stats[name]}; no input values were filled or changed"
+                for name in ("missing_atr_rows", "invalid_atr_rows", "missing_body_ratio_rows",
+                             "invalid_body_ratio_rows", "zero_range_rows", "missing_atr_normalized_body_rows",
+                             "invalid_atr_normalized_body_rows", "atr_normalized_body_mismatch_rows",
+                             "nonfinite_derived_body_atr_rows") if stats[name]]
     return {
         "symbol": symbol, "source_timeframe": timeframe, "input_path": str(source),
         "output_path": str(output), "input_candle_count": stats["input_rows"],
-        "bullish_fvg_count": stats["bullish_fvg_count"], "bearish_fvg_count": stats["bearish_fvg_count"],
-        "fvg_with_aligned_displacement_count": stats["fvg_with_aligned_displacement_count"],
+        **{name: stats[name] for name in ("bullish_fvg_count", "bearish_fvg_count",
+                                        "fvg_with_aligned_displacement_count")},
         "displacement_body_creation_count": stats["displacement_body_count"],
-        "displacement_only_candidate_count_as_of_end": body_only,
+        "displacement_only_candidate_count_as_of_end": stats["displacement_body_count"] - stats["fvg_confirmation_count"],
         "linked_fvg_confirmation_count": stats["fvg_confirmation_count"],
         "unique_candidate_count": stats["create_count"], "output_event_rows": stats["output_event_rows"],
         "missing_atr_rows": stats["missing_atr_rows"], "invalid_atr_rows": stats["invalid_atr_rows"],

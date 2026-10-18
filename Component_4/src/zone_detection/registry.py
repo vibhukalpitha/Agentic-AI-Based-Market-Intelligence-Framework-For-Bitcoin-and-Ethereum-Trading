@@ -1,12 +1,3 @@
-"""Unified chronological candidate history with as-of geometric overlap metadata.
-
-No source detector is rerun. Structural snapshots and swing CSVs are not inputs.
-Overlap-search eligibility is NOT zone validity or survival. Volume observations
-are correlated OHLCV estimates, not independent reactions or trade-level volume.
-
-Run: python -B Component_4/src/zone_detection/registry.py
-"""
-
 from __future__ import annotations
 
 import argparse
