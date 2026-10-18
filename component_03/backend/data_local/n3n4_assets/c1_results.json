@@ -1,0 +1,38 @@
+{
+ "protocol_c1_v3_sha256": "5b78096f0ffeb5cf4c626cc6c17bfa1d292d2206989c2f2b7270f868b9973171",
+ "hypotheses": {
+  "H-C1": true,
+  "H-C2": true,
+  "H-C3": true,
+  "H-C4": false,
+  "H-C6": true,
+  "H-C7": true
+ },
+ "coverage_min_normal_R": 0.8972894265232975,
+ "abnormal_coverage_R": 0.9078542867419793,
+ "abnormal_coverage_S": 0.9078542867419793,
+ "set_mix_genuine_R": {
+  "{normal}": 0.4459927140255009,
+  "cannot tell": 0.4537112932604736,
+  "{abnormal}": 0.1002959927140255,
+  "{} unlike both": 0.0
+ },
+ "LR_abnormal_only": 6.84864460531529,
+ "level_LR": [
+  4.654960074605118,
+  0.4557152486879484,
+  0.15016571171778453
+ ],
+ "strong_over_limited": 30.998821377768746,
+ "strong_over_limited_ci": [
+  20.4358859097677,
+  54.592404054565975
+ ],
+ "genuine_episode_peak_strong_share": 0.08016877637130802,
+ "old_label_LR": [
+  7.795121462736505,
+  0.7158885586058169,
+  0.22173156925595036
+ ],
+ "mock": false
+}

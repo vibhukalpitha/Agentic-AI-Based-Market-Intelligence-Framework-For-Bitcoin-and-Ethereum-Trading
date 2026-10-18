@@ -1,0 +1,23 @@
+{
+ "spec": {
+  "window_bars": 60,
+  "outcome_bars": 60,
+  "gap_bars": 120,
+  "k": 5,
+  "candidate": "c2",
+  "blocks": [
+   "S",
+   "ZM",
+   "ZL"
+  ],
+  "feature_weight": 1.0,
+  "dims": 24,
+  "metric": "euclidean on per-symbol standardised, block-weighted descriptor"
+ },
+ "version_sha256": {
+  "BTCUSDT": "a8f3c79ee27d9fabe16e9d36610f36a75576bcbb4d5d2be0b135fca216541ae3",
+  "ETHUSDT": "f86ed53c57738bcfb1a6a87902092df67cd554ffe0ee35bbf1dfe9a0338c5963"
+ },
+ "protocol_h1_v4_sha256": "dc8ed3be287bbb31cb0a4bcc0e4ac42a93ac613f59c6d1f3060650855a4cc661",
+ "note": "index files are data: kept on Drive, never committed"
+}

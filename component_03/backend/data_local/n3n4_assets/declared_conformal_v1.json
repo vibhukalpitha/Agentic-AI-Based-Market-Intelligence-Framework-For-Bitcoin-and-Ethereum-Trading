@@ -1,0 +1,52 @@
+{
+ "status": "DECLARED before any TEST bar is read in notebook 49",
+ "protocol_c1_v3_sha256": "5b78096f0ffeb5cf4c626cc6c17bfa1d292d2206989c2f2b7270f868b9973171",
+ "eps_primary": 0.1,
+ "eps_reported": [
+  0.05,
+  0.1,
+  0.2
+ ],
+ "variant_primary": "R",
+ "calibration_set": "CAL-3 (August 2024)",
+ "rules": {
+  "gamma": "abnormal in Gamma iff p_abn > eps; normal in Gamma iff (R) fused score <= trailing 7-day (1-eps) quantile of the genuine fused series, (S) p_norm > eps",
+  "persistence": ">= 3 of last 5 bars above the Alert line (a check)",
+  "data_quality": ">= 1440 bars of history and none of the last 15 bars with volume <= 0, trades_count <= 0 or non-finite feature",
+  "conflict": "exactly one of XGBoost / Transformer above its own Alert line while the other is <= its trailing 7-day genuine 90th percentile",
+  "rare": "fused score above trailing 7-day genuine 99.9th percentile",
+  "Strong": "data-quality gate and rare and persistent and no conflict",
+  "Moderate": "gate and exactly two of the three checks",
+  "Limited": "any other Alert bar"
+ },
+ "alert_q": {
+  "BTCUSDT": 0.997,
+  "ETHUSDT": 0.997
+ },
+ "model_alert_q": {
+  "AE-ctx fmax": {
+   "BTCUSDT": 0.993,
+   "ETHUSDT": 0.99
+  },
+  "XGBoost v2": {
+   "BTCUSDT": 0.998,
+   "ETHUSDT": 0.999
+  },
+  "Transformer v2": {
+   "BTCUSDT": 0.997,
+   "ETHUSDT": 0.998
+  }
+ },
+ "table_sizes": {
+  "BTCUSDT": {
+   "abn": 5546,
+   "norm": 43200
+  },
+  "ETHUSDT": {
+   "abn": 5658,
+   "norm": 43200
+  }
+ },
+ "tables_file": "conformal_tables_v1.npz",
+ "tables_sha16": "613555e0ad99e39b"
+}

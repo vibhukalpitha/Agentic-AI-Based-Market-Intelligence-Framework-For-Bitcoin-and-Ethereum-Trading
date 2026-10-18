@@ -4,7 +4,19 @@ import datetime as dt
 import numpy as np
 from .core import SymbolEngine
 from . import explain
+from .reliability import ReliabilityTracker, Assets
+import os
 from .validate import check_features, check_warmup, problem, DataError
+
+_ASSETS = {}
+
+
+def default_assets():
+    """optional N3/N4 assets folder (conformal tables, history index): env C03_ASSETS. Missing folder or files -> the reliability layer still runs, conformal sets are reported as not available."""
+    f = os.environ.get('C03_ASSETS')
+    if f not in _ASSETS: _ASSETS[f] = Assets(f)
+    return _ASSETS[f]
+
 
 LIMIT_REF = '/api/c03/model-info#limitations'
 HORIZONS = {'15m': ('15 min', 15), '1h': ('1 hour', 60)}
@@ -17,14 +29,14 @@ def minute_of(ts): return int(dt.datetime.fromisoformat(iso(ts).replace('Z', '+0
 
 
 class SymbolService:
-    def __init__(self, export, sym, max_bars=20000):
-        self.ex, self.sym = export, sym; self.eng = SymbolEngine(export, sym); mh = export.decl['mh']; self.mh_thr = mh['thresholds'][sym]; self.mh_pts = {h: np.asarray(mh['score100_percentile_points_genuine_dev_windows'][sym][v[0]]) for h, v in HORIZONS.items()}
+    def __init__(self, export, sym, max_bars=20000, assets=None):
+        self.ex, self.sym = export, sym; self.eng = SymbolEngine(export, sym); self.assets = assets if assets is not None else default_assets(); self.rel = ReliabilityTracker(self.eng.MODELS, self.eng.c.TRF, self.eng.qa, self.eng.mq, self.eng.WIN, self.eng.MINP, self.assets, sym); mh = export.decl['mh']; self.mh_thr = mh['thresholds'][sym]; self.mh_pts = {h: np.asarray(mh['score100_percentile_points_genuine_dev_windows'][sym][v[0]]) for h, v in HORIZONS.items()}
         self.bars = deque(maxlen=max_bars); self.windows = {h: deque(maxlen=5000) for h in HORIZONS}; self.cur = {h: None for h in HORIZONS}; self.episodes = []; self.open_ep = None; self.state = 'NORMAL'; self.last = None
         self.last_m = None; self.n_bad = 0; self.consec_bad = 0
 
     def prime(self, F, ts):
         check_warmup(F)                         # clear DataError (too short / columns missing / bad rows) instead of an assertion or a silent NaN
-        self.eng.prime(F, ts); self.last_ts = ts[-1]
+        fz = self.eng.prime(F, ts); self.last_ts = ts[-1]; self.rel.prime(fz, {m: list(self.eng.hist[m]) for m in self.eng.MODELS})
         try: self.last_m = minute_of(ts[-1])
         except Exception: self.last_m = None
 
@@ -44,6 +56,7 @@ class SymbolService:
         self.last_m = m; self.consec_bad = 0
         r = self.eng.step(feat, ts); events = []; state = r['state']; fz = r['fusion']; reasons, caveats = ([], [])
         if state != 'NORMAL': reasons, caveats = explain.reasons(self.eng, r)
+        rel = self.rel.update(fz, {m: r['scores'][k] for m, k in zip(self.eng.MODELS, ['ae', 'xgboost', 'transformer'])}, state)
         f = {k: float(v) for k, v in zip(self.ex.B.FEATS, feat)}
         bar = {'symbol': self.sym, 'bar_open_utc': iso(ts), 'features': f, 'scores': r['scores'], 'fused_score': fz, 'unusualness': r['unusualness'], 'state': state, 'confidence': r['confidence'], 'warmup': r['warmup'], 'close': None if ohlc is None else ohlc.get('close')}
         self.bars.append(bar)
@@ -63,7 +76,7 @@ class SymbolService:
             e = self.open_ep; e['_last'] = m; e['end_utc'] = iso(ts); e['peak_unusualness'] = max(e['peak_unusualness'], r['unusualness'] or 0.0); e['models_above'] |= set(r['models_above'] or [])
             order = {'LOW': 0, 'MEDIUM': 1, 'HIGH': 2}; e['confidence'] = max([e['confidence'], r['confidence']], key=lambda x: order.get(x, -1))
         elif self.open_ep is not None and m - self.open_ep['_last'] > 5: self._close_ep()
-        status = self._status(bar, r, reasons, caveats); status['data_quality'] = {'ok': True, 'warnings': warnings, 'bad_minutes_total': self.n_bad}
+        status = self._status(bar, r, reasons, caveats); status['data_quality'] = {'ok': True, 'warnings': warnings, 'bad_minutes_total': self.n_bad}; status['reliability'] = rel; bar['reliability'] = {k: rel[k] for k in ('level', 'level_code', 'checks_met')} | {'conformal_set': rel['conformal']['set']}
         if state != self.state: events.append({'type': 'state_change', 'data': {'symbol': self.sym, 'from': self.state, 'to': state, 'at_utc': iso(ts), 'status': status}}); self.state = state
         events.insert(0, {'type': 'bar_scored', 'data': status}); self.last = status; return status, events
 
@@ -71,7 +84,7 @@ class SymbolService:
         """report a minute that cannot be scored: state NO_DATA, the reasons in plain words. The engine memory, windows and episodes are left untouched."""
         try: bt = iso(ts)
         except Exception: bt = str(ts)
-        self.n_bad += 1; self.consec_bad += 1
+        self.n_bad += 1; self.consec_bad += 1; self.rel.note_bad()
         try: f = {k: float(v) for k, v in zip(self.ex.B.FEATS, feat)}
         except Exception: f = None
         why = '; '.join(p['text'] for p in problems)

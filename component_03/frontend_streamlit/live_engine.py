@@ -102,7 +102,23 @@ class LiveSymbol(SimpleNamespace):
             self.bad[k] = [p['text'] for p in status['data_quality']['problems']]
             return
         r = self.cap['r']
+        if 'N1' in self.svc.eng.zbuf:
+            self.z1[k] = self.svc.eng.zbuf['N1'][-1]
+        rel = status.get('reliability')
+        if rel:
+            c = rel['checks']
+            self.rel_level[k], self.rel_met[k], self.rel_gate[k] = rel['level_code'], -1 if rel['checks_met'] is None else rel['checks_met'], int(rel['gate']['ok'])
+            self.rel_rare[k], self.rel_pers[k], self.rel_nc[k] = [-1 if c[x] is None else int(c[x]) for x in ('rare', 'persistent', 'no_conflict')]
+            self.rel_set[k] = rel['conformal']['set_code'] if rel['conformal']['available'] else -1
+            self.rel_pabn[k] = np.nan if rel['conformal']['p_abnormal'] is None else rel['conformal']['p_abnormal']
+            d = rel['detail']
+            for q_, m_ in enumerate(self.svc.eng.MODELS):
+                md_ = (d.get('models') or {}).get(m_)
+                if md_:
+                    self.rel_ab[k, q_], self.rel_lo[k, q_] = int(md_['above_own_alert_line']), int(md_['at_or_below_own_90th'])
+            self.rel_rare_line[k], self.rel_norm_line[k], self.rel_hist[k] = (np.nan if d['rare_line'] is None else d['rare_line']), (np.nan if d['normal_line'] is None else d['normal_line']), rel['gate']['history_minutes']
         self.state[k] = STATE_NUM[r['state']]
+        self.zm[k] = [r['z']['ae'], r['z']['xgboost'], r['z']['transformer']]
         self.fusion[k] = np.nan if r['fusion'] is None else r['fusion']
         self.thr_alert[k], self.thr_watch[k] = r['thr_alert'], r['thr_watch']
         self.ae[k], self.xgb[k], self.tr[k] = r['scores']['ae'], r['scores']['xgboost'], r['scores']['transformer']
@@ -153,6 +169,10 @@ class LiveSymbol(SimpleNamespace):
 def make_live(ex, sym, cal=None):
     """build one LiveSymbol: loads the replay bars, primes the engine with the first FIRST bars (fills the rolling windows)"""
     from c03_engine.service import SymbolService
+    if not os.environ.get('C03_ASSETS'):         # optional folder with the conformal tables / history index (git-ignored); the page still works without it
+        d = Path(ex.root).parent / 'data_local' / 'n3n4_assets'
+        if d.exists():
+            os.environ['C03_ASSETS'] = str(d)
     df = pd.read_parquet(Path(ex.root) / 'replay' / f'{sym}_replay_2024-08-01_to_08-10.parquet')
     df = df.reset_index(drop=True)
     n = len(df)
@@ -176,11 +196,28 @@ def make_live(ex, sym, cal=None):
         symbol=sym, sym=sym.replace('USDT', '/USDT'), n=n, first=FIRST, done=FIRST, ts=ts, df=df, feats=feats, svc=svc, cap=cap,
         dt=pd.to_datetime(pd.Series(ts), utc=True).dt.tz_localize(None).to_numpy(), t0=int(pd.Timestamp(ts[0]).value // 60_000_000_000),
         close=df.close.to_numpy('float64'), fusion=nan(), thr_alert=nan(), thr_watch=nan(), ae=nan(), xgb=nan(), tr=nan(), c_ae=nan(), c_xgb=nan(), c_tr=nan(), c_shared=nan(),
-        plev=nan(), integ=nan(), unus_engine=nan(), state=np.zeros(n, int), agree=np.full(n, -1), conf=[None] * n, xai={}, reasons={}, features=feats,
+        z1=np.full((n, 6), np.nan), zm=np.full((n, 3), np.nan), rel_ab=np.full((n, 3), -1), rel_lo=np.full((n, 3), -1), hidx=None, rel_level=np.zeros(n, int), rel_met=np.full(n, -1), rel_gate=np.zeros(n, int), rel_rare=np.full(n, -1), rel_pers=np.full(n, -1), rel_nc=np.full(n, -1), rel_set=np.full(n, -1),
+        rel_pabn=nan(), rel_rare_line=nan(), rel_norm_line=nan(), rel_hist=np.zeros(n, int), plev=nan(), integ=nan(), unus_engine=nan(), state=np.zeros(n, int), agree=np.full(n, -1), conf=[None] * n, xai={}, reasons={}, features=feats,
         eps=[], alert_eps=[], _eps=[], _o=None, bad={}, wmap={'15m': {}, '1h': {}}, cal=cal, _ev={}, _evid={}, t_engine=0.0,
         bandA=100.0 * (1 - qa), bandW=100.0 * (1 - qw), conf_labels=ex.decl['unc']['labels'], thr_windows=ex.decl['mh']['thresholds'][sym],
         alert_budget_per_day=cfg.get('alert_budget_per_day', 2), bundle_version='live engine (trained models run in this session)')
+    try:
+        from c03_engine.history import HistoryIndex
+        j.hidx = HistoryIndex(os.environ.get('C03_ASSETS'))
+    except Exception as e:                       # the page still works without the validated index
+        j.hidx = None
     return j
+
+
+def window_descriptor(j, k):
+    """the 24 raw numbers of the last 60 minutes ending at replay bar k (None when any minute of the window has no score)"""
+    from c03_engine.history import W, descriptor_raw
+    if k - W + 1 < 0:
+        return None
+    sl = slice(k - W + 1, k + 1)
+    # notebook 53 summarised the RAW model scores (not the log-transformed ones used inside the fusion), so the live descriptor uses the raw scores too; the parity test against the saved index proves it
+    F4 = [j.fusion[sl], j.ae[sl], j.xgb[sl], j.tr[sl]]
+    return descriptor_raw(F4, j.z1[sl])
 
 
 def advance_all(B, upto, progress=None, chunk=120):

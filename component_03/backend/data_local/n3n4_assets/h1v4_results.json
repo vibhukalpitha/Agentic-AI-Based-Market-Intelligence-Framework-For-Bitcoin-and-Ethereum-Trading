@@ -1,0 +1,54 @@
+{
+ "protocol_h1_v4_sha256": "dc8ed3be287bbb31cb0a4bcc0e4ac42a93ac613f59c6d1f3060650855a4cc661",
+ "chosen": "c2",
+ "k_out": 20,
+ "index_versions": {
+  "BTCUSDT": "a8f3c79ee27d9fabe16e9d36610f36a75576bcbb4d5d2be0b135fca216541ae3",
+  "ETHUSDT": "f86ed53c57738bcfb1a6a87902092df67cd554ffe0ee35bbf1dfe9a0338c5963"
+ },
+ "hypotheses": {
+  "H-H1a": true,
+  "H-H1c": true,
+  "H-H2b": true,
+  "H-H5": false,
+  "H-H3": true,
+  "H-H4": true
+ },
+ "H1a": 0.5426174496644295,
+ "H1c": 0.2976510067114094,
+ "vs_score_only": [
+  0.026845637583892613,
+  [
+   0.012416107382550336,
+   0.04060402684563758
+  ]
+ ],
+ "vs_c1": [
+  0.015100671140939598,
+  [
+   0.0013338926174496601,
+   0.029530201342281875
+  ]
+ ],
+ "gain_over_persistence": [
+  0.05229325115345966,
+  [
+   0.02999400526680891,
+   0.07234395009022648
+  ]
+ ],
+ "lift_alert_next_hour": [
+  1.9663052858683927,
+  [
+   0.0,
+   6.192017453586603
+  ]
+ ],
+ "persistence_lift": 1.8524309095707037,
+ "share_hours_mostly_alert": 0.004864489228630994,
+ "duplicates": 0,
+ "leakage": 0,
+ "median_query_ms": 13.711307999983546,
+ "noise_overlap": 0.853448275862069,
+ "mock": false
+}

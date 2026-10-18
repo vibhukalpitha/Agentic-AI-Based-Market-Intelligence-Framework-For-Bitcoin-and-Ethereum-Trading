@@ -1,5 +1,5 @@
 """
-TradeSense - Component 03 IntegritySense : Streamlit dashboard (Rashmi)
+TradeSense - Component 03 : Streamlit dashboard (Rashmi)
 
 Run (from this folder):   streamlit run app.py
 
@@ -27,16 +27,22 @@ DATA_DIR = HERE / 'data'
 SYMBOLS = ['BTCUSDT', 'ETHUSDT']
 sys.path.insert(0, str(HERE))
 
-COL = {0: '#10B981', 1: '#F59E0B', 2: '#EF4444'}
+COL = {0: '#2FBF8A', 1: '#E9A23B', 2: '#EF5B5B'}
 NAME = ['NORMAL', 'WATCH', 'ALERT']
-LVC = {'STRONG': '#10B981', 'MODERATE': '#F59E0B', 'LIMITED': '#EF4444'}
-CONFC = {'HIGH': '#EF4444', 'MEDIUM': '#FB923C', 'LOW': '#F59E0B'}
+LVN = {0: None, 1: 'LIMITED', 2: 'MODERATE', 3: 'STRONG'}
+LVC = {'STRONG': '#2FBF8A', 'MODERATE': '#E9A23B', 'LIMITED': '#EF5B5B'}
+LDISP = {'STRONG': 'Strong', 'MODERATE': 'Moderate', 'LIMITED': 'Weak'}       # what the page shows; the engine / API value stays LIMITED
+CONFC = {'HIGH': '#EF5B5B', 'MEDIUM': '#FB923C', 'LOW': '#E9A23B'}
 FPLAIN = {'log_returns': 'Price movement', 'trade_flow_imbalance': 'Buy/sell pressure', 'hl_spread_ratio': 'Price range',
           'rush_order_density': 'Rush of small trades', 'volume_acceleration': 'Volume surge', 'large_trade_count': 'Large trades'}
 DET = [dict(c='c_ae', bit=1, name='Unfamiliar-behaviour check', tech='Autoencoder'),
        dict(c='c_xgb', bit=2, name='Known-pattern check', tech='XGBoost'),
        dict(c='c_tr', bit=4, name='Multi-minute pattern check', tech='Transformer')]
-ACC, TXT, DIM, GRID = '#8B93FF', '#E8ECF5', '#8E98B0', '#1B2640'
+GROUPS3 = {'Price movement & range': ['log_returns', 'hl_spread_ratio'], 'Trade flow': ['trade_flow_imbalance', 'rush_order_density'], 'Large trades & volume': ['large_trade_count', 'volume_acceleration']}
+E3_TR = {'hit': 0.614, 'lo': 0.566, 'hi': 0.660, 'rand': 0.347, 'top2': 0.672, 'n': 412}      # notebook 55, protocol E3 v1: Transformer group-level agreement with the deletion test, 412 model-active TEST events
+E4_X = {'group': 0.977, 'lo': 0.961, 'rand': 0.353, 'n': 431, 'sig': 0.951, 'chance': 0.618}       # notebook 59, protocol E4 v1: interventional Shapley for XGBoost on held-out TEST events
+ACC, TXT, DIM, GRID = '#3987E5', '#E9EEF9', '#8A97B8', '#1F2F55'
+SURF, SURF2, ORG, VIO, AQ = '#0F1A33', '#142243', '#D95926', '#9085E9', '#199E70'      # colour theme of the three analysis tabs
 
 
 # ------------------------------------------------------------------ data
@@ -123,16 +129,27 @@ def live_mode():
     return engine_paths() is not None
 
 
+@st.cache_resource(show_spinner=False)
+def live_symbols(root, backend, cal_key):
+    """the two live engines, kept for as long as the server runs: minutes the models have already scored are not scored again after a browser refresh.
+    Optional pre-warm: start the server with C03_PREWARM=aug5 and the models score up to the first alert of 5 Aug before the first page opens."""
+    import os
+    import live_engine as LE
+    ex = load_export(root, backend)
+    cal = load_calibration()
+    B = {s_: LE.make_live(ex, s_, cal.get(s_)) for s_ in SYMBOLS}
+    if os.environ.get('C03_PREWARM', '').lower() == 'aug5':
+        LE.advance_until(B, 'BTCUSDT', lambda j: any(j.ts[e[0]][:10] == '2024-08-05' for e in j.alert_eps), B['BTCUSDT'].n - 1, None, 120)
+        LE.advance_all(B, min(B['BTCUSDT'].done + 60, B['BTCUSDT'].n - 1))
+    return B, ex
+
+
 def bundles():
     paths = engine_paths()
     if paths is not None:
         if '_LB' not in st.session_state:
-            import live_engine as LE
-            ex = load_export(str(paths[1]), str(paths[0]))
-            cal = load_calibration()
-            with st.spinner('Loading the trained models and filling their rolling windows (about 10 s) ...'):
-                st.session_state['_LB'] = {s: LE.make_live(ex, s, cal.get(s)) for s in SYMBOLS}
-                st.session_state['_EX'] = ex
+            with st.spinner('Loading the trained models and filling their rolling windows (about 10 s; with pre-warm a few minutes, once) ...'):
+                st.session_state['_LB'], st.session_state['_EX'] = live_symbols(str(paths[1]), str(paths[0]), (DATA_DIR / 'calibration_cal3.json').stat().st_mtime if (DATA_DIR / 'calibration_cal3.json').exists() else 0)
         return st.session_state['_LB'], []
     out = {}
     miss = []
@@ -199,9 +216,8 @@ def resem_card(v):
     ev = evid(v)
     x = j.xai.get(v.xb) if v.xb is not None else None
     with st.container(border=True):
-        st.markdown('**Detected behaviour & evidence** ' + (badge('INDICATIVE', ACC) if m and m.get('show_closest') else badge('COMING SOON', DIM)), unsafe_allow_html=True)
-        L, R = st.columns([1.15, 1.35])
-        with L:
+        st.markdown('**Detected behaviour** ' + (badge('INDICATIVE', ACC) if m and m.get('show_closest') else badge('COMING SOON', DIM)), unsafe_allow_html=True)
+        if True:
             if not m or not m.get('show_closest'):
                 st.caption('Pattern resemblance is not available yet.')
             elif v.mx < 2:
@@ -217,22 +233,10 @@ def resem_card(v):
                     st.caption('This episode lasted under 3 minutes, which is too short to compare with known patterns.')
                 else:
                     st.caption('Still too short to compare with known patterns. It needs at least 3 minutes; keep playing.')
-            t1, t2, t3 = st.columns(3)
-            t1.markdown(f"<div style='font-size:11px;letter-spacing:1px;color:{DIM}'>ALERT LEVEL</div><div style='font-size:18px;font-weight:700;color:{COL[v.mx]}'>{lvl_txt(v)}</div>", unsafe_allow_html=True)
-            cf = ev.conf if v.mx == 2 and ev.conf else '–'
-            t2.markdown(f"<div style='font-size:11px;letter-spacing:1px;color:{DIM}'>ENGINE CONFIDENCE</div><div style='font-size:18px;font-weight:700;color:{CONFC.get(cf, DIM)}'>{cf}</div>", unsafe_allow_html=True)
-            lv = ev.level or 'NOT RATED'
-            t3.markdown(f"<div style='font-size:11px;letter-spacing:1px;color:{DIM}'>EVIDENCE</div><div style='font-size:18px;font-weight:700'>{lv}</div>", unsafe_allow_html=True)
             rj = (m or {}).get('results', {}).get('JITTERED')
             acc = (f"In synthetic tests (imperfect episode edges) the first guess was right {rj['top1'] * 100:.0f}% of the time and the right pattern was inside the shortlist {rj['top2'] * 100:.0f}% of the time. "
                    if rj else '')
             st.caption(acc + 'It is a resemblance, not proof of manipulation, and says nothing about price direction. A genuinely new pattern can look like an older one.')
-        with R:
-            st.markdown('**What drove it** ' + badge('INDICATIVE', ACC), unsafe_allow_html=True)
-            if x and x.get('shap'):
-                st.plotly_chart(hbar_fig(x['shap'], [fname(f) for f in j.features], True), width='stretch', config=dict(displayModeBar=False), key='x_drv')
-            else:
-                st.caption('Detailed signal data was not captured for this episode.')
 
 
 # ------------------------------------------------------------------ provenance (everything here is read from the files, nothing typed in)
@@ -325,7 +329,17 @@ def evid(v):
     rare, pers, agr = pl is not None and pl <= 0.001, cnt >= 3, nA is not None and nA >= 2
     met = sum([rare, pers, agr])
     r = SimpleNamespace(k=k, pl=pl, ag=ag, nA=nA, cnt=cnt, rare=rare, pers=pers, agr=agr, met=met, conf=j.conf[k],
-                        level=None if v.mx < 2 else ('STRONG' if met == 3 else 'MODERATE' if met == 2 else 'LIMITED'))
+                        level=None if v.mx < 2 else ('STRONG' if met == 3 else 'MODERATE' if met == 2 else 'LIMITED'), bm=k)
+    if hasattr(j, 'rel_level'):
+        # validated rule (protocol C1 v3, notebook 49): the level of an episode is the best level reached by any of its ALERT minutes
+        ks = [q for q in range(v.s, v.e + 1) if j.state[q] == 2]
+        if ks:
+            bm = max(ks, key=lambda q: (j.rel_level[q], j.fusion[q] if np.isfinite(j.fusion[q]) else -1e9))
+            r.bm, r.level = bm, LVN[int(j.rel_level[bm])]
+            r.rare, r.pers, r.agr = (j.rel_rare[bm] == 1), (j.rel_pers[bm] == 1), (j.rel_nc[bm] == 1)
+            r.met = int(max(j.rel_met[bm], 0))
+        else:
+            r.level = None
     j._evid[key] = r
     return r
 
@@ -755,7 +769,7 @@ def pick_episode(vis):
     opts = list(reversed(vis))[:40]
     labels = {}
     for e in opts:
-        labels[e.s] = f"{j.ts[e.s][5:16]} · ALERT · {evid(e).level.title()} evidence" if e.mx == 2 else f"{j.ts[e.s][5:16]} · WATCH only (not rated)"
+        labels[e.s] = f"{j.ts[e.s][5:16]} · ALERT · {LDISP[evid(e).level]} evidence" if e.mx == 2 else f"{j.ts[e.s][5:16]} · WATCH only (not rated)"
     cur_s = ss().sel if ss().sel in labels else latest.s
     idx = [e.s for e in opts].index(cur_s)
 
@@ -775,7 +789,152 @@ def pick_episode(vis):
     return v, latest
 
 
+# ------------------------------------------------------------------ shared look (one design for the three analysis tabs)
+import html as _html
+
+CHIPS = {'alert': ('#FF8E8E', '#7A2D35', '#2A1520'), 'warn': ('#F4C06E', '#6F5320', '#271F12'), 'good': ('#6FE0B4', '#1F6A52', '#102A25'),
+         'mute': ('#A9B4D0', '#1F2F55', '#142243'), 'blue': ('#8DB8FF', '#2C4C8F', '#112248')}
+GN_ = {'price': 'Price movement & range', 'flow': 'Trade flow', 'size_volume': 'Large trades & volume'}
+LVCHIP = {'STRONG': 'good', 'MODERATE': 'warn', 'LIMITED': 'alert'}
+SHORT_DET = ['Unfamiliar-behaviour check', 'Known-pattern check', 'Multi-minute pattern check']
+
+
+def chip(t, k='mute', tip=''):
+    c, b, g = CHIPS[k]
+    return (f'<span title="{_html.escape(tip, quote=True)}" style="display:inline-block;color:{c};border:1px solid {b};background:{g};border-radius:99px;'
+            f'padding:3px 10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:0 6px 4px 0">{t}</span>')
+
+
+def head(title, sub=None):
+    s = f'<div style="font-weight:700;font-size:15px;color:{TXT}">{title}</div>'
+    s += f'<div style="color:{DIM};font-size:12.5px;margin:2px 0 10px">{sub}</div>' if sub else '<div style="height:8px"></div>'
+    st.markdown(s, unsafe_allow_html=True)
+
+
+def bar_rows(rows):
+    """rows = [(label, share 0..1, text, colour)]"""
+    out = ''
+    for lab, w, txt, c in rows:
+        out += (f'<div style="display:grid;grid-template-columns:150px 1fr 56px;gap:10px;align-items:center;margin:9px 0;font-size:13px;color:{TXT}">'
+                f'<span>{lab}</span><div style="height:10px;background:{SURF2};border-radius:5px;position:relative;overflow:hidden">'
+                f'<div style="position:absolute;left:0;top:0;bottom:0;width:{max(1.5, min(100.0, 100 * w)):.1f}%;background:{c};border-radius:5px"></div></div>'
+                f'<span style="font-family:monospace;text-align:right">{txt}</span></div>')
+    return out
+
+
+def legend(items):
+    """items = [(text, colour, dashed)]"""
+    return ('<div style="display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:#A9B4D0;margin-top:6px">' +
+            ''.join(f'<span><span style="display:inline-block;width:14px;border-top:2px {"dashed" if d else "solid"} {c};vertical-align:middle;margin-right:6px"></span>{t}</span>' for t, c, d in items) + '</div>')
+
+
+def themed(f, h, left=48, bottom=26, top=8, hover=True):
+    f.update_layout(template='plotly_dark', height=h, margin=dict(l=left, r=10, t=top, b=bottom), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                    font=dict(size=11, color=DIM), showlegend=False, hovermode='x unified' if hover else False)
+    f.update_xaxes(gridcolor=GRID, showline=False)
+    f.update_yaxes(gridcolor=GRID, zeroline=False)
+    return f
+
+
+def runs_shade(f, j, a, b, op=0.16):
+    """shade every flagged stretch (WATCH amber, ALERT red) between minutes a and b"""
+    q = a
+    while q <= b:
+        s_ = int(j.state[q])
+        if s_ >= 1:
+            r = q
+            while r + 1 <= b and int(j.state[r + 1]) == s_:
+                r += 1
+            f.add_vrect(x0=j.dt[q], x1=j.dt[r] + np.timedelta64(1, 'm'), fillcolor=COL[s_], opacity=op, line_width=0, row='all', col=1)
+            q = r + 1
+        else:
+            q += 1
+
+
+def why_line(v):
+    """one headline + one detail line for an episode, built from the explanation values of its strongest minute"""
+    j, k = v.j, v.eng
+    x = j.xai.get(v.xb) if v.xb is not None else None
+    ev = evid(v)
+    F = j.features
+    area = top = None
+    if x:
+        sv = x.get('shap_int') or x.get('shap')
+        if x.get('shap_int_group'):
+            g = x['shap_int_group']
+            area = GN_.get(max(g, key=g.get))
+        elif sv:
+            gsh = {g_: sum(max(0.0, sv[F.index(f_)]) for f_ in fs) for g_, fs in GROUPS3.items()}
+            area = max(gsh, key=gsh.get)
+        elif x.get('tr_feat'):
+            gsh = {g_: sum(x['tr_feat'][F.index(f_)] for f_ in fs) for g_, fs in GROUPS3.items()}
+            area = max(gsh, key=gsh.get)
+        if sv:
+            top = fname(F[int(np.argmax(sv))])
+    if top is None:
+        feats = [r for r in (j.reasons.get(k) or []) if r['type'] == 'feature']
+        if feats:
+            top = fname(feats[0]['feature'])
+    if area:
+        hd = f'Mainly {area[0].lower() + area[1:]}'
+    elif top:
+        hd = f'Strongest signal: {top[0].lower() + top[1:]}'
+    else:
+        hd = 'The combined score rose above its alert line'
+    bits = []
+    if top and area:
+        bits.append(f'Strongest signal: {top[0].lower() + top[1:]}')
+    if ev.nA is not None:
+        bits.append(f'{ev.nA} of 3 checks above their own line')
+    return hd, ' · '.join(bits)
+
+
+def status_strip(j, i, v):
+    stt = int(j.state[i])
+    sc = j.integ[i]
+    num = '–' if sc is None or not np.isfinite(sc) else (f'{sc:.1f}' if sc < 10 else f'{sc:.0f}')
+    chp = chip(NAME[stt], {0: 'good', 1: 'warn', 2: 'alert'}[stt])
+    if v is None:
+        hd, sb, since, k1, conf, cc = 'No alert yet', 'Nothing has been flagged in this recording so far.', '–', 'Flagged since', '–', DIM
+    else:
+        ev = evid(v)
+        hd, sb = why_line(v)
+        live_ep = stt >= 1 and v.e >= i
+        k1 = 'Flagged since' if live_ep else 'Last flagged'
+        since = f'{hhmm(j, v.s)} · {v.len} min'
+        conf = LDISP[ev.level] if ev.level else 'Not rated'
+        cc = LVC.get(ev.level, DIM)
+        if not live_ep:
+            sb = f'{hd[0].lower() + hd[1:]}' + (' · ' + sb if sb else '')
+            hd = 'No alert right now'
+    kv = lambda k_, v_, c_=TXT: f'<div><div style="font-size:11px;color:{DIM};text-transform:uppercase;letter-spacing:.08em">{k_}</div><div style="font:500 14px monospace;color:{c_}">{v_}</div></div>'
+    st.markdown(
+        f'<div style="display:flex;flex-wrap:wrap;gap:14px 30px;align-items:center;background:{SURF};border:1px solid {GRID};border-radius:14px;padding:14px 18px;margin:4px 0 14px">'
+        f'<div style="display:flex;gap:14px;align-items:center"><div style="font-size:40px;font-weight:800;line-height:1;color:{TXT}">{num}<span style="font-size:14px;color:{DIM};font-weight:600">/100</span></div>'
+        f'<div>{chp}<div style="font-size:11px;color:{DIM};text-transform:uppercase;letter-spacing:.08em;margin-top:2px">Integrity score</div></div></div>'
+        f'<div style="flex:1;min-width:240px"><div style="font-size:17px;font-weight:700;color:{TXT}">{hd}</div><div style="font-size:12.5px;color:{DIM};margin-top:2px">{sb}</div></div>'
+        f'{kv(k1, since)}{kv("Confidence", conf, cc)}</div>', unsafe_allow_html=True)
+
+
 # ------------------------------------------------------------------ EXPLAINABLE AI
+def resem_compact(v):
+    m = resem_model()
+    if not m or not m.get('show_closest') or v.mx < 2:
+        return
+    with st.container(border=True):
+        head('This behaviour resembles')
+        r = resem_of(v)
+        if r['status'] == 'ok':
+            rj = m.get('results', {}).get('JITTERED')
+            tip = (f"In synthetic tests the first guess was right {rj['top1'] * 100:.0f}% of the time and the right pattern was in the shortlist {rj['top2'] * 100:.0f}% of the time. "
+                   'A resemblance, not proof of manipulation. A genuinely new pattern can look like an older one.') if rj else ''
+            st.markdown(f'<div style="font-size:24px;font-weight:800;color:#FB923C;line-height:1.2">{r["first"]}</div>'
+                        f'<div style="font-size:12.5px;color:{DIM};margin:6px 0 8px">{FAM_DESC.get(r["first"], "")}</div>'
+                        + chip('Indicative', 'blue', tip) + chip('Also close: ' + r['shortlist2'], 'mute'), unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div style="font-size:12.5px;color:{DIM}">Needs at least 3 minutes of alert to compare with known patterns.</div>', unsafe_allow_html=True)
+
+
 def render_xai(v):
     if v is None:
         st.info('Nothing has been flagged yet. Press Play, or use Next Alert at the top.')
@@ -783,96 +942,103 @@ def render_xai(v):
     j, k = v.j, v.eng
     i = ss().i
     x = j.xai.get(v.xb) if v.xb is not None else None
-    sc = j.integ[k]
     F = j.features
     names = [fname(f) for f in F]
-    rs = j.reasons.get(k) or []
-    feats = [r for r in rs if r['type'] == 'feature']
-    mods = [r for r in rs if r['type'] == 'model']
-    top = F[int(np.argmax(x['shap']))] if x and x.get('shap') else (feats[0]['feature'] if feats else None)
     ev = evid(v)
-    nA = ev.nA
-    if top:
-        take = f"The strongest push toward unusual behaviour came from **{fname(top).lower()}**" + (
-            '. No single check crossed its own line; the combined score did' if nA == 0 else (f', flagged by **{nA} of 3** checks' if nA is not None else '')) + '.'
-    else:
-        take = f'The fused score rose above its {lvl_txt(v).lower()} line.'
-    h1, h2, h3 = st.columns([1.1, 1.1, 1.1])
-    with h1.container(border=True):
-        a, b = st.columns([1, 1.3])
-        a.plotly_chart(ring_fig(sc, COL[v.mx]), width='stretch', config=dict(displayModeBar=False), key='x_ring')
-        with b:
-            label('Episode state (at its peak)')
-            st.markdown(pill(v.mx, lvl_txt(v)), unsafe_allow_html=True)
-            st.caption(f'{j.sym}\n\n{hhmm(j, v.s)} – {hhmm(j, v.e)} UTC ({v.len} min)\n\nThe state of this episode at its strongest minute, not of the current minute (see Overview).')
-    with h2.container(border=True):
-        st.markdown('**Key takeaway**')
-        st.markdown(take)
-    with h3.container(border=True):
-        st.markdown('**Top supporting signals** ' + badge('INDICATIVE', ACC), unsafe_allow_html=True)
-        sig = (feats if feats else mods)[:3]
-        if not sig:
-            st.caption('No signal detail for this episode.')
-        smx = max([s_.get('weight') or 0 for s_ in sig] + [1e-9])
-        for s_ in sig:
-            nm = fname(s_['feature']) if s_['type'] == 'feature' else (s_['text'][:44] + '…' if len(s_['text']) > 46 else s_['text'])
-            w = s_.get('weight') or 0
-            st.markdown(f'{nm} &nbsp; **{round(w * 100)}%**')
-            st.progress(min(1.0, max(0.04, w / smx)))
-    resem_card(v)
-    st.markdown('### 1 · Price & unusual score')
-    c1, c2 = st.columns([2, 1])
-    with c1.container(border=True):
-        f, g = ep_window(v, i)
-        st.caption('PRICE (USD) · shaded = this episode')
-        st.plotly_chart(f, width='stretch', config=dict(displayModeBar=False), key='x_price')
-        st.caption('FUSED SCORE · dashed red = ALERT line · dashed amber = WATCH line')
-        st.plotly_chart(g, width='stretch', config=dict(displayModeBar=False), key='x_fused')
-    with c2.container(border=True):
-        st.markdown('**Which checks noticed it**')
+    status_strip(j, i, v)
+
+    # ---- row 1: price + score around the alert | what drove it
+    ca, cb = st.columns([2, 1])
+    with ca.container(border=True):
+        head('Price and unusual-ness around the alert', 'Shaded blocks are the minutes the system flagged.')
+        b_ = min(i, v.e + 20)
+        a_ = max(j.first, v.s - 40)
+        if b_ - a_ < 59:
+            a_ = max(j.first, b_ - 59)
+        xs = j.dt[a_:b_ + 1]
+        from plotly.subplots import make_subplots
+        f = make_subplots(rows=2, cols=1, shared_xaxes=True, row_heights=[0.55, 0.45], vertical_spacing=0.06)
+        f.add_trace(go.Scatter(x=xs, y=j.close[a_:b_ + 1], mode='lines', line=dict(color=ACC, width=2), name='Price', hovertemplate='Price $%{y:,.0f}<extra></extra>'), row=1, col=1)
+        f.add_trace(go.Scatter(x=xs, y=j.fusion[a_:b_ + 1], mode='lines', line=dict(color=ORG, width=2), fill='tozeroy', fillcolor='rgba(217,89,38,.10)',
+                               name='Unusual-ness', hovertemplate='Unusual-ness %{y:.2f}<extra></extra>'), row=2, col=1)
+        f.add_trace(go.Scatter(x=xs, y=j.thr_alert[a_:b_ + 1], mode='lines', line=dict(color=COL[2], dash='dash', width=1.2), name='Alert line', hoverinfo='skip'), row=2, col=1)
+        f.add_trace(go.Scatter(x=xs, y=j.thr_watch[a_:b_ + 1], mode='lines', line=dict(color=COL[1], dash='dot', width=1), name='Watch line', hoverinfo='skip'), row=2, col=1)
+        f.add_trace(go.Scatter(x=[j.dt[b_]], y=[j.fusion[b_]], mode='markers', marker=dict(color=ORG, size=9, line=dict(color=SURF, width=2)), hoverinfo='skip'), row=2, col=1)
+        runs_shade(f, j, a_, b_)
+        themed(f, 390, left=60)
+        f.update_yaxes(tickprefix='$', tickformat=',.0f', row=1, col=1)
+        st.plotly_chart(f, width='stretch', config=dict(displayModeBar=False), key='x_pr')
+        st.markdown(legend([('Price', ACC, False), ('Unusual-ness', ORG, False), ('Alert line', COL[2], True), ('Watch line', COL[1], True)]), unsafe_allow_html=True)
+    with cb:
+        with st.container(border=True):
+            head('What drove it', 'Share of the push toward unusual that each signal explains.')
+            sv = x.get('shap_int') if x else None
+            vals = sv or (x.get('shap') if x else None)
+            if vals:
+                vals = np.array(vals, dtype=float)
+                tot = float(np.clip(vals, 0, None).sum()) or float(np.abs(vals).sum()) or 1.0
+                order = sorted(range(len(vals)), key=lambda q: (vals[q] < 0, -abs(vals[q])))
+                st.markdown(bar_rows([(names[q], min(1.0, abs(vals[q]) / tot), (f'{100 * vals[q] / tot:.0f}%' if vals[q] >= 0 else f'-{100 * abs(vals[q]) / tot:.0f}%'), ACC if vals[q] >= 0 else AQ) for q in order]), unsafe_allow_html=True)
+                tip = ('Each signal is swapped for what the market normally looks like; the share is how much the score falls. Held-out test: the main area matched this in '
+                       f"{100 * E4_X['group']:.0f}% of {E4_X['n']} events.") if sv else 'Quick estimate. Not yet checked on test events.'
+                st.markdown(chip('Checked on test events' if sv else 'Indicative', 'good' if sv else 'blue', tip) +
+                            (chip('Blue pushed it up · green held it back', 'mute') if (vals < 0).any() else ''), unsafe_allow_html=True)
+            else:
+                st.markdown(f'<div style="font-size:12.5px;color:{DIM}">Detailed signal data was not captured for this episode.</div>', unsafe_allow_html=True)
+        resem_compact(v)
+
+    # ---- row 2: which checks noticed it
+    with st.container(border=True):
+        head('Which checks noticed it', 'Each check looks at the market in a different way. Longer bar = bigger share of the combined score.')
         dmax = max([abs(getattr(j, d['c'])[k]) if np.isfinite(getattr(j, d['c'])[k]) else 0 for d in DET] + [1e-9])
-        for d in DET:
+        cols_ = st.columns(4)
+        for col_, d in zip(cols_, DET):
             on = ev.ag is not None and (ev.ag & d['bit']) > 0
             sh = getattr(j, d['c'])[k]
-            with st.container(border=True):
-                st.markdown(f"**{d['name']}** &nbsp; " + badge('N/A' if ev.ag is None else 'ABOVE ITS LINE' if on else 'BELOW ITS LINE', COL[2] if on else DIM), unsafe_allow_html=True)
-                st.caption(f"Contribution to the fused score: {fx(sh)}")
-                st.progress(float(min(1.0, max(0.02, abs(sh) / dmax))) if np.isfinite(sh) else 0.02)
-        with st.container(border=True):
-            st.markdown('**TGNN check** ' + badge('COMING SOON', DIM), unsafe_allow_html=True)
-    st.markdown('### 2 · Which signals mattered')
-    c1, c2 = st.columns(2)
-    with c1.container(border=True):
-        st.markdown('**Known-pattern check · signal contributions** ' + badge('INDICATIVE', ACC), unsafe_allow_html=True)
-        if x and x.get('shap'):
-            st.caption('Right = pushed the score up · Left = pulled it down')
-            st.plotly_chart(hbar_fig(x['shap'], names, True), width='stretch', config=dict(displayModeBar=False), key='x_shap')
-            q = int(np.argmax(x['shap']))
-            st.markdown(f'Biggest push: **{names[q]}** ({x["shap"][q]:+.2f}).')
-        else:
-            st.caption('Detailed signal data was not captured for this episode.')
-    if x and x.get('ae_err'):
-        with c2.container(border=True):
-            st.markdown('**Unfamiliar-behaviour check · unusual signals** ' + badge('SECONDARY', DIM), unsafe_allow_html=True)
-            st.caption("Longer bar = less familiar versus this market's own recent past")
-            st.plotly_chart(hbar_fig(x['ae_err'], names, False), width='stretch', config=dict(displayModeBar=False), key='x_ae')
-    if x and x.get('tr_time') and x.get('tr_feat'):
-        st.markdown('### 3 · Unusual behaviour over time')
-        c1, c2 = st.columns(2)
-        with c1.container(border=True):
-            st.markdown('**Which recent minutes the multi-minute check relied on** ' + badge('INDICATIVE', ACC), unsafe_allow_html=True)
-            t = np.array(x['tr_time'])
-            ff = go.Figure(go.Bar(x=list(range(-len(t) + 1, 1)), y=t * 100, marker_color='#6366F1', hovertemplate='%{x} min: %{y:.1f}%<extra></extra>'))
-            ff.update_layout(template='plotly_dark', height=210, margin=dict(l=40, r=8, t=6, b=30), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
-                             xaxis=dict(title='minutes before the flagged minute', gridcolor=GRID), yaxis=dict(title='%', gridcolor=GRID))
+            w = float(min(1.0, abs(sh) / dmax)) if np.isfinite(sh) else 0.0
+            stxt = 'Not available' if ev.ag is None else ('Above its alert line' if on else 'Below its alert line')
+            with col_.container(border=True):
+                st.markdown(f'<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><b style="font-size:13.5px;color:{TXT}">{d["name"]}</b>'
+                            f'<span style="font-size:22px;font-weight:800;color:{TXT}">{fx(sh)}</span></div>'
+                            f'<div style="height:10px;background:{GRID};border-radius:5px;margin:10px 0 8px;overflow:hidden"><div style="width:{max(2.0, 100 * w):.0f}%;height:100%;background:{ORG if on else ACC};border-radius:5px"></div></div>'
+                            f'<div style="font-size:12px;color:{DIM}">{stxt}</div>', unsafe_allow_html=True)
+        with cols_[3].container(border=True):
+            st.markdown(f'<div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:13.5px;color:{DIM}">Network check</b>{chip("Coming soon", "mute")}</div>'
+                        f'<div style="height:10px;background:{GRID};border-radius:5px;margin:10px 0 8px"></div><div style="font-size:12px;color:{DIM}">Not active yet</div>', unsafe_allow_html=True)
+
+    # ---- row 3: when it built up | other unusual signals
+    r1, r2 = st.columns(2)
+    with r1.container(border=True):
+        head('When it built up', 'Which of the last minutes the multi-minute check relied on most.')
+        if x and x.get('tr_time') and x.get('tr_feat'):
+            t = np.array(x['tr_time'], dtype=float)
+            mt = float(t.max()) or 1.0
+            ff = go.Figure(go.Bar(x=list(range(-len(t) + 1, 1)), y=t * 100, marker_color=[ORG if q > 0.5 * mt else '#3F5B96' for q in t],
+                                  hovertemplate='%{x} min before: %{y:.1f}%<extra></extra>'))
+            themed(ff, 230, left=40, hover=False)
+            ff.update_xaxes(title_text='minutes before the flagged minute')
+            ff.update_yaxes(ticksuffix='%')
             st.plotly_chart(ff, width='stretch', config=dict(displayModeBar=False), key='x_trt')
-        with c2.container(border=True):
-            st.markdown('**Signals it relied on** ' + badge('INDICATIVE', ACC), unsafe_allow_html=True)
-            st.plotly_chart(hbar_fig(x['tr_feat'], names, False), width='stretch', config=dict(displayModeBar=False), key='x_trf')
+            gsh = {g_: float(sum(x['tr_feat'][F.index(f_)] for f_ in fs)) for g_, fs in GROUPS3.items()}
+            gtop = max(gsh, key=gsh.get)
+            tip = (f"Held-out test: the main area agreed with the deletion test in {100 * E3_TR['hit']:.0f}% of {E3_TR['n']} events "
+                   f"(95% range {100 * E3_TR['lo']:.0f}-{100 * E3_TR['hi']:.0f}%, random {100 * E3_TR['rand']:.0f}%). Single signals stay indicative.")
+            st.markdown(chip(f'Mainly {gtop.lower()} · {100 * gsh[gtop]:.0f}%', 'blue') + chip('Area checked on test events', 'good', tip), unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div style="font-size:12.5px;color:{DIM}">Not captured for this episode.</div>', unsafe_allow_html=True)
+    with r2.container(border=True):
+        head('Other unusual signals', "How far each signal is from this market's own normal behaviour.")
+        if x and x.get('ae_err'):
+            ae = np.array(x['ae_err'], dtype=float)
+            mx = float(np.abs(ae).max()) or 1.0
+            order = np.argsort(-np.abs(ae))
+            st.markdown(bar_rows([(names[q], abs(ae[q]) / mx, f'{ae[q]:.2f}', VIO) for q in order]) + chip('Extra detail', 'mute'), unsafe_allow_html=True)
+        else:
+            st.markdown(f'<div style="font-size:12.5px;color:{DIM}">Not captured for this episode.</div>', unsafe_allow_html=True)
     st.caption('An alert is an attention signal, not proof of wrongdoing or a trading recommendation.')
 
 
-# ------------------------------------------------------------------ UNCERTAINTY
+# ------------------------------------------------------------------ UNCERTAINTY (legacy helpers)
 def win_row(v, hk, n, lab):
     j = v.j
     m0 = j.t0
@@ -891,7 +1057,7 @@ def win_row(v, hk, n, lab):
     st.markdown(f"**{lab}** &nbsp; {badge(w['tier'], COL[lv])}<br><span style='color:{DIM};font-size:12px'>{w['start'][11:16]}–{w['end'][11:16]} UTC · peak unusualness {w['peak_unus']:.1f}% · {w['flagged_min']} flagged min</span>", unsafe_allow_html=True)
 
 
-def render_unc(v, vis):
+def render_unc_legacy(v, vis):
     if v is None:
         st.info('Nothing has been flagged yet. Press Play, or use Next Alert at the top.')
         return
@@ -962,7 +1128,7 @@ def render_unc(v, vis):
         cl = j.conf_labels or {}
         st.markdown('**Rule:** three checks are made at the strongest minute of the episode. **Rare** = the score is rarer than 1 in 1,000 minutes of this market\'s last 7 days. '
                     '**Persistent** = at least 3 of the last 5 minutes were ALERT. **Checks agree** = at least 2 of the 3 detectors are above their own line. '
-                    '3 met = Strong, 2 = Moderate, otherwise Limited. Only ALERT episodes are rated.')
+                    '3 met = Strong, 2 = Moderate, otherwise Weak. Only ALERT episodes are rated.')
         st.markdown(f"**Engine confidence:** HIGH = {cl.get('High')}. MEDIUM = {cl.get('Medium')}. LOW = {cl.get('Low')}.")
         st.markdown('**Detectors:** ' + ' · '.join(f"{d['name']} = {d['tech']}" for d in DET) + '.')
     cal = j.cal
@@ -987,12 +1153,12 @@ def render_unc(v, vis):
             for l_, t_ in [('STRONG', 'All three checks met'), ('MODERATE', 'Two of three checks met'), ('LIMITED', 'Fewer than two checks met')]:
                 on = lvl == l_
                 st.markdown(f'<div style="border:1px solid {LVC[l_] if on else GRID};background:{LVC[l_] + "18" if on else "transparent"};border-radius:8px;padding:8px 10px;margin-bottom:6px">'
-                            f'<b style="color:{LVC[l_]}">{l_.title()} evidence</b><br><span style="color:{DIM};font-size:12px">{t_}</span></div>', unsafe_allow_html=True)
+                            f'<b style="color:{LVC[l_]}">{LDISP[l_]} evidence</b><br><span style="color:{DIM};font-size:12px">{t_}</span></div>', unsafe_allow_html=True)
             cnt = {'STRONG': 0, 'MODERATE': 0, 'LIMITED': 0}
             for q in vis:
                 if q.mx == 2:
                     cnt[evid(q).level] += 1
-            st.caption(f"All alerts so far ({sum(cnt.values())}): Strong {cnt['STRONG']} · Moderate {cnt['MODERATE']} · Limited {cnt['LIMITED']}")
+            st.caption(f"All alerts so far ({sum(cnt.values())}): Strong {cnt['STRONG']} · Moderate {cnt['MODERATE']} · Weak {cnt['LIMITED']}")
     with st.expander('Technical notes (calibration and diagnostics)'):
         tw = j.thr_windows or {}
         g = lambda a_, b_: fx((tw.get(a_) or {}).get(b_))
@@ -1000,6 +1166,184 @@ def render_unc(v, vis):
                     f"- Engine confidence: `{e.conf}`\n- Alert / watch line at peak: `{fx(j.thr_alert[v.pk], 3)} / {fx(j.thr_watch[v.pk], 3)}`\n"
                     f"- 15-min lines (alert / watch): `{g('15 min', 'Alert')} / {g('15 min', 'Watch')}`\n- 1-hour lines (alert / watch): `{g('1 hour', 'Alert')} / {g('1 hour', 'Watch')}`\n"
                     f"- Calibration source: `{cal['source'] if cal else 'n/a'}`\n- Calibration table id: `{cal['npz_sha16'] if cal else 'n/a'}`")
+
+
+# ------------------------------------------------------------------ UNCERTAINTY & ASSESSMENT RELIABILITY (novelty 3, protocol C1 v3 / notebook 49)
+# This tab answers ONE question, for the minute and the episode that are open: "how far can the evidence be trusted, and where does the doubt come from?"
+# It does not repeat the Integrity Score or the state (Overview), nor the reasons (Explainable AI tab). Everything below is computed from the minute shown, not written text.
+SETC = {1: ('Looks normal', '#2FBF8A', 'ordinary zone'), 2: ('Leans unusual', '#EF5B5B', 'abnormal zone'), 3: ("Can't tell", '#E9A23B', 'overlap: both are possible'), 0: ('Unfamiliar', '#8A97B8', 'fits neither class')}
+NB49_REF = {'STRONG': 4.65, 'MODERATE': 0.46, 'LIMITED': 0.15}      # likelihood ratios measured on the synthetic TEST events of notebook 49
+LCODE = {3: 'STRONG', 2: 'MODERATE', 1: 'LIMITED'}
+
+
+def would_be(gate, rare, pers, nc):
+    """the level the minute would get if it were an ALERT minute (same rule as the engine)"""
+    n = int(rare == 1) + int(pers == 1) + int(nc == 1)
+    return 3 if (gate and n == 3) else 2 if (gate and n == 2) else 1
+
+
+def abn_boundary(j, eps=0.10):
+    """fused-score value from which 'abnormal' stays in the conformal set (p-value > eps), from the CAL-3 table"""
+    tab = getattr(getattr(j.svc, 'assets', None), 'abn', {}).get(j.symbol)
+    if tab is None or len(tab) == 0:
+        return None
+    return float(tab[int(np.floor(eps * (len(tab) + 1) - 1))])
+
+
+def tick(b):
+    return {1: '✅', 0: '❌', -1: '❔'}[int(b)]
+
+
+def render_unc(v, vis):
+    j = CUR()
+    if not hasattr(j, 'rel_level'):
+        return render_unc_legacy(v, vis)
+    i = ss().i
+    if i in getattr(j, 'bad', {}) or not np.isfinite(j.fusion[i]):
+        st.info('This minute has no score (NO DATA, or the models are still warming up), so no reliability can be given. Move the replay on.')
+        return
+    lvl, met = int(j.rel_level[i]), int(j.rel_met[i])
+    rare, pers, nc, gate = int(j.rel_rare[i]), int(j.rel_pers[i]), int(j.rel_nc[i]), bool(j.rel_gate[i])
+    fz, nl, rl = float(j.fusion[i]), j.rel_norm_line[i], j.rel_rare_line[i]
+    bnd = abn_boundary(j)
+    cset = int(j.rel_set[i])
+    status_strip(j, i, v)
+
+    # ---- row 1: confidence | the checks behind it
+    ca, cb = st.columns([1, 2])
+    with ca.container(border=True):
+        label('Confidence in this alert')
+        if lvl > 0:
+            nm_, col_ = LDISP[LCODE[lvl]], LVC[LCODE[lvl]]
+            filled = lvl
+        else:
+            nm_, col_, filled = 'No alert now', DIM, max(0, met)
+        segs = ''.join(f'<span style="flex:1;height:10px;border-radius:5px;background:{col_ if q < filled else GRID}"></span>' for q in range(3))
+        st.markdown(f'<div style="font-size:32px;font-weight:800;color:{col_};margin:8px 0 12px">{nm_}</div><div style="display:flex;gap:5px">{segs}</div>'
+                    f'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:{DIM};margin-top:6px"><span>Weak</span><span>Moderate</span><span>Strong</span></div>'
+                    f'<div style="font-size:13px;color:#A9B4D0;margin-top:14px">{max(0, met)} of 3 checks passed' + ('' if gate else ' · data check failed') + '</div>', unsafe_allow_html=True)
+    with cb.container(border=True):
+        head('The checks behind it', 'What was measured, and how close it was.')
+        dots = ''.join('●' if j.state[q] == 2 else '○' for q in range(max(0, i - 4), i + 1))
+        cnt = dots.count('●')
+        pos = []
+        for q_ in (1, 2):
+            ab_, lo_ = int(j.rel_ab[i, q_]), int(j.rel_lo[i, q_])
+            pos.append('above its own line' if ab_ == 1 else 'low' if lo_ == 1 else 'in between' if ab_ == 0 else 'n/a')
+        hist = int(j.rel_hist[i])
+        rows = [
+            (rare, 'Big move', f'Score {fz:.2f}, the big-move line is {fx(rl)}' if np.isfinite(rl) else f'Score {fz:.2f}', f'{fz - rl:+.2f}' if np.isfinite(rl) else ''),
+            (pers, 'Lasting', f'<span style="letter-spacing:2px;color:{ACC}">{dots}</span> &nbsp;{cnt} of the last 5 minutes were alerts', 'needs 3'),
+            (nc, 'Models agree', f'Known-pattern check {pos[0]} · multi-minute check {pos[1]}', 'no conflict' if nc == 1 else 'conflict' if nc == 0 else ''),
+            (int(gate), 'Data is clean', f'{min(hist, 10080):,} minutes of history' + ('' if gate or hist < 1440 else ' · a rejected minute is recent'), 'needs 1,440'),
+        ]
+        h_ = ''
+        for ok, nm_, dt_, rt_ in rows:
+            ic = {1: ('#113A31', COL[0], '✓'), 0: ('#3A1B22', COL[2], '✗')}.get(int(ok), (GRID, DIM, '–'))
+            h_ += (f'<div style="display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid {GRID}">'
+                   f'<span style="width:24px;height:24px;border-radius:50%;background:{ic[0]};color:{ic[1]};display:grid;place-items:center;font-weight:800;font-size:13px">{ic[2]}</span>'
+                   f'<div><b style="color:{TXT}">{nm_}</b><div style="font-size:12px;color:{DIM}">{dt_}</div></div>'
+                   f'<span style="font:500 12.5px monospace;color:#A9B4D0">{rt_}</span></div>')
+        st.markdown(h_, unsafe_allow_html=True)
+
+    # ---- row 2: normal or unusual | models agree | can the score tell
+    cl_, cm_, cr_ = st.columns(3)
+    with cl_.container(border=True):
+        head('Normal or unusual?', "Where the score sits against this market's own history.")
+        if cset < 0 or bnd is None:
+            st.markdown(f'<div style="font-size:12.5px;color:{DIM}">Not available in this session.</div>', unsafe_allow_html=True)
+        else:
+            nm, col, tx = SETC[cset]
+            lo_, hi_ = min(nl, bnd), max(nl, bnd)
+            span = [min(fz, lo_) - 1.0, max(fz, hi_) + 1.0]
+            rf = go.Figure()
+            for x0, x1, colz in [(span[0], lo_, 'rgba(47,191,138,.40)'), (lo_, hi_, 'rgba(233,162,59,.40)' if bnd < nl else 'rgba(138,151,184,.40)'), (hi_, span[1], 'rgba(239,91,91,.40)')]:
+                rf.add_shape(type='rect', x0=x0, x1=x1, y0=0, y1=1, fillcolor=colz, line=dict(width=0))
+            rf.add_vline(x=fz, line=dict(color='#FFFFFF', width=3))
+            rf.update_layout(template='plotly_dark', height=64, margin=dict(l=4, r=4, t=4, b=20), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+                             xaxis=dict(range=span, gridcolor=GRID, tickvals=[round(lo_, 2), round(hi_, 2)]), yaxis=dict(visible=False), showlegend=False)
+            st.plotly_chart(rf, width='stretch', config=dict(displayModeBar=False), key='u_ruler')
+            st.markdown(f'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:{DIM}"><span>Looks normal</span><span>Can\'t tell</span><span>Leans unusual</span></div>'
+                        f'<div style="margin-top:12px">{chip(nm, {1: "good", 2: "alert", 3: "warn", 0: "mute"}[cset])}</div>', unsafe_allow_html=True)
+    with cm_.container(border=True):
+        head('Models agree', 'How many checks are above their own alert line.')
+        ab = [int(j.rel_ab[i, q]) for q in range(3)]
+        n_ab = sum(1 for q in ab if q == 1)
+        dots_ = ''.join(f'<span style="width:14px;height:14px;border-radius:50%;background:{ORG if q == 1 else GRID};display:inline-block;margin-right:7px"></span>' for q in ab)
+        st.markdown(f'<div style="display:flex;gap:16px;align-items:center"><div style="font-size:44px;font-weight:800;line-height:1;color:{TXT}">{n_ab}<span style="font-size:18px;color:{DIM}"> of 3</span></div><div>{dots_}</div></div>'
+                    f'<div style="font-size:12px;color:{DIM};margin-top:12px">' + ' · '.join(f'{n_}: {"above" if a_ == 1 else "below" if a_ == 0 else "n/a"}' for n_, a_ in zip(SHORT_DET, ab)) + '</div>', unsafe_allow_html=True)
+    # evolution window
+    lo = max(j.first, i - 179)
+    ks = np.arange(lo, i + 1)
+    w = slice(lo, i + 1)
+    cs, lv_, st_ = j.rel_set[w], j.rel_level[w], j.state[w]
+    n_ = max(1, len(cs))
+    with cr_.container(border=True):
+        head('Can the score tell?', 'Share of the last 3 hours in each state.')
+        segs = [('Looks normal', float((cs == 1).sum()), COL[0]), ("Can't tell", float(((cs == 3) | (cs == 0)).sum()), COL[1]), ('Leans unusual', float((cs == 2).sum()), COL[2])]
+        d1, d2 = st.columns([1, 1])
+        pf = go.Figure(go.Pie(values=[s_[1] for s_ in segs], hole=0.66, marker=dict(colors=[s_[2] for s_ in segs]), textinfo='none', sort=False, direction='clockwise', hoverinfo='skip'))
+        pf.update_layout(height=120, margin=dict(l=0, r=0, t=0, b=0), paper_bgcolor='rgba(0,0,0,0)', showlegend=False)
+        d1.plotly_chart(pf, width='stretch', config=dict(displayModeBar=False), key='u_donut')
+        d2.markdown(''.join(f'<div style="display:flex;gap:8px;align-items:center;font-size:12.5px;color:#A9B4D0;margin:6px 0"><span style="width:10px;height:10px;border-radius:3px;background:{c_}"></span>{n}'
+                            f'<b style="margin-left:auto;color:{TXT};font-family:monospace">{100 * s / n_:.0f}%</b></div>' for n, s, c_ in segs), unsafe_allow_html=True)
+
+    # ---- row 3: how the doubt changed | this alert minute by minute
+    cx, cy = st.columns([2, 1])
+    with cx.container(border=True):
+        head('How the doubt changed, last 3 hours', 'The score against the lines that decide normal, unusual and alert.')
+        x = [pd.Timestamp(j.dt[q]) for q in ks]
+        from plotly.subplots import make_subplots
+        f = make_subplots(rows=3, cols=1, shared_xaxes=True, row_heights=[0.7, 0.15, 0.15], vertical_spacing=0.03)
+        f.add_trace(go.Scatter(x=x, y=j.fusion[ks], mode='lines', line=dict(color='#C7D2F5', width=1.7), fill='tozeroy', fillcolor='rgba(199,210,245,.07)', name='score'), row=1, col=1)
+        f.add_trace(go.Scatter(x=x, y=j.rel_norm_line[ks], mode='lines', line=dict(color=COL[0], dash='dot', width=1.1), name='normal up to'), row=1, col=1)
+        if bnd is not None:
+            f.add_trace(go.Scatter(x=x, y=np.full(len(ks), bnd), mode='lines', line=dict(color=COL[1], dash='dot', width=1.1), name='unusual from'), row=1, col=1)
+        f.add_trace(go.Scatter(x=x, y=j.thr_alert[ks], mode='lines', line=dict(color=COL[2], dash='dash', width=1.1), name='alert line'), row=1, col=1)
+        f.add_trace(go.Scatter(x=x, y=j.rel_rare_line[ks], mode='lines', line=dict(color=VIO, dash='dot', width=1.1), name='big-move line'), row=1, col=1)
+        f.add_trace(go.Bar(x=x, y=np.where(j.rel_set[ks] >= 0, 1, 0), marker_color=[SETC[int(q)][1] if q >= 0 else GRID for q in j.rel_set[ks]], showlegend=False, hoverinfo='skip'), row=2, col=1)
+        f.add_trace(go.Bar(x=x, y=np.where(j.rel_level[ks] > 0, 1, 0), marker_color=[LVC[LCODE[int(q)]] if q > 0 else GRID for q in j.rel_level[ks]], showlegend=False, hoverinfo='skip'), row=3, col=1)
+        themed(f, 400, left=44)
+        f.update_layout(bargap=0)
+        for r_, t_ in [(2, 'state'), (3, 'confidence')]:
+            f.update_yaxes(visible=True, showticklabels=False, title_text=t_, range=[0, 1], row=r_, col=1)
+        st.plotly_chart(f, width='stretch', config=dict(displayModeBar=False), key='u_tl')
+        st.markdown(legend([('Score', '#C7D2F5', False), ('Normal up to here', COL[0], True), ('Unusual from here', COL[1], True), ('Alert line', COL[2], True), ('Big-move line', VIO, True)]), unsafe_allow_html=True)
+    with cy.container(border=True):
+        head('This alert, minute by minute', 'Confidence of each alert minute.')
+        if v is None:
+            st.markdown(f'<div style="font-size:12.5px;color:{DIM}">No alert yet. Press Play, or use Next Alert at the top.</div>', unsafe_allow_html=True)
+        else:
+            ks_ = np.arange(v.s, v.e + 1)
+            al_ = ks_[j.state[ks_] == 2]
+            pad = 10
+            kk = np.arange(max(j.first, v.s - pad), min(i, v.e + pad) + 1)
+            ef = go.Figure()
+            ef.add_trace(go.Bar(x=[pd.Timestamp(j.dt[q]) for q in kk], y=np.where(j.state[kk] == 2, j.rel_level[kk], 0), marker_color=[LVC[LCODE[int(q)]] if q > 0 else GRID for q in j.rel_level[kk]],
+                                hovertext=[f'{hhmm(j, q)} · checks met {int(j.rel_met[q])}' for q in kk], hoverinfo='text'))
+            themed(ef, 250, left=64, hover=False)
+            ef.update_layout(bargap=0.05)
+            ef.update_yaxes(tickvals=[1, 2, 3], ticktext=['Weak', 'Moderate', 'Strong'], range=[0, 3.3])
+            st.plotly_chart(ef, width='stretch', config=dict(displayModeBar=False), key='u_ep')
+            st.markdown(''.join(chip(f'{hhmm(j, q)} {LDISP[LCODE[int(j.rel_level[q])]]}', LVCHIP[LCODE[int(j.rel_level[q])]]) for q in al_[-6:] if j.rel_level[q] > 0), unsafe_allow_html=True)
+
+    with st.expander('How this works'):
+        st.markdown('- An alert minute is rated on three checks: a big move, a lasting move, and models that agree. **Strong** needs all three plus clean data, **Moderate** two plus clean data, **Weak** is every other alert minute.\n'
+                    "- The score is compared with the last 7 days of this same market.\n"
+                    "- On genuine (non-event) test minutes the score alone said 'looks normal' about 45% of the time and \"can't tell\" about 45%, because many event minutes are weak. "
+                    'Two further attempts to sharpen this were tested and did not help, so use this as support for your own judgement, not as an alarm.\n'
+                    f"- On the synthetic test events a Strong minute was {NB49_REF['STRONG']:.2f}x, a Moderate minute {NB49_REF['MODERATE']:.2f}x and a Weak minute {NB49_REF['LIMITED']:.2f}x as likely to be a genuine event as an average alert minute. This is not a probability.")
+        cal = j.cal
+        if cal:
+            E = np.array(cal['edges'])
+            ff = go.Figure()
+            for key, nm, col, fc in [('normal', f"ordinary calibration minutes ({cal['n_normal']:,})", '#3987E5', 'rgba(57,135,229,.25)'), ('abnormal', f"abnormal calibration minutes ({cal['n_abnormal']:,})", VIO, 'rgba(144,133,233,.25)')]:
+                ff.add_trace(go.Scatter(x=np.repeat(E, 2)[1:-1], y=np.repeat(cal[key], 2), mode='lines', line=dict(color=col, width=1.4), fill='tozeroy', fillcolor=fc, name=nm))
+            ff.add_vline(x=float(max(E[0], min(E[-1], fz))), line=dict(color='#FFFFFF', dash='dash', width=2), annotation_text=f'now {fz:.2f}', annotation_font_color='#FFFFFF')
+            themed(ff, 230, left=44, top=20, bottom=30, hover=False)
+            ff.update_layout(showlegend=True, legend=dict(orientation='h', y=-0.25))
+            ff.update_yaxes(title='density')
+            st.plotly_chart(ff, width='stretch', config=dict(displayModeBar=False), key='u_cal')
 
 
 # ------------------------------------------------------------------ SIMILAR PAST
@@ -1060,7 +1404,7 @@ def spark(vals, thr, split=None, h=130):
     return f
 
 
-def render_hist(j, i):
+def render_hist_legacy(j, i):
     st.info('**Context, not a forecast.** Similar past patterns do not guarantee the same future. Matches are searched only among earlier minutes of this recording (at least 2 hours before the current minute), never looking ahead.')
     res = hist_find(j, i)
     with st.container(border=True):
@@ -1089,12 +1433,124 @@ def render_hist(j, i):
                         f"peak unusualness {('–' if np.isnan(r['pk']) else format(r['pk'], '.1f') + '%')}", unsafe_allow_html=True)
 
 
+MATCHC = ['#3987E5', '#5B9BEA', '#7DAFEF', '#9FC3F4', '#C0D7F8']
+
+
+def match_trace(j, hx, r):
+    """fused score and Alert line of a matched hour (60 min) and the hour after it (60 min): from the live replay when the match lies inside this recording, otherwise from the July traces (notebook 60)"""
+    kk = int((r['end_ts_ns'] - pd.Timestamp(j.ts[0]).value) // 60_000_000_000)
+    if HW - 1 <= kk and kk + 60 < getattr(j, 'done', j.n):
+        f, t = j.fusion[kk - HW + 1:kk + 61], j.thr_alert[kk - HW + 1:kk + 61]
+        if np.isfinite(f).all():
+            return f, t
+    return hx.trace(j.symbol, r['end_ts_ns']) if hasattr(hx, 'trace') else None
+
+
+def match_fig(f, t, h=150):
+    x = np.arange(-HW + 1, 61)
+    g = go.Figure()
+    g.add_trace(go.Scatter(x=x[:HW], y=f[:HW], mode='lines', line=dict(color=ACC, width=1.8), hovertemplate='%{x} min: %{y:.2f}<extra></extra>'))
+    g.add_trace(go.Scatter(x=x[HW - 1:], y=f[HW - 1:], mode='lines', line=dict(color=ORG, width=1.8), hovertemplate='+%{x} min: %{y:.2f}<extra></extra>'))
+    if np.isfinite(t).any():
+        g.add_trace(go.Scatter(x=x, y=t, mode='lines', line=dict(color=COL[2], dash='dash', width=1), hoverinfo='skip'))
+    g.add_vline(x=0, line=dict(color='#3A4C7A', width=1))
+    themed(g, h, left=30, bottom=22, top=6)
+    g.update_xaxes(tickvals=[-59, 0, 60], ticktext=['1 h before', 'match', '1 h after'])
+    return g
+
+
+def render_hist(j, i, v=None):
+    status_strip(j, i, v)
+    hx = getattr(j, 'hidx', None)
+    if hx is None or not hx.ok:
+        return render_hist_legacy(j, i)
+    import live_engine as LE
+    d = LE.window_descriptor(j, i)
+    res = []
+    if d is not None:
+        key = (j.symbol, i)
+        cache = ss().setdefault('_hq', {})
+        if key not in cache:
+            cache[key] = hx.find(j.symbol, d, pd.Timestamp(j.ts[i]).value)
+            if len(cache) > 400:
+                cache.pop(next(iter(cache)))
+        res = cache[key] or []
+    trs = [match_trace(j, hx, r) for r in res]
+    has = any(t_ is not None for t_ in trs)
+    top = st.columns([2, 1])
+    with top[0].container(border=True):
+        if has:
+            head('Now compared with the most similar past hours', 'Orange is the last hour. Blue lines are the matched past hours, lined up at their last minute.')
+        else:
+            head('The last hour, now', 'Unusual-ness over the last 60 minutes.')
+        a_ = max(j.first, i - HW + 1)
+        cur = j.fusion[a_:i + 1]
+        f = go.Figure()
+        for n, (r, t_) in enumerate(zip(res, trs)):
+            if t_ is not None:
+                f.add_trace(go.Scatter(x=np.arange(-HW + 1, 1), y=t_[0][:HW], mode='lines', line=dict(color=MATCHC[n % 5], width=1.3), opacity=0.85,
+                                       name=f'#{n + 1} · ' + r['end_utc'][5:16].replace('T', ' '), hovertemplate='#' + str(n + 1) + ' %{y:.2f}<extra></extra>'))
+        f.add_trace(go.Scatter(x=np.arange(-len(cur) + 1, 1), y=cur, mode='lines', line=dict(color=ORG, width=3), name='Now', hovertemplate='Now %{y:.2f}<extra></extra>'))
+        f.add_trace(go.Scatter(x=[0], y=[cur[-1]], mode='markers', marker=dict(color=ORG, size=9, line=dict(color=SURF, width=2)), hoverinfo='skip'))
+        themed(f, 280, left=44)
+        f.update_xaxes(tickvals=[-59, -45, -30, -15, 0], ticktext=['60 min ago', '45', '30', '15', 'now'])
+        st.plotly_chart(f, width='stretch', config=dict(displayModeBar=False), key='h_now')
+        st.markdown(legend([('Now', ORG, False)] + ([('Similar past hours', ACC, False)] if has else [])), unsafe_allow_html=True)
+    if d is None or not res:
+        with top[1].container(border=True):
+            msg = ('This 60-minute window contains minutes without a score (warm-up or NO DATA), so it cannot be matched yet. Move the replay on a little.' if d is None else
+                   'No earlier hour is old enough yet. The first day of the recording has no past of its own; the Jul 3-29 development period is used when available.')
+            st.markdown(f'<div style="font-size:12.5px;color:{DIM}">{msg}</div>', unsafe_allow_html=True)
+        return
+    n_al = sum(1 for r in res if (r['minutes_above_alert_next_hour'] or 0) > 0)
+    with top[1].container(border=True):
+        head('What happened next', f'In the {len(res)} most similar past hours.')
+        st.markdown(f'<div style="display:flex;gap:16px;align-items:center"><div style="font-size:46px;font-weight:800;line-height:1;color:{TXT}">{n_al}<span style="font-size:18px;color:{DIM}"> of {len(res)}</span></div>'
+                    f'<div style="font-size:13px;color:#A9B4D0;max-width:150px">went on to an alert in the next hour</div></div>', unsafe_allow_html=True)
+        pk = [r['peak_fused_next_hour'] if r['peak_fused_next_hour'] is not None else 0 for r in res]
+        pf = go.Figure(go.Bar(x=[f'#{n + 1}' for n in range(len(res))], y=pk, marker_color=[COL[2] if (r['minutes_above_alert_next_hour'] or 0) > 0 else ACC for r in res],
+                              hovertemplate='%{x}: highest score %{y:.2f}<extra></extra>'))
+        themed(pf, 130, left=34, top=10, bottom=22, hover=False)
+        st.plotly_chart(pf, width='stretch', config=dict(displayModeBar=False), key='h_peaks')
+        st.markdown('<div style="font-size:11.5px;color:' + DIM + ';margin:-4px 0 8px">Highest score in the hour after each match</div>' + chip('Past hours, not a forecast', 'warn'), unsafe_allow_html=True)
+
+    with st.container(border=True):
+        head(f'The {len(res)} most similar past hours', 'Blue is the matched hour, orange is the hour after it, red dashed is that day\'s alert line.')
+        cols = st.columns(len(res))
+        for n, (r, c, t_) in enumerate(zip(res, cols, trs)):
+            ma, pk_ = r['minutes_above_alert_next_hour'], r['peak_fused_next_hour']
+            when = r['end_utc'][5:16].replace('T', ' ')
+            typ = r['typical_distance']
+            clo = max(0.0, min(1.0, 1 - r['distance'] / typ)) if typ else None
+            with c.container(border=True):
+                st.markdown(f'<div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap"><span style="font:600 13px monospace;color:{TXT}">{when} UTC</span>'
+                            + chip(f'Alert {ma} min' if (ma or 0) > 0 else 'No alert after', 'alert' if (ma or 0) > 0 else 'good') + '</div>', unsafe_allow_html=True)
+                if t_ is not None:
+                    st.plotly_chart(match_fig(t_[0], t_[1], 140), width='stretch', config=dict(displayModeBar=False), key=f'h_{n}')
+                if clo is not None:
+                    st.markdown(bar_rows([('Closeness', clo, f'{100 * clo:.0f}%', ACC)]).replace('150px', '70px'), unsafe_allow_html=True)
+                st.markdown(bar_rows([('Alert minutes', (ma or 0) / 60.0, f'{ma if ma is not None else "–"}', COL[2] if (ma or 0) > 0 else ACC)]).replace('150px', '90px')
+                            + f'<div style="display:flex;justify-content:space-between;font-size:12px;color:{DIM}"><span>Highest score next hour</span><b style="color:{TXT};font-family:monospace">{"–" if pk_ is None else format(pk_, ".2f")}</b></div>', unsafe_allow_html=True)
+    with st.expander('How was this made?'):
+        st.markdown('- The last 60 minutes are summarised as 24 numbers (the four scores plus the six signals) and compared with earlier hours only; a match must have ended at least 2 hours ago.\n'
+                    f'- Index version `{str(hx.version.get(j.symbol, "n/a"))[:16]}`. The history is short (about 4 months of one exchange) and the validation events are synthetic.\n'
+                    '- Two pre-registered attempts to turn the matches into an alert probability failed on held-out hours (the second reached AUC 0.51), so history is shown as context only. '
+                    'On synthetic events the right family was among the top five matches 30% of the time, which makes it a starting point for a human, not evidence.')
+
+
 # ------------------------------------------------------------------ page
 CSS = """
 <style>
+.stApp,[data-testid="stHeader"]{background:#080E1D}
 .block-container{padding-top:1.2rem;max-width:1500px}
+[data-testid="stVerticalBlockBorderWrapper"]{background:#0F1A33;border:1px solid #1F2F55 !important;border-radius:14px}
+[data-testid="stVerticalBlockBorderWrapper"] [data-testid="stVerticalBlockBorderWrapper"]{background:#142243}
 [data-testid="stMetricValue"]{font-size:1.35rem}
 [data-testid="stMetricLabel"]{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em}
+.stTabs [data-baseweb="tab"]{font-weight:600}
+.stTabs [aria-selected="true"]{color:#8DB8FF}
+.stTabs [data-baseweb="tab-highlight"]{background-color:#3987E5}
+details{background:#0F1A33;border-color:#1F2F55 !important;border-radius:14px}
 </style>
 """
 
@@ -1216,8 +1672,8 @@ def render(data_dir=None):
     st.markdown(CSS, unsafe_allow_html=True)
     s = ss()
     top = st.columns([3.2, 1.6, 2.2])
-    top[0].markdown('## 🛡️ TradeSense · IntegritySense')
-    top[0].caption('Market Integrity Intelligence Engine · 1-minute Binance Spot bars · Monitor-only · Component 03')
+    top[0].markdown('## 🛡️ TradeSense')
+    top[0].caption('Market integrity monitor · 1-minute Binance Spot bars · Monitor-only · Component 03')
     with top[1]:
         pick = st.segmented_control('Market', ['BTC/USDT', 'ETH/USDT'], key='sym_sel')
         if pick and pick.replace('/', '') != s.sym:
@@ -1249,7 +1705,7 @@ def render(data_dir=None):
     i = s.i
     vis = vis_eps(j, i)
     v, latest = pick_episode(vis) if True else (None, None)
-    t1, t2, t3, t4 = st.tabs(['Overview', 'Explainable AI & Evidence', 'Uncertainty & Assessment Reliability', 'Similar past · Historical Context'])
+    t1, t2, t3, t4 = st.tabs(['Overview', 'Evidence with Explainable AI', 'Uncertainty & Reliability', 'Similar Past'])
     with t1:
         render_overview(B, j, i)
     with t2:
@@ -1257,7 +1713,7 @@ def render(data_dir=None):
     with t3:
         render_unc(v, vis)
     with t4:
-        render_hist(j, i)
+        render_hist(j, i, v)
     render_data_checks()
     render_provenance(B)
     # replay engine: advance, then rerun
@@ -1282,5 +1738,5 @@ def render(data_dir=None):
 
 
 if __name__ == '__main__':
-    st.set_page_config(page_title='C03 IntegritySense', page_icon='🛡️', layout='wide')
+    st.set_page_config(page_title='TradeSense · Market Integrity', page_icon='🛡️', layout='wide')
     render()

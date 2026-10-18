@@ -83,3 +83,24 @@ def test_data_check_panel_rejects_garbage_and_accepts_a_real_minute():
     assert not at.exception and any('Rejected' in e.value for e in at.error)
     next(s for s in at.selectbox if s.key == 'dq_pick').select('A normal minute (copied from the recording)').run()
     assert not at.exception and any('Accepted' in s_.value for s_ in at.success) and not any('Rejected' in e.value for e in at.error)
+
+
+@pytest.mark.skipif(not LIVE, reason='backend/export not found')
+def test_scored_minutes_survive_a_new_session():
+    """a browser refresh (new session) must not repeat the scoring the models have already done"""
+    at = fresh()
+    j = at.session_state['_B']['BTCUSDT']
+    btn(at, '1 bar ▶').click().run()
+    done = j.done
+    at2 = fresh()
+    assert not at2.exception and at2.session_state['_B']['BTCUSDT'].done >= done
+
+
+@pytest.mark.skipif(not LIVE, reason='backend/export not found')
+def test_analysis_tabs_are_plain_and_free_of_the_old_name():
+    """the three analysis tabs draw from the models, show the confidence level and carry no developer wording"""
+    at = fresh()
+    assert not at.exception
+    text = ' '.join(m.value for tb in at.tabs[1:] for m in tb.markdown)
+    assert 'IntegritySense' not in text and 'SHAP' not in text and 'protocol' not in text.lower() and 'notebook' not in text.lower().replace('notebooks', '')
+    assert 'Confidence' in text and 'What drove it' in text and 'Normal or unusual?' in text and 'most similar past hours' in text
