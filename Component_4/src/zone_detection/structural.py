@@ -3,8 +3,8 @@
 Run from the repository root:
     python -B Component_4/src/zone_detection/structural.py
 
-Snapshots describe end-of-input state, not historical availability. Event rows
-are immutable versions appended in confirmation order during each batch run.
+Swing audit and zone event CSVs preserve confirmed evidence and history. Event
+rows are immutable versions appended in confirmation order during each batch run.
 --overwrite explicitly regenerates these derived files; this is not a resumable
 incremental writer. Matching expiry only archives the matching index, not zones.
 """
@@ -45,7 +45,22 @@ ZONE_COLUMNS = (
     "diameter_limit", "padding_price", "latest_evidence_at_utc",
 )
 EVENT_COLUMNS = ("event_type", "event_at_utc", "event_sequence", "evidence_swing_id") + ZONE_COLUMNS
-SNAPSHOT_COLUMNS = ZONE_COLUMNS + ("snapshot_as_of_utc",)
+
+# Static methodology text for the report, separate from CLI execution.
+RULES = {
+    "swings": "Strict unique extrema; high before low for same pivot; confirming candle availability and ATR",
+    "reference_atr": "Frozen from first swing confirmation ATR",
+    "matching_tolerance": "cluster_tolerance_atr * min(first_reference_atr, new_confirmation_atr)",
+    "compactness": "Updated diameter <= cluster_tolerance_atr * minimum confirmation ATR of all members",
+    "ties": "Nearest existing midpoint, earliest first confirmation, lexicographic cluster ID",
+    "eligibility": "Elapsed confirmation time since latest evidence <= timeframe lookback; expiry is not invalidation",
+    "boundaries": "[min_price-padding, max_price+padding]; padding=min(padding_atr*minimum_member_atr, padding_price_cap_fraction*min_price)",
+    "width_cap": "positive finite boundaries and width <= max_zone_width_fraction * observed midpoint",
+    "invalid_atr": "Keep confirmed swing in audit output; exclude it from grouping; never fill ATR",
+    "availability": "confirmed_at_utc is original zone creation; available_at_utc is availability of this version",
+    "history": "Zone event rows are immutable states at event_at_utc",
+    "scope": "Historical candidates only; no lifecycle or present-day validity assessment",
+}
 
 
 @dataclass(frozen=True)
@@ -108,9 +123,8 @@ def boundaries(minimum: float, maximum: float, minimum_atr: float,
 class StructuralDetector:
     """Price-indexed eligible groups with an elapsed-time expiry heap.
 
-    Reference ATR is frozen at the first evidence. The diameter allowance can
-    only shrink: tolerance * minimum confirmation ATR across all group members.
-    A single swing joins at most one group; duplicate swing IDs are rejected.
+    First-evidence ATR stays frozen; the diameter cap can only shrink with ATR.
+    Each unique swing joins at most one group. Expiry does not invalidate zones.
     """
 
     def __init__(self, symbol: str, timeframe: str, config: Config | None = None):
@@ -145,15 +159,21 @@ class StructuralDetector:
     def state(self, group: Group) -> dict:
         lower, upper, padding = boundaries(group.minimum, group.maximum,
                                             group.minimum_atr, self.config)
-        return dict(zip(ZONE_COLUMNS, (
-            group.cluster_id.replace("group_", "zone_", 1), group.cluster_id,
-            group.symbol, group.timeframe, "structural", f"swing_{group.kind}_cluster",
-            lower, upper, iso(group.formation_start), iso(group.zone_confirmed_at),
-            iso(group.latest_confirmation), group.count, group.reference_atr,
-            CLUSTER_METHOD, "candidate", group.minimum, group.maximum,
-            group.minimum_atr, group.diameter_limit, padding,
-            iso(group.latest_confirmation),
-        )))
+        available_at = iso(group.latest_confirmation)
+        return {
+            "zone_id": group.cluster_id.replace("group_", "zone_", 1),
+            "cluster_id": group.cluster_id, "symbol": group.symbol,
+            "source_timeframe": group.timeframe, "zone_family": "structural",
+            "origin_type": f"swing_{group.kind}_cluster",
+            "lower_price": lower, "upper_price": upper,
+            "formation_start_utc": iso(group.formation_start),
+            "confirmed_at_utc": iso(group.zone_confirmed_at), "available_at_utc": available_at,
+            "confirmed_swing_count": group.count, "cluster_reference_atr": group.reference_atr,
+            "cluster_method": CLUSTER_METHOD, "candidate_status": "candidate",
+            "observed_min_price": group.minimum, "observed_max_price": group.maximum,
+            "minimum_member_atr": group.minimum_atr, "diameter_limit": group.diameter_limit,
+            "padding_price": padding, "latest_evidence_at_utc": available_at,
+        }
 
     def consume(self, swing: Swing) -> dict | None:
         if swing.symbol != self.symbol or swing.source_timeframe != self.timeframe:
@@ -197,8 +217,7 @@ class StructuralDetector:
         if matches:
             group = self.active[min(matches)[2]]
             self._remove_price(group)
-            group.minimum = min(group.minimum, price)
-            group.maximum = max(group.maximum, price)
+            group.minimum, group.maximum = min(group.minimum, price), max(group.maximum, price)
             group.minimum_atr = min(group.minimum_atr, atr)
             group.diameter_limit = min(group.diameter_limit,
                                       self.config.cluster_tolerance_atr * group.minimum_atr)
@@ -243,8 +262,7 @@ class StructuralDetector:
 def output_paths(root: Path, symbol: str, timeframe: str) -> dict[str, Path]:
     folder = root / "data" / "zones" / "structural"
     stem = f"{symbol}_{timeframe}"
-    return {"snapshot": folder / f"{stem}.csv",
-            "swings": folder / f"{stem}_swings.csv",
+    return {"swings": folder / f"{stem}_swings.csv",
             "zone_events": folder / f"{stem}_zone_events.csv"}
 
 
@@ -280,8 +298,7 @@ def process_dataset(symbol: str, timeframe: str, source: Path, outputs: dict[str
 
     with ExitStack() as stack:
         writers = {}
-        for name, columns in (("snapshot", SNAPSHOT_COLUMNS), ("swings", SWING_COLUMNS),
-                              ("zone_events", EVENT_COLUMNS)):
+        for name, columns in (("swings", SWING_COLUMNS), ("zone_events", EVENT_COLUMNS)):
             path = outputs[name]
             path.parent.mkdir(parents=True, exist_ok=True)
             handle = stack.enter_context(path.open("w" if overwrite else "x", newline="", encoding="utf-8"))
@@ -297,37 +314,28 @@ def process_dataset(symbol: str, timeframe: str, source: Path, outputs: dict[str
         if last_available is None:
             raise ValueError(f"Empty feature input: {source}")
         detector.archive_matching_as_of(last_available)
-        snapshots = detector.snapshots(last_available)
-        writers["snapshot"].writerows(snapshots)
 
-    warnings = []
-    for name in ("missing_atr_rows", "invalid_atr_rows"):
-        if stats[name]:
-            warnings.append(f"{name}: {stats[name]}; no ATR imputation was used")
-    for name in ("swings_skipped_unusable_atr", "swings_skipped_invalid_boundaries"):
-        if detector.stats[name]:
-            warnings.append(f"{name}: {detector.stats[name]}; swings remain in the swing audit CSV")
+    warnings = [f"{name}: {stats[name]}; no ATR imputation was used"
+                for name in ("missing_atr_rows", "invalid_atr_rows") if stats[name]]
+    warnings += [f"{name}: {detector.stats[name]}; swings remain in the swing audit CSV"
+                 for name in ("swings_skipped_unusable_atr", "swings_skipped_invalid_boundaries")
+                 if detector.stats[name]]
     return {
         "symbol": symbol, "source_timeframe": timeframe, "input_path": str(source),
-        "input_rows": stats["input_rows"],
-        "confirmed_swing_high_count": stats["confirmed_swing_high_count"],
-        "confirmed_swing_low_count": stats["confirmed_swing_low_count"],
-        "missing_atr_rows": stats["missing_atr_rows"], "invalid_atr_rows": stats["invalid_atr_rows"],
+        **{name: stats[name] for name in ("input_rows", "confirmed_swing_high_count",
+                                        "confirmed_swing_low_count", "missing_atr_rows", "invalid_atr_rows")},
         "provisional_cluster_count": sum(g.zone_confirmed_at is None for g in detector.groups.values()),
         "total_cluster_count": len(detector.groups),
         "candidate_zones_created": detector.stats["zone_create_count"],
         "zone_update_count": detector.stats["zone_update_count"],
         "matching_eligible_groups_at_end": len(detector.active),
-        "matching_groups_examined": detector.stats["matching_groups_examined"],
-        "groups_archived_from_matching": detector.stats["groups_archived_from_matching"],
-        "swings_grouped": detector.stats["swings_grouped"],
-        "swings_skipped_unusable_atr": detector.stats["swings_skipped_unusable_atr"],
+        **{name: detector.stats[name] for name in ("matching_groups_examined",
+             "groups_archived_from_matching", "swings_grouped", "swings_skipped_unusable_atr")},
         "lookback_days": config.lookback(timeframe).total_seconds() / 86400,
         "timestamp_checks": {"status": "PASS", "rows_checked": stats["timestamp_rows_checked"],
                              "first_open_utc": iso(first_open), "last_available_utc": iso(last_available),
                              "checks": ["aware UTC grid", "exact interval spacing", "close-time availability"]},
         "price_boundary_checks": {"status": "PASS", "ohlc_rows_checked": stats["ohlc_rows_checked"],
-                                  "snapshot_zones_checked": len(snapshots),
                                   "event_states_checked": detector.stats["zone_create_count"] + detector.stats["zone_update_count"],
                                   "rejected_swings": detector.stats["swings_skipped_invalid_boundaries"]},
         "output_paths": {name: str(path) for name, path in outputs.items()},
@@ -348,8 +356,7 @@ def run_tests(root: Path) -> dict:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--overwrite", action="store_true", help="Regenerate existing Phase 2 outputs and summary")
-    defaults = Config()
-    for name, value in asdict(defaults).items():
+    for name, value in asdict(Config()).items():
         parser.add_argument("--" + name.replace("_", "-"), type=type(value), default=value)
     args = vars(parser.parse_args(argv))
     overwrite = args.pop("overwrite")
@@ -370,21 +377,8 @@ def main(argv: list[str] | None = None) -> int:
         summary = {
             "generated_at_utc": iso(datetime.now(timezone.utc)), "phase": 2,
             "parameters": asdict(config), "parameter_status": "provisional research assumptions; not optimized",
-            "rules": {
-                "swings": "Strict unique extrema; high before low for same pivot; confirming candle availability and ATR",
-                "reference_atr": "Frozen from first swing confirmation ATR",
-                "matching_tolerance": "cluster_tolerance_atr * min(first_reference_atr, new_confirmation_atr)",
-                "compactness": "Updated diameter <= cluster_tolerance_atr * minimum confirmation ATR of all members",
-                "ties": "Nearest existing midpoint, earliest first confirmation, lexicographic cluster ID",
-                "eligibility": "Elapsed confirmation time since latest evidence <= timeframe lookback; expiry is not invalidation",
-                "boundaries": "[min_price-padding, max_price+padding]; padding=min(padding_atr*minimum_member_atr, padding_price_cap_fraction*min_price)",
-                "width_cap": "positive finite boundaries and width <= max_zone_width_fraction * observed midpoint",
-                "invalid_atr": "Keep confirmed swing in audit output; exclude it from grouping; never fill ATR",
-                "availability": "confirmed_at_utc is original zone creation; available_at_utc is availability of this version",
-                "history": "Zone event rows are immutable states at event_at_utc; snapshot_as_of_utc marks end-of-input snapshots",
-                "scope": "Historical candidates only; no lifecycle or present-day validity assessment",
-            },
-            "schemas": {"swings": SWING_COLUMNS, "zone_events": EVENT_COLUMNS, "snapshots": SNAPSHOT_COLUMNS},
+            "rules": RULES.copy(),
+            "schemas": {"swings": SWING_COLUMNS, "zone_events": EVENT_COLUMNS},
             "tests": tests, "datasets": results,
             "warnings": [f"{r['symbol']} {r['source_timeframe']}: {w}" for r in results for w in r["warnings"]],
         }

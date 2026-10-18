@@ -58,11 +58,13 @@ class Swing:
     atr_at_confirmation: float | None
 
     def record(self) -> dict:
-        return dict(zip(SWING_COLUMNS, (
-            self.swing_id, self.symbol, self.source_timeframe, self.swing_type,
-            self.swing_price, iso(self.swing_time), iso(self.confirmed_at),
-            self.atr_at_confirmation,
-        )))
+        return {
+            "swing_id": self.swing_id, "symbol": self.symbol,
+            "source_timeframe": self.source_timeframe, "swing_type": self.swing_type,
+            "swing_price": self.swing_price, "swing_time_utc": iso(self.swing_time),
+            "confirmed_at_utc": iso(self.confirmed_at),
+            "atr_at_confirmation": self.atr_at_confirmation,
+        }
 
 
 def check_header(path: Path) -> None:
@@ -99,23 +101,17 @@ def read_candles(path: Path, timeframe: str, stats: Counter) -> Iterator[Candle]
                 if high < max(opening, low, close) or low > min(opening, close):
                     raise ValueError("inconsistent OHLC")
                 raw_atr = row["atr_14_sma"].strip()
-                if not raw_atr:
+                try:
+                    atr = float(raw_atr) if raw_atr else None
+                except ValueError:
                     atr = None
-                    stats["missing_atr_rows"] += 1
-                else:
-                    try:
-                        atr = float(raw_atr)
-                    except ValueError:
-                        atr = None
-                    if not positive(atr):
-                        stats["invalid_atr_rows"] += 1
-                        atr = None
+                if not positive(atr):
+                    stats["invalid_atr_rows" if raw_atr else "missing_atr_rows"] += 1
+                    atr = None
             except (ValueError, TypeError, AttributeError, KeyError) as exc:
                 raise ValueError(f"{path}, CSV line {line}: {exc}") from exc
             previous = timestamp
-            stats["input_rows"] += 1
-            stats["timestamp_rows_checked"] += 1
-            stats["ohlc_rows_checked"] += 1
+            stats.update(("input_rows", "timestamp_rows_checked", "ohlc_rows_checked"))
             yield Candle(timestamp, available, opening, high, low, close, atr)
 
 

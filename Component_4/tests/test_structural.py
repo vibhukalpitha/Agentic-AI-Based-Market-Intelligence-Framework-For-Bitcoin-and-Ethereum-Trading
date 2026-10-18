@@ -311,7 +311,7 @@ class InputAndIntegrationTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 list(read_candles(path, "15m", Counter()))
 
-    def test_csv_history_snapshot_and_input_preservation(self):
+    def test_csv_history_two_outputs_and_input_preservation(self):
         highs = [101, 102, 103, 110, 103, 102, 101, 102, 103, 110.5, 103, 102,
                  101, 102, 103, 110.8, 103, 102, 101]
         with tempfile.TemporaryDirectory() as directory:
@@ -320,15 +320,22 @@ class InputAndIntegrationTests(unittest.TestCase):
             write_input(source, records(candles(highs)))
             original = source.read_bytes()
             outputs = output_paths(root, "BTCUSDT", "15m")
+            self.assertEqual(set(outputs), {"swings", "zone_events"})
             stats = process_dataset("BTCUSDT", "15m", source, outputs, Config())
             history = read_csv(outputs["zone_events"])
-            snapshots = read_csv(outputs["snapshot"])
+            self.assertEqual(set((root / "data").rglob("*.csv")), set(outputs.values()))
             self.assertEqual([e["event_type"] for e in history], ["create", "update"])
             self.assertEqual(history[0]["confirmed_swing_count"], "2")
             self.assertEqual(history[1]["confirmed_swing_count"], "3")
             self.assertEqual(history[0]["zone_id"], history[1]["zone_id"])
-            self.assertEqual(snapshots[0]["snapshot_as_of_utc"], (START + timedelta(minutes=19 * 15)).isoformat())
             self.assertEqual(stats["input_rows"], 19)
+            self.assertEqual(stats["candidate_zones_created"], 1)
+            self.assertEqual(stats["zone_update_count"], 1)
+            self.assertEqual(stats["timestamp_checks"]["last_available_utc"],
+                             (START + timedelta(minutes=19 * 15)).isoformat())
+            self.assertEqual(stats["price_boundary_checks"]["event_states_checked"], 2)
+            self.assertNotIn("snapshot_zones_checked", stats["price_boundary_checks"])
+            self.assertEqual(stats["output_paths"], {key: str(path) for key, path in outputs.items()})
             self.assertEqual(source.read_bytes(), original)
             saved = {key: path.read_bytes() for key, path in outputs.items()}
             with self.assertRaises(FileExistsError):
@@ -344,6 +351,16 @@ class InputAndIntegrationTests(unittest.TestCase):
                     write_input(path, records(candles([101], timeframe=timeframe)))
             jobs = preflight(root, False)
             self.assertEqual(len(jobs), 6)
+            for _, _, _, outputs in jobs:
+                self.assertEqual(set(outputs), {"swings", "zone_events"})
+                for path in outputs.values():
+                    path.parent.mkdir(parents=True, exist_ok=True)
+                    path.write_text("existing output", encoding="utf-8")
+                    with self.assertRaises(FileExistsError):
+                        preflight(root, False)
+                    self.assertEqual(len(preflight(root, True)), 6)
+                    self.assertEqual(path.read_text(), "existing output")
+                    path.unlink()
             summary = root / "reports" / "zone_detection" / "structural_summary.json"
             summary.parent.mkdir(parents=True)
             with summary.open("x", encoding="utf-8") as handle:
