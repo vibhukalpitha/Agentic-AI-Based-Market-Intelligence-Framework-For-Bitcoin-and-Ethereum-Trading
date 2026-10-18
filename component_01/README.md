@@ -51,7 +51,10 @@ Run the steps in this order. Each one prints a report of what it produced.
 | 1. Download data | `..\.venv\Scripts\python.exe -m src.data.download` | long, about 2.1 million candles | `data/parquet/` |
 | 2. Check data | `..\.venv\Scripts\python.exe -m src.data.validate` | seconds | report only |
 | 3. Build features | `..\.venv\Scripts\python.exe -m src.features.indicators` | about 1 minute | `data/features/` |
+| 3b. Explore the data (EDA) | `..\.venv\Scripts\python.exe -W ignore -m src.eda.explore` | about 1 minute | `results/eda/` |
 | 4. Train regime models | `..\.venv\Scripts\python.exe -W ignore -m src.regime.train --interval 1d` | minutes for `1d`; over an hour for `5m` | `models/`, `data/regimes/`, `results/` |
+| 4b. State-count check (BIC) for 1h, 15m, 5m | `..\.venv\Scripts\python.exe -W ignore -m src.regime.bic_check --symbol BTCUSDT --interval 1h` (then `--summary`) | hours for `5m` | `results/bic/` |
+| 4c. Convergence check, BTC 5m | `..\.venv\Scripts\python.exe -W ignore -m src.regime.convergence_check` | about 6 minutes | `results/convergence_check_BTCUSDT_5m.json` |
 | 5. Fuse the timeframes | `..\.venv\Scripts\python.exe -W ignore -m src.fusion.alignment` | about 10 seconds | `data/fusion/` |
 | 6. Propagation | `..\.venv\Scripts\python.exe -W ignore -m src.fusion.propagation` | seconds | `data/propagation/` |
 | 7. Test H1 | `..\.venv\Scripts\python.exe -W ignore -m src.experiments.h1_precursor` | about 4 minutes | `results/h1_*` |
@@ -76,6 +79,11 @@ Step 4 is run once per timeframe: `1d`, `4h`, `1h`, `15m`, `5m`. Two options hel
 - `results/h1_*` and `results/h2_*` hold the hypothesis test results, with the design
   settings recorded inside each JSON file.
 - `results/sample_output_*.json` are example records for the Fusion Engine.
+- `results/eda/` holds the exploratory data analysis: charts, tables and a summary
+  (`EDA_SUMMARY.md`) of data quality, price history, volatility over the years, the
+  shape of returns, feature correlations and activity by hour and weekday.
+- `results/bic/` and `results/convergence_check_*.json` hold the two training checks
+  (steps 4b and 4c). Neither changes a saved model or label.
 - `data/` and `models/` (inside `component_01/`) are not in Git because of their size.
   Steps 1 to 6 rebuild them.
 
@@ -88,7 +96,6 @@ An effect of 0.5 means no difference.
 |---|---|
 | H1: cross-timeframe alignment declines before a Daily regime transition | **Not supported.** BTC 0.398 (95% interval 0.337–0.460), ETH 0.440 (0.377–0.503). For BTC alignment was slightly higher before transitions. Alignment added nothing beyond volatility. |
 | H2: regime changes already present at faster timeframes are more durable | **Not established at the Daily level** (the effect is no larger than a placebo). **A small effect at the 1h and 15m levels** that exceeds the placebo by 0.025–0.086. |
-
 | H2b: a regime change that the next slower timeframe does not take up is noise | **Not established for 4h changes taken up by Daily** (too few cases). **A small effect at the 5m level and for ETH at 15m** that exceeds the placebo by 0.040–0.071. |
 
 **Regime Stability Score (M6), test period.** The delivered score (the Daily model's own

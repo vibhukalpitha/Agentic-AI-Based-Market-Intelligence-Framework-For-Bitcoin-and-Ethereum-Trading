@@ -1,0 +1,57 @@
+{
+  "symbol": "BTCUSDT",
+  "interval": "5m",
+  "saved_model": {
+    "iterations": 300,
+    "last_log_likelihood_gain": 0.0003330624895170331,
+    "train_log_likelihood_per_candle": -4.3221767373463615
+  },
+  "continued_model": {
+    "extra_iterations_allowed": 2000,
+    "extra_iterations_used": 217,
+    "reached_tolerance": true,
+    "last_log_likelihood_gain": 9.183690417557955e-05,
+    "train_log_likelihood_per_candle": -4.322176473485308
+  },
+  "naming_unchanged": true,
+  "label_agreement": {
+    "train": 0.9988951433932433,
+    "test": 0.9988687553264883,
+    "all": 0.9988779255856136
+  },
+  "transitions": {
+    "saved": 40926,
+    "continued": 40907
+  },
+  "mean_confidence": {
+    "saved": 0.9622859406098411,
+    "continued": 0.9623050186373644
+  },
+  "regime_share": {
+    "Bullish": {
+      "saved_train": 0.286200722,
+      "continued_train": 0.2865674201,
+      "saved_test": 0.2244556836,
+      "continued_test": 0.2247169352
+    },
+    "Bearish": {
+      "saved_train": 0.2660513758,
+      "continued_train": 0.2657942109,
+      "saved_test": 0.2037939816,
+      "continued_test": 0.2035251207
+    },
+    "Sideways": {
+      "saved_train": 0.2944061872,
+      "continued_train": 0.2945109581,
+      "saved_test": 0.4718203401,
+      "continued_test": 0.4719928168
+    },
+    "Volatile": {
+      "saved_train": 0.153341715,
+      "continued_train": 0.1531274109,
+      "saved_test": 0.0999299947,
+      "continued_test": 0.0997651272
+    }
+  },
+  "minutes": 5.5
+}
