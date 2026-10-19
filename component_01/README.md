@@ -63,6 +63,7 @@ Run the steps in this order. Each one prints a report of what it produced.
 | 8c. Test H2b | `..\.venv\Scripts\python.exe -W ignore -m src.experiments.h2b_failed_propagation --period test` | about 3 minutes | `results/h2b_*` |
 | 9. Stability score | `..\.venv\Scripts\python.exe -W ignore -m src.stability.stability` | about 20 seconds | `data/stability/`, `results/stability_model_*` |
 | 9b. Evaluate it | `..\.venv\Scripts\python.exe -W ignore -m src.experiments.m6_evaluation --period test` | seconds | `results/m6_*` |
+| 9c. Model-quality charts | `..\.venv\Scripts\python.exe -W ignore -m src.figures.model_quality_charts` | seconds | `results/model_quality/` |
 | 10. Output record | `..\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol BTCUSDT` | seconds | printed JSON |
 
 Step 4 is run once per timeframe: `1d`, `4h`, `1h`, `15m`, `5m`. Two options help:
@@ -82,6 +83,11 @@ Step 4 is run once per timeframe: `1d`, `4h`, `1h`, `15m`, `5m`. Two options hel
 - `results/eda/` holds the exploratory data analysis: charts, tables and a summary
   (`EDA_SUMMARY.md`) of data quality, price history, volatility over the years, the
   shape of returns, feature correlations and activity by hour and weekday.
+- `results/model_quality/` holds four charts of model quality, drawn from the result
+  files above (fit on unseen data, state count, meaning of the regimes on unseen data,
+  and the Stability Score against its baselines), with `MODEL_QUALITY_SUMMARY.md`. The
+  regime models are unsupervised, so there is no accuracy; these charts show how they
+  are judged instead.
 - `results/bic/` and `results/convergence_check_*.json` hold the two training checks
   (steps 4b and 4c). Neither changes a saved model or label. In all ten models BIC
   keeps improving up to six states, so four states is a design choice (one per named
