@@ -1,0 +1,1868 @@
+{
+  "phase": 8,
+  "methodology_version": "frozen_geometry_close_outcomes_v1",
+  "parameters": {
+    "wait_bars": 20,
+    "defense_bars": 24,
+    "scenario_bars": 12,
+    "strong_atr": 1.5,
+    "bounce_atr": 0.75,
+    "failure_atr": 0.5,
+    "sideways_padding_atr": 0.25,
+    "sideways_range_atr": 1.0,
+    "sideways_closes": 9,
+    "embargo_hours": 176
+  },
+  "model_features": {
+    "strong_zone": [
+      "symbol",
+      "source_timeframe",
+      "zone_family",
+      "origin_type",
+      "direction",
+      "width_atr",
+      "signed_distance_atr",
+      "normalized_atr",
+      "body_ratio",
+      "close_location_value",
+      "relative_volume_20",
+      "rolling_mean_return_20",
+      "overlapping_family_count_at_decision",
+      "overlapping_candidate_count_at_decision"
+    ],
+    "scenario": [
+      "symbol",
+      "source_timeframe",
+      "zone_family",
+      "origin_type",
+      "direction",
+      "width_atr",
+      "signed_distance_atr",
+      "normalized_atr",
+      "body_ratio",
+      "close_location_value",
+      "relative_volume_20",
+      "rolling_mean_return_20",
+      "overlapping_family_count_at_decision",
+      "overlapping_candidate_count_at_decision",
+      "version_age_bars",
+      "touch_penetration"
+    ]
+  },
+  "schema": [
+    "sample_id",
+    "model",
+    "registry_zone_id",
+    "zone_version_at_utc",
+    "source_file",
+    "source_row",
+    "symbol",
+    "source_timeframe",
+    "zone_family",
+    "origin_type",
+    "direction",
+    "lower_price",
+    "upper_price",
+    "decision_at_utc",
+    "decision_atr",
+    "touch_at_utc",
+    "observation_end_utc",
+    "label",
+    "label_status",
+    "split",
+    "split_status",
+    "width_atr",
+    "signed_distance_atr",
+    "normalized_atr",
+    "body_ratio",
+    "close_location_value",
+    "relative_volume_20",
+    "rolling_mean_return_20",
+    "version_age_bars",
+    "touch_penetration",
+    "overlapping_family_count_at_decision",
+    "overlapping_candidate_count_at_decision"
+  ],
+  "tests": {
+    "tests_run": 257,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "successful": true
+  },
+  "datasets": [
+    {
+      "symbol": "ETHUSDT",
+      "timeframe": "4h",
+      "input_candles": 12420,
+      "registry_events": 7158,
+      "registry_identities": 4801,
+      "neutral_volume_versions_excluded": 976,
+      "lifecycle_event_counts": {
+        "first_touch": 6429,
+        "range_span": 5662,
+        "boundary_crossing": 15123,
+        "observed_invalidation": 4295,
+        "version_end": 2024,
+        "contact_exit": 5096,
+        "retest": 4295,
+        "penetration_increase": 4229,
+        "monitoring_expiry": 365
+      },
+      "overlap_recency_parameters": {
+        "overlap_15m_days": 30,
+        "overlap_1h_days": 90,
+        "overlap_4h_days": 180
+      },
+      "inputs": [
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\4h\\ETHUSDT_4h_features.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\lifecycle\\ETHUSDT_4h.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\ETHUSDT_4h.csv"
+      ],
+      "outputs": {
+        "strong_zone": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\strong_zone\\ETHUSDT_4h.csv",
+        "scenario": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\scenario\\ETHUSDT_4h.csv"
+      },
+      "validation": {
+        "status": "PASS",
+        "outputs": {
+          "strong_zone": {
+            "rows": 3825,
+            "bytes": 2147105,
+            "families": {
+              "imbalance": {
+                "rows": 2534,
+                "labels": {
+                  "0": 1042,
+                  "1": 472
+                },
+                "statuses": {
+                  "invalid_decision_atr": 2,
+                  "no_touch": 254,
+                  "ambiguous_approach": 760,
+                  "labeled": 1514,
+                  "censored_response": 3,
+                  "censored_wait": 1
+                },
+                "splits": {
+                  "eligible": 2505,
+                  "embargo": 21,
+                  "purged_label_window": 8
+                },
+                "eligible_labels": {
+                  "train:1": 331,
+                  "train:0": 737,
+                  "validation:1": 94,
+                  "validation:0": 166,
+                  "test:0": 126,
+                  "test:1": 45
+                },
+                "null_features": {}
+              },
+              "reaction": {
+                "rows": 596,
+                "labels": {
+                  "0": 345,
+                  "1": 139
+                },
+                "statuses": {
+                  "labeled": 484,
+                  "no_touch": 91,
+                  "ambiguous_approach": 19,
+                  "censored_response": 2
+                },
+                "splits": {
+                  "eligible": 588,
+                  "purged_label_window": 3,
+                  "embargo": 5
+                },
+                "eligible_labels": {
+                  "train:1": 99,
+                  "train:0": 245,
+                  "validation:0": 61,
+                  "validation:1": 28,
+                  "test:0": 33,
+                  "test:1": 12
+                },
+                "null_features": {}
+              },
+              "structural": {
+                "rows": 695,
+                "labels": {
+                  "0": 302,
+                  "1": 136
+                },
+                "statuses": {
+                  "no_touch": 245,
+                  "labeled": 438,
+                  "ambiguous_approach": 10,
+                  "censored_response": 2
+                },
+                "splits": {
+                  "eligible": 686,
+                  "purged_label_window": 4,
+                  "embargo": 5
+                },
+                "eligible_labels": {
+                  "train:0": 222,
+                  "train:1": 102,
+                  "validation:0": 46,
+                  "validation:1": 22,
+                  "test:0": 31,
+                  "test:1": 10
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 793,
+                "1": 1062,
+                "2": 440,
+                "3": 115
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 793,
+                "1": 1022,
+                "2": 417,
+                "3": 141,
+                "4": 32,
+                "5": 5
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          },
+          "scenario": {
+            "rows": 6182,
+            "bytes": 3351970,
+            "families": {
+              "imbalance": {
+                "rows": 3365,
+                "labels": {
+                  "breakout": 721,
+                  "bounce": 910,
+                  "consolidation": 90
+                },
+                "statuses": {
+                  "labeled": 1721,
+                  "ambiguous_approach": 761,
+                  "already_resolved": 317,
+                  "no_observed_first_touch": 80,
+                  "unresolved": 149,
+                  "touch_after_wait": 335,
+                  "censored_response": 2
+                },
+                "splits": {
+                  "eligible": 2925,
+                  "no_decision": 415,
+                  "purged_label_window": 3,
+                  "embargo": 21,
+                  "outside_period": 1
+                },
+                "eligible_labels": {
+                  "train:breakout": 514,
+                  "train:bounce": 643,
+                  "train:consolidation": 63,
+                  "validation:breakout": 109,
+                  "validation:bounce": 161,
+                  "validation:consolidation": 17,
+                  "test:consolidation": 8,
+                  "test:bounce": 100,
+                  "test:breakout": 91
+                },
+                "null_features": {
+                  "relative_volume_20": 2,
+                  "rolling_mean_return_20": 2
+                }
+              },
+              "reaction": {
+                "rows": 1288,
+                "labels": {
+                  "breakout": 386,
+                  "bounce": 447,
+                  "consolidation": 6
+                },
+                "statuses": {
+                  "already_resolved": 141,
+                  "labeled": 839,
+                  "touch_after_wait": 153,
+                  "ambiguous_approach": 48,
+                  "unresolved": 53,
+                  "no_observed_first_touch": 52,
+                  "censored_response": 2
+                },
+                "splits": {
+                  "eligible": 1041,
+                  "no_decision": 205,
+                  "identity_other_partition": 35,
+                  "embargo": 5,
+                  "purged_label_window": 2
+                },
+                "eligible_labels": {
+                  "train:breakout": 273,
+                  "train:bounce": 328,
+                  "train:consolidation": 3,
+                  "validation:breakout": 73,
+                  "validation:bounce": 72,
+                  "validation:consolidation": 2,
+                  "test:breakout": 31,
+                  "test:bounce": 28,
+                  "test:consolidation": 1
+                },
+                "null_features": {}
+              },
+              "structural": {
+                "rows": 1529,
+                "labels": {
+                  "bounce": 420,
+                  "breakout": 319,
+                  "consolidation": 6
+                },
+                "statuses": {
+                  "labeled": 745,
+                  "no_observed_first_touch": 162,
+                  "ambiguous_approach": 26,
+                  "touch_after_wait": 395,
+                  "already_resolved": 160,
+                  "unresolved": 41
+                },
+                "splits": {
+                  "eligible": 931,
+                  "no_decision": 557,
+                  "purged_label_window": 1,
+                  "identity_other_partition": 39,
+                  "embargo": 1
+                },
+                "eligible_labels": {
+                  "train:bounce": 284,
+                  "train:breakout": 235,
+                  "train:consolidation": 3,
+                  "validation:breakout": 51,
+                  "validation:bounce": 75,
+                  "validation:consolidation": 2,
+                  "test:breakout": 23,
+                  "test:bounce": 39
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 826,
+                "1": 1427,
+                "2": 767,
+                "3": 209
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 826,
+                "1": 1337,
+                "2": 697,
+                "3": 299,
+                "4": 59,
+                "5": 11
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          }
+        },
+        "all_old_columns_unchanged": true,
+        "independent_overlap_interval_replay": "PASS",
+        "current_schema_and_all_original_columns": "PASS"
+      },
+      "runtime_seconds": 2.689175500010606
+    },
+    {
+      "symbol": "BTCUSDT",
+      "timeframe": "15m",
+      "input_candles": 198720,
+      "registry_events": 120413,
+      "registry_identities": 73681,
+      "neutral_volume_versions_excluded": 14216,
+      "lifecycle_event_counts": {
+        "first_touch": 112826,
+        "contact_exit": 90473,
+        "retest": 79041,
+        "range_span": 105393,
+        "boundary_crossing": 286901,
+        "observed_invalidation": 81101,
+        "penetration_increase": 81615,
+        "version_end": 29094,
+        "monitoring_expiry": 3458
+      },
+      "overlap_recency_parameters": {
+        "overlap_15m_days": 30,
+        "overlap_1h_days": 90,
+        "overlap_4h_days": 180
+      },
+      "inputs": [
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\15m\\BTCUSDT_15m_features.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\lifecycle\\BTCUSDT_15m.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\BTCUSDT_15m.csv"
+      ],
+      "outputs": {
+        "strong_zone": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\strong_zone\\BTCUSDT_15m.csv",
+        "scenario": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\scenario\\BTCUSDT_15m.csv"
+      },
+      "validation": {
+        "status": "PASS",
+        "outputs": {
+          "strong_zone": {
+            "rows": 59465,
+            "bytes": 33922461,
+            "families": {
+              "imbalance": {
+                "rows": 41965,
+                "labels": {
+                  "0": 18634,
+                  "1": 7483
+                },
+                "statuses": {
+                  "invalid_decision_atr": 3,
+                  "ambiguous_approach": 11986,
+                  "labeled": 26117,
+                  "no_touch": 3856,
+                  "censored_response": 3
+                },
+                "splits": {
+                  "eligible": 41661,
+                  "purged_label_window": 8,
+                  "embargo": 296
+                },
+                "eligible_labels": {
+                  "train:0": 12771,
+                  "train:1": 5186,
+                  "validation:0": 3360,
+                  "validation:1": 1300,
+                  "test:0": 2361,
+                  "test:1": 947
+                },
+                "null_features": {}
+              },
+              "structural": {
+                "rows": 9011,
+                "labels": {
+                  "0": 3996,
+                  "1": 1694
+                },
+                "statuses": {
+                  "labeled": 5690,
+                  "no_touch": 3159,
+                  "ambiguous_approach": 160,
+                  "censored_response": 1,
+                  "censored_wait": 1
+                },
+                "splits": {
+                  "eligible": 8956,
+                  "embargo": 51,
+                  "purged_label_window": 4
+                },
+                "eligible_labels": {
+                  "train:0": 2823,
+                  "train:1": 1239,
+                  "validation:0": 709,
+                  "validation:1": 290,
+                  "test:0": 442,
+                  "test:1": 152
+                },
+                "null_features": {}
+              },
+              "reaction": {
+                "rows": 8489,
+                "labels": {
+                  "0": 4923,
+                  "1": 2060
+                },
+                "statuses": {
+                  "labeled": 6983,
+                  "no_touch": 1320,
+                  "ambiguous_approach": 185,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 8445,
+                  "purged_label_window": 3,
+                  "embargo": 41
+                },
+                "eligible_labels": {
+                  "train:1": 1528,
+                  "train:0": 3477,
+                  "validation:1": 324,
+                  "validation:0": 888,
+                  "test:0": 535,
+                  "test:1": 201
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 10709,
+                "1": 18680,
+                "2": 7363,
+                "3": 1781
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 10709,
+                "1": 18037,
+                "2": 6739,
+                "3": 2459,
+                "4": 495,
+                "5": 81,
+                "6": 12,
+                "7": 1
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          },
+          "scenario": {
+            "rows": 106197,
+            "bytes": 58707323,
+            "families": {
+              "imbalance": {
+                "rows": 53057,
+                "labels": {
+                  "breakout": 12670,
+                  "bounce": 15002,
+                  "consolidation": 943
+                },
+                "statuses": {
+                  "invalid_decision_atr": 2,
+                  "ambiguous_approach": 12129,
+                  "labeled": 28615,
+                  "touch_after_wait": 5124,
+                  "already_resolved": 4622,
+                  "no_observed_first_touch": 655,
+                  "unresolved": 1909,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 46957,
+                  "no_decision": 5779,
+                  "identity_other_partition": 1,
+                  "embargo": 319,
+                  "purged_label_window": 1
+                },
+                "eligible_labels": {
+                  "train:breakout": 8556,
+                  "train:bounce": 10219,
+                  "train:consolidation": 726,
+                  "validation:breakout": 2387,
+                  "validation:bounce": 2670,
+                  "validation:consolidation": 137,
+                  "test:bounce": 2006,
+                  "test:breakout": 1645,
+                  "test:consolidation": 78
+                },
+                "null_features": {}
+              },
+              "reaction": {
+                "rows": 25070,
+                "labels": {
+                  "bounce": 9383,
+                  "breakout": 7349,
+                  "consolidation": 159
+                },
+                "statuses": {
+                  "labeled": 16891,
+                  "touch_after_wait": 3413,
+                  "ambiguous_approach": 690,
+                  "already_resolved": 2493,
+                  "no_observed_first_touch": 488,
+                  "unresolved": 1095
+                },
+                "splits": {
+                  "eligible": 20756,
+                  "no_decision": 3901,
+                  "identity_other_partition": 362,
+                  "embargo": 48,
+                  "purged_label_window": 3
+                },
+                "eligible_labels": {
+                  "train:bounce": 6753,
+                  "train:breakout": 5149,
+                  "train:consolidation": 117,
+                  "validation:breakout": 1206,
+                  "validation:bounce": 1460,
+                  "validation:consolidation": 23,
+                  "test:bounce": 1002,
+                  "test:breakout": 827,
+                  "test:consolidation": 13
+                },
+                "null_features": {}
+              },
+              "structural": {
+                "rows": 28070,
+                "labels": {
+                  "bounce": 7713,
+                  "breakout": 5781,
+                  "consolidation": 96
+                },
+                "statuses": {
+                  "labeled": 13590,
+                  "touch_after_wait": 8556,
+                  "already_resolved": 3050,
+                  "no_observed_first_touch": 1504,
+                  "ambiguous_approach": 616,
+                  "unresolved": 754
+                },
+                "splits": {
+                  "eligible": 17617,
+                  "no_decision": 10060,
+                  "identity_other_partition": 348,
+                  "embargo": 45
+                },
+                "eligible_labels": {
+                  "train:bounce": 5550,
+                  "train:breakout": 3984,
+                  "train:consolidation": 63,
+                  "validation:bounce": 1207,
+                  "validation:breakout": 965,
+                  "validation:consolidation": 20,
+                  "test:breakout": 668,
+                  "test:bounce": 810,
+                  "test:consolidation": 10
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 11541,
+                "1": 26081,
+                "2": 15974,
+                "3": 4655
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 11541,
+                "1": 24391,
+                "2": 13870,
+                "3": 6322,
+                "4": 1788,
+                "5": 290,
+                "6": 43,
+                "7": 6
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          }
+        },
+        "all_old_columns_unchanged": true,
+        "independent_overlap_interval_replay": "PASS",
+        "current_schema_and_all_original_columns": "PASS"
+      },
+      "runtime_seconds": 49.39698149997275
+    },
+    {
+      "symbol": "ETHUSDT",
+      "timeframe": "15m",
+      "input_candles": 198720,
+      "registry_events": 120590,
+      "registry_identities": 73868,
+      "neutral_volume_versions_excluded": 14545,
+      "lifecycle_event_counts": {
+        "first_touch": 112576,
+        "contact_exit": 89958,
+        "retest": 78039,
+        "boundary_crossing": 284226,
+        "penetration_increase": 80517,
+        "range_span": 104557,
+        "version_end": 29643,
+        "observed_invalidation": 80375,
+        "monitoring_expiry": 3533
+      },
+      "overlap_recency_parameters": {
+        "overlap_15m_days": 30,
+        "overlap_1h_days": 90,
+        "overlap_4h_days": 180
+      },
+      "inputs": [
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\15m\\ETHUSDT_15m_features.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\lifecycle\\ETHUSDT_15m.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\ETHUSDT_15m.csv"
+      ],
+      "outputs": {
+        "strong_zone": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\strong_zone\\ETHUSDT_15m.csv",
+        "scenario": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\scenario\\ETHUSDT_15m.csv"
+      },
+      "validation": {
+        "status": "PASS",
+        "outputs": {
+          "strong_zone": {
+            "rows": 59323,
+            "bytes": 33765416,
+            "families": {
+              "imbalance": {
+                "rows": 41955,
+                "labels": {
+                  "0": 18125,
+                  "1": 7752
+                },
+                "statuses": {
+                  "invalid_decision_atr": 2,
+                  "labeled": 25877,
+                  "ambiguous_approach": 11847,
+                  "no_touch": 4226,
+                  "censored_response": 3
+                },
+                "splits": {
+                  "eligible": 41652,
+                  "purged_label_window": 9,
+                  "embargo": 294
+                },
+                "eligible_labels": {
+                  "train:0": 12788,
+                  "train:1": 5459,
+                  "validation:0": 3180,
+                  "validation:1": 1318,
+                  "test:0": 2022,
+                  "test:1": 928
+                },
+                "null_features": {
+                  "relative_volume_20": 1,
+                  "rolling_mean_return_20": 1
+                }
+              },
+              "reaction": {
+                "rows": 8328,
+                "labels": {
+                  "0": 4789,
+                  "1": 2023
+                },
+                "statuses": {
+                  "labeled": 6812,
+                  "no_touch": 1309,
+                  "ambiguous_approach": 207
+                },
+                "splits": {
+                  "eligible": 8283,
+                  "embargo": 44,
+                  "purged_label_window": 1
+                },
+                "eligible_labels": {
+                  "train:0": 3397,
+                  "train:1": 1422,
+                  "validation:0": 824,
+                  "validation:1": 343,
+                  "test:1": 246,
+                  "test:0": 542
+                },
+                "null_features": {
+                  "rolling_mean_return_20": 1
+                }
+              },
+              "structural": {
+                "rows": 9040,
+                "labels": {
+                  "0": 4145,
+                  "1": 1693
+                },
+                "statuses": {
+                  "labeled": 5838,
+                  "no_touch": 3058,
+                  "ambiguous_approach": 143,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 8993,
+                  "embargo": 46,
+                  "purged_label_window": 1
+                },
+                "eligible_labels": {
+                  "train:0": 2879,
+                  "train:1": 1212,
+                  "validation:0": 741,
+                  "validation:1": 300,
+                  "test:1": 174,
+                  "test:0": 500
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 11433,
+                "1": 18059,
+                "2": 7176,
+                "3": 1607
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 11433,
+                "1": 17485,
+                "2": 6551,
+                "3": 2269,
+                "4": 470,
+                "5": 61,
+                "6": 6
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          },
+          "scenario": {
+            "rows": 106045,
+            "bytes": 58484305,
+            "families": {
+              "imbalance": {
+                "rows": 53240,
+                "labels": {
+                  "bounce": 15138,
+                  "breakout": 12755,
+                  "consolidation": 997
+                },
+                "statuses": {
+                  "invalid_decision_atr": 1,
+                  "unresolved": 1911,
+                  "labeled": 28890,
+                  "ambiguous_approach": 11926,
+                  "touch_after_wait": 5507,
+                  "already_resolved": 4289,
+                  "no_observed_first_touch": 716
+                },
+                "splits": {
+                  "eligible": 46709,
+                  "no_decision": 6223,
+                  "identity_other_partition": 1,
+                  "embargo": 306,
+                  "outside_period": 1
+                },
+                "eligible_labels": {
+                  "train:bounce": 10665,
+                  "train:breakout": 8895,
+                  "train:consolidation": 740,
+                  "validation:breakout": 2305,
+                  "validation:bounce": 2576,
+                  "validation:consolidation": 164,
+                  "test:breakout": 1466,
+                  "test:bounce": 1800,
+                  "test:consolidation": 87
+                },
+                "null_features": {}
+              },
+              "reaction": {
+                "rows": 24678,
+                "labels": {
+                  "breakout": 7334,
+                  "bounce": 9253,
+                  "consolidation": 129
+                },
+                "statuses": {
+                  "labeled": 16716,
+                  "already_resolved": 2374,
+                  "no_observed_first_touch": 491,
+                  "ambiguous_approach": 731,
+                  "touch_after_wait": 3353,
+                  "unresolved": 1013
+                },
+                "splits": {
+                  "eligible": 20480,
+                  "no_decision": 3844,
+                  "identity_other_partition": 294,
+                  "embargo": 59,
+                  "purged_label_window": 1
+                },
+                "eligible_labels": {
+                  "train:breakout": 5185,
+                  "train:bounce": 6590,
+                  "train:consolidation": 96,
+                  "validation:bounce": 1480,
+                  "validation:breakout": 1199,
+                  "validation:consolidation": 16,
+                  "test:bounce": 1020,
+                  "test:breakout": 819,
+                  "test:consolidation": 14
+                },
+                "null_features": {}
+              },
+              "structural": {
+                "rows": 28127,
+                "labels": {
+                  "breakout": 5944,
+                  "bounce": 7807,
+                  "consolidation": 75
+                },
+                "statuses": {
+                  "labeled": 13826,
+                  "no_observed_first_touch": 1543,
+                  "touch_after_wait": 8457,
+                  "unresolved": 720,
+                  "ambiguous_approach": 578,
+                  "already_resolved": 3003
+                },
+                "splits": {
+                  "eligible": 17826,
+                  "no_decision": 10000,
+                  "purged_label_window": 2,
+                  "identity_other_partition": 243,
+                  "embargo": 56
+                },
+                "eligible_labels": {
+                  "train:breakout": 4151,
+                  "train:bounce": 5549,
+                  "train:consolidation": 55,
+                  "validation:breakout": 1021,
+                  "validation:bounce": 1270,
+                  "validation:consolidation": 12,
+                  "test:breakout": 678,
+                  "test:bounce": 852,
+                  "test:consolidation": 8
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 12466,
+                "1": 25805,
+                "2": 15889,
+                "3": 4553
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 12466,
+                "1": 24217,
+                "2": 13717,
+                "3": 6140,
+                "4": 1806,
+                "5": 333,
+                "6": 31,
+                "7": 2,
+                "8": 1
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          }
+        },
+        "all_old_columns_unchanged": true,
+        "independent_overlap_interval_replay": "PASS",
+        "current_schema_and_all_original_columns": "PASS"
+      },
+      "runtime_seconds": 50.538098499993794
+    },
+    {
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "input_candles": 49680,
+      "registry_events": 28711,
+      "registry_identities": 17927,
+      "neutral_volume_versions_excluded": 3822,
+      "lifecycle_event_counts": {
+        "first_touch": 26367,
+        "boundary_crossing": 65320,
+        "penetration_increase": 18293,
+        "observed_invalidation": 18282,
+        "range_span": 24457,
+        "version_end": 7608,
+        "contact_exit": 21521,
+        "retest": 18515,
+        "monitoring_expiry": 1042
+      },
+      "overlap_recency_parameters": {
+        "overlap_15m_days": 30,
+        "overlap_1h_days": 90,
+        "overlap_4h_days": 180
+      },
+      "inputs": [
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\1h\\BTCUSDT_1h_features.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\lifecycle\\BTCUSDT_1h.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\BTCUSDT_1h.csv"
+      ],
+      "outputs": {
+        "strong_zone": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\strong_zone\\BTCUSDT_1h.csv",
+        "scenario": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\scenario\\BTCUSDT_1h.csv"
+      },
+      "validation": {
+        "status": "PASS",
+        "outputs": {
+          "strong_zone": {
+            "rows": 14105,
+            "bytes": 7955584,
+            "families": {
+              "imbalance": {
+                "rows": 9273,
+                "labels": {
+                  "0": 3990,
+                  "1": 1648
+                },
+                "statuses": {
+                  "invalid_decision_atr": 2,
+                  "labeled": 5638,
+                  "ambiguous_approach": 2802,
+                  "no_touch": 828,
+                  "censored_response": 1,
+                  "censored_wait": 2
+                },
+                "splits": {
+                  "eligible": 9199,
+                  "purged_label_window": 9,
+                  "embargo": 63,
+                  "outside_period": 2
+                },
+                "eligible_labels": {
+                  "train:1": 1136,
+                  "train:0": 2732,
+                  "validation:1": 301,
+                  "validation:0": 717,
+                  "test:1": 195,
+                  "test:0": 512
+                },
+                "null_features": {}
+              },
+              "reaction": {
+                "rows": 2309,
+                "labels": {
+                  "0": 1314,
+                  "1": 554
+                },
+                "statuses": {
+                  "labeled": 1868,
+                  "no_touch": 379,
+                  "ambiguous_approach": 61,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 2290,
+                  "purged_label_window": 4,
+                  "embargo": 15
+                },
+                "eligible_labels": {
+                  "train:1": 392,
+                  "train:0": 945,
+                  "validation:1": 91,
+                  "validation:0": 215,
+                  "test:1": 67,
+                  "test:0": 143
+                },
+                "null_features": {}
+              },
+              "structural": {
+                "rows": 2523,
+                "labels": {
+                  "0": 1150,
+                  "1": 484
+                },
+                "statuses": {
+                  "no_touch": 845,
+                  "ambiguous_approach": 44,
+                  "labeled": 1634
+                },
+                "splits": {
+                  "eligible": 2507,
+                  "purged_label_window": 2,
+                  "embargo": 14
+                },
+                "eligible_labels": {
+                  "train:0": 844,
+                  "train:1": 357,
+                  "validation:1": 70,
+                  "validation:0": 173,
+                  "test:0": 126,
+                  "test:1": 54
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 2592,
+                "1": 4220,
+                "2": 1819,
+                "3": 439
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 2592,
+                "1": 4031,
+                "2": 1696,
+                "3": 603,
+                "4": 131,
+                "5": 14,
+                "6": 3
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          },
+          "scenario": {
+            "rows": 24889,
+            "bytes": 13560596,
+            "families": {
+              "imbalance": {
+                "rows": 12024,
+                "labels": {
+                  "bounce": 3331,
+                  "breakout": 2653,
+                  "consolidation": 291
+                },
+                "statuses": {
+                  "invalid_decision_atr": 2,
+                  "labeled": 6275,
+                  "ambiguous_approach": 2811,
+                  "already_resolved": 992,
+                  "unresolved": 556,
+                  "touch_after_wait": 1181,
+                  "no_observed_first_touch": 207
+                },
+                "splits": {
+                  "eligible": 10569,
+                  "no_decision": 1388,
+                  "embargo": 65,
+                  "identity_other_partition": 1,
+                  "outside_period": 1
+                },
+                "eligible_labels": {
+                  "train:bounce": 2242,
+                  "train:breakout": 1813,
+                  "train:consolidation": 217,
+                  "validation:bounce": 649,
+                  "validation:breakout": 468,
+                  "validation:consolidation": 44,
+                  "test:bounce": 415,
+                  "test:breakout": 355,
+                  "test:consolidation": 30
+                },
+                "null_features": {}
+              },
+              "structural": {
+                "rows": 6877,
+                "labels": {
+                  "breakout": 1329,
+                  "bounce": 1921,
+                  "consolidation": 24
+                },
+                "statuses": {
+                  "ambiguous_approach": 143,
+                  "already_resolved": 842,
+                  "labeled": 3274,
+                  "unresolved": 216,
+                  "touch_after_wait": 1942,
+                  "no_observed_first_touch": 459,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 4344,
+                  "no_decision": 2401,
+                  "purged_label_window": 3,
+                  "identity_other_partition": 118,
+                  "embargo": 10,
+                  "outside_period": 1
+                },
+                "eligible_labels": {
+                  "train:breakout": 905,
+                  "train:bounce": 1347,
+                  "train:consolidation": 12,
+                  "validation:bounce": 303,
+                  "validation:breakout": 235,
+                  "validation:consolidation": 7,
+                  "test:bounce": 222,
+                  "test:breakout": 142,
+                  "test:consolidation": 4
+                },
+                "null_features": {}
+              },
+              "reaction": {
+                "rows": 5988,
+                "labels": {
+                  "bounce": 2128,
+                  "breakout": 1667,
+                  "consolidation": 60
+                },
+                "statuses": {
+                  "labeled": 3855,
+                  "no_observed_first_touch": 157,
+                  "touch_after_wait": 812,
+                  "ambiguous_approach": 198,
+                  "unresolved": 309,
+                  "already_resolved": 656,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 4894,
+                  "no_decision": 969,
+                  "embargo": 13,
+                  "identity_other_partition": 109,
+                  "purged_label_window": 1,
+                  "outside_period": 2
+                },
+                "eligible_labels": {
+                  "train:bounce": 1497,
+                  "train:breakout": 1147,
+                  "train:consolidation": 41,
+                  "validation:bounce": 363,
+                  "validation:breakout": 288,
+                  "validation:consolidation": 11,
+                  "test:bounce": 220,
+                  "test:breakout": 188,
+                  "test:consolidation": 8
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 2814,
+                "1": 5725,
+                "2": 3619,
+                "3": 1015
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 2814,
+                "1": 5342,
+                "2": 3161,
+                "3": 1427,
+                "4": 366,
+                "5": 56,
+                "6": 7
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          }
+        },
+        "all_old_columns_unchanged": true,
+        "independent_overlap_interval_replay": "PASS",
+        "current_schema_and_all_original_columns": "PASS"
+      },
+      "runtime_seconds": 10.78893090004567
+    },
+    {
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "input_candles": 49680,
+      "registry_events": 29218,
+      "registry_identities": 18256,
+      "neutral_volume_versions_excluded": 3872,
+      "lifecycle_event_counts": {
+        "first_touch": 26770,
+        "boundary_crossing": 66433,
+        "penetration_increase": 18710,
+        "contact_exit": 21913,
+        "observed_invalidation": 18457,
+        "range_span": 24604,
+        "retest": 18802,
+        "version_end": 7847,
+        "monitoring_expiry": 1045
+      },
+      "overlap_recency_parameters": {
+        "overlap_15m_days": 30,
+        "overlap_1h_days": 90,
+        "overlap_4h_days": 180
+      },
+      "inputs": [
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\1h\\ETHUSDT_1h_features.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\lifecycle\\ETHUSDT_1h.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\ETHUSDT_1h.csv"
+      ],
+      "outputs": {
+        "strong_zone": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\strong_zone\\ETHUSDT_1h.csv",
+        "scenario": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\scenario\\ETHUSDT_1h.csv"
+      },
+      "validation": {
+        "status": "PASS",
+        "outputs": {
+          "strong_zone": {
+            "rows": 14384,
+            "bytes": 8089653,
+            "families": {
+              "imbalance": {
+                "rows": 9637,
+                "labels": {
+                  "0": 4131,
+                  "1": 1866
+                },
+                "statuses": {
+                  "invalid_decision_atr": 2,
+                  "labeled": 5997,
+                  "ambiguous_approach": 2749,
+                  "no_touch": 883,
+                  "censored_response": 4,
+                  "censored_wait": 2
+                },
+                "splits": {
+                  "eligible": 9559,
+                  "purged_label_window": 12,
+                  "embargo": 64,
+                  "outside_period": 2
+                },
+                "eligible_labels": {
+                  "train:0": 2861,
+                  "train:1": 1349,
+                  "validation:1": 300,
+                  "validation:0": 735,
+                  "test:1": 197,
+                  "test:0": 507
+                },
+                "null_features": {
+                  "relative_volume_20": 2,
+                  "rolling_mean_return_20": 2
+                }
+              },
+              "reaction": {
+                "rows": 2269,
+                "labels": {
+                  "0": 1306,
+                  "1": 554
+                },
+                "statuses": {
+                  "ambiguous_approach": 56,
+                  "labeled": 1860,
+                  "no_touch": 353
+                },
+                "splits": {
+                  "eligible": 2248,
+                  "purged_label_window": 4,
+                  "embargo": 17
+                },
+                "eligible_labels": {
+                  "train:0": 914,
+                  "train:1": 385,
+                  "validation:0": 225,
+                  "validation:1": 91,
+                  "test:0": 155,
+                  "test:1": 72
+                },
+                "null_features": {}
+              },
+              "structural": {
+                "rows": 2478,
+                "labels": {
+                  "0": 1107,
+                  "1": 467
+                },
+                "statuses": {
+                  "labeled": 1574,
+                  "no_touch": 869,
+                  "ambiguous_approach": 34,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 2459,
+                  "purged_label_window": 4,
+                  "embargo": 15
+                },
+                "eligible_labels": {
+                  "train:0": 791,
+                  "train:1": 335,
+                  "validation:0": 190,
+                  "validation:1": 79,
+                  "test:1": 51,
+                  "test:0": 120
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 2896,
+                "1": 4254,
+                "2": 1781,
+                "3": 426
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 2896,
+                "1": 4070,
+                "2": 1666,
+                "3": 568,
+                "4": 133,
+                "5": 23,
+                "6": 1
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          },
+          "scenario": {
+            "rows": 25346,
+            "bytes": 13783112,
+            "families": {
+              "imbalance": {
+                "rows": 12645,
+                "labels": {
+                  "breakout": 2911,
+                  "bounce": 3637,
+                  "consolidation": 294
+                },
+                "statuses": {
+                  "invalid_decision_atr": 1,
+                  "labeled": 6842,
+                  "ambiguous_approach": 2753,
+                  "touch_after_wait": 1235,
+                  "unresolved": 549,
+                  "already_resolved": 1053,
+                  "no_observed_first_touch": 212
+                },
+                "splits": {
+                  "eligible": 11124,
+                  "no_decision": 1447,
+                  "embargo": 71,
+                  "purged_label_window": 3
+                },
+                "eligible_labels": {
+                  "train:breakout": 1997,
+                  "train:bounce": 2590,
+                  "train:consolidation": 219,
+                  "validation:breakout": 524,
+                  "validation:bounce": 599,
+                  "validation:consolidation": 40,
+                  "test:bounce": 422,
+                  "test:breakout": 375,
+                  "test:consolidation": 33
+                },
+                "null_features": {
+                  "relative_volume_20": 1,
+                  "rolling_mean_return_20": 2
+                }
+              },
+              "reaction": {
+                "rows": 5914,
+                "labels": {
+                  "breakout": 1687,
+                  "bounce": 2129,
+                  "consolidation": 45
+                },
+                "statuses": {
+                  "ambiguous_approach": 204,
+                  "labeled": 3861,
+                  "touch_after_wait": 758,
+                  "unresolved": 286,
+                  "already_resolved": 632,
+                  "no_observed_first_touch": 173
+                },
+                "splits": {
+                  "eligible": 4874,
+                  "no_decision": 931,
+                  "embargo": 20,
+                  "identity_other_partition": 88,
+                  "purged_label_window": 1
+                },
+                "eligible_labels": {
+                  "train:breakout": 1201,
+                  "train:bounce": 1491,
+                  "train:consolidation": 34,
+                  "validation:breakout": 253,
+                  "validation:bounce": 369,
+                  "validation:consolidation": 7,
+                  "test:breakout": 195,
+                  "test:bounce": 214,
+                  "test:consolidation": 3
+                },
+                "null_features": {}
+              },
+              "structural": {
+                "rows": 6787,
+                "labels": {
+                  "bounce": 1776,
+                  "breakout": 1437,
+                  "consolidation": 19
+                },
+                "statuses": {
+                  "already_resolved": 774,
+                  "labeled": 3232,
+                  "touch_after_wait": 1971,
+                  "no_observed_first_touch": 483,
+                  "unresolved": 214,
+                  "ambiguous_approach": 113
+                },
+                "splits": {
+                  "eligible": 4251,
+                  "no_decision": 2454,
+                  "identity_other_partition": 71,
+                  "embargo": 9,
+                  "purged_label_window": 2
+                },
+                "eligible_labels": {
+                  "train:bounce": 1265,
+                  "train:breakout": 1009,
+                  "train:consolidation": 14,
+                  "validation:breakout": 241,
+                  "validation:bounce": 319,
+                  "validation:consolidation": 2,
+                  "test:breakout": 155,
+                  "test:bounce": 160,
+                  "test:consolidation": 3
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 3130,
+                "1": 6039,
+                "2": 3533,
+                "3": 1032
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 3130,
+                "1": 5598,
+                "2": 3170,
+                "3": 1377,
+                "4": 387,
+                "5": 66,
+                "6": 6
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          }
+        },
+        "all_old_columns_unchanged": true,
+        "independent_overlap_interval_replay": "PASS",
+        "current_schema_and_all_original_columns": "PASS"
+      },
+      "runtime_seconds": 11.43904589995509
+    },
+    {
+      "symbol": "BTCUSDT",
+      "timeframe": "4h",
+      "input_candles": 12420,
+      "registry_events": 7034,
+      "registry_identities": 4620,
+      "neutral_volume_versions_excluded": 971,
+      "lifecycle_event_counts": {
+        "first_touch": 6315,
+        "range_span": 5545,
+        "contact_exit": 5108,
+        "retest": 4289,
+        "boundary_crossing": 15333,
+        "observed_invalidation": 4162,
+        "version_end": 2004,
+        "penetration_increase": 4569,
+        "monitoring_expiry": 370
+      },
+      "overlap_recency_parameters": {
+        "overlap_15m_days": 30,
+        "overlap_1h_days": 90,
+        "overlap_4h_days": 180
+      },
+      "inputs": [
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\features\\4h\\BTCUSDT_4h_features.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\lifecycle\\BTCUSDT_4h.csv",
+        "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\zones\\unified\\BTCUSDT_4h.csv"
+      ],
+      "outputs": {
+        "strong_zone": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\strong_zone\\BTCUSDT_4h.csv",
+        "scenario": "C:\\Users\\User\\OneDrive\\Desktop\\Research\\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\\Component_4\\data\\ml\\scenario\\BTCUSDT_4h.csv"
+      },
+      "validation": {
+        "status": "PASS",
+        "outputs": {
+          "strong_zone": {
+            "rows": 3649,
+            "bytes": 2053531,
+            "families": {
+              "imbalance": {
+                "rows": 2348,
+                "labels": {
+                  "0": 903,
+                  "1": 449
+                },
+                "statuses": {
+                  "invalid_decision_atr": 3,
+                  "ambiguous_approach": 764,
+                  "labeled": 1352,
+                  "no_touch": 226,
+                  "censored_response": 2,
+                  "censored_wait": 1
+                },
+                "splits": {
+                  "eligible": 2323,
+                  "purged_label_window": 8,
+                  "embargo": 17
+                },
+                "eligible_labels": {
+                  "train:1": 305,
+                  "train:0": 597,
+                  "validation:0": 158,
+                  "validation:1": 96,
+                  "test:0": 140,
+                  "test:1": 42
+                },
+                "null_features": {
+                  "relative_volume_20": 1,
+                  "rolling_mean_return_20": 1
+                }
+              },
+              "structural": {
+                "rows": 696,
+                "labels": {
+                  "0": 306,
+                  "1": 134
+                },
+                "statuses": {
+                  "no_touch": 243,
+                  "labeled": 440,
+                  "ambiguous_approach": 12,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 687,
+                  "purged_label_window": 3,
+                  "embargo": 6
+                },
+                "eligible_labels": {
+                  "train:0": 214,
+                  "train:1": 98,
+                  "validation:0": 56,
+                  "validation:1": 17,
+                  "test:1": 18,
+                  "test:0": 32
+                },
+                "null_features": {}
+              },
+              "reaction": {
+                "rows": 605,
+                "labels": {
+                  "0": 330,
+                  "1": 148
+                },
+                "statuses": {
+                  "labeled": 478,
+                  "no_touch": 101,
+                  "ambiguous_approach": 25,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 595,
+                  "purged_label_window": 3,
+                  "embargo": 7
+                },
+                "eligible_labels": {
+                  "train:1": 113,
+                  "train:0": 240,
+                  "validation:0": 48,
+                  "validation:1": 15,
+                  "test:0": 39,
+                  "test:1": 17
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 674,
+                "1": 1031,
+                "2": 438,
+                "3": 102
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 674,
+                "1": 977,
+                "2": 442,
+                "3": 126,
+                "4": 26
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          },
+          "scenario": {
+            "rows": 6063,
+            "bytes": 3292344,
+            "families": {
+              "imbalance": {
+                "rows": 3184,
+                "labels": {
+                  "breakout": 646,
+                  "bounce": 877,
+                  "consolidation": 82
+                },
+                "statuses": {
+                  "invalid_decision_atr": 1,
+                  "labeled": 1605,
+                  "already_resolved": 306,
+                  "ambiguous_approach": 764,
+                  "unresolved": 126,
+                  "no_observed_first_touch": 103,
+                  "touch_after_wait": 278,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 2780,
+                  "no_decision": 381,
+                  "purged_label_window": 3,
+                  "embargo": 20
+                },
+                "eligible_labels": {
+                  "train:breakout": 420,
+                  "train:bounce": 586,
+                  "train:consolidation": 65,
+                  "validation:bounce": 168,
+                  "validation:breakout": 125,
+                  "validation:consolidation": 11,
+                  "test:breakout": 97,
+                  "test:bounce": 116,
+                  "test:consolidation": 5
+                },
+                "null_features": {
+                  "relative_volume_20": 2,
+                  "rolling_mean_return_20": 2
+                }
+              },
+              "reaction": {
+                "rows": 1274,
+                "labels": {
+                  "bounce": 420,
+                  "breakout": 361,
+                  "consolidation": 14
+                },
+                "statuses": {
+                  "labeled": 795,
+                  "already_resolved": 147,
+                  "unresolved": 67,
+                  "ambiguous_approach": 58,
+                  "touch_after_wait": 164,
+                  "no_observed_first_touch": 42,
+                  "censored_response": 1
+                },
+                "splits": {
+                  "eligible": 1042,
+                  "no_decision": 206,
+                  "embargo": 4,
+                  "identity_other_partition": 21,
+                  "purged_label_window": 1
+                },
+                "eligible_labels": {
+                  "train:bounce": 310,
+                  "train:breakout": 251,
+                  "train:consolidation": 7,
+                  "validation:breakout": 64,
+                  "validation:bounce": 59,
+                  "validation:consolidation": 4,
+                  "test:breakout": 39,
+                  "test:bounce": 43,
+                  "test:consolidation": 2
+                },
+                "null_features": {}
+              },
+              "structural": {
+                "rows": 1605,
+                "labels": {
+                  "breakout": 330,
+                  "bounce": 404,
+                  "consolidation": 14
+                },
+                "statuses": {
+                  "labeled": 748,
+                  "already_resolved": 192,
+                  "unresolved": 60,
+                  "touch_after_wait": 397,
+                  "ambiguous_approach": 35,
+                  "no_observed_first_touch": 173
+                },
+                "splits": {
+                  "eligible": 1007,
+                  "no_decision": 570,
+                  "embargo": 5,
+                  "identity_other_partition": 23
+                },
+                "eligible_labels": {
+                  "train:breakout": 227,
+                  "train:bounce": 287,
+                  "train:consolidation": 5,
+                  "validation:breakout": 60,
+                  "validation:bounce": 67,
+                  "validation:consolidation": 8,
+                  "test:bounce": 37,
+                  "test:breakout": 37,
+                  "test:consolidation": 1
+                },
+                "null_features": {}
+              }
+            },
+            "eligible_overlap_distributions": {
+              "overlapping_family_count_at_decision": {
+                "0": 705,
+                "1": 1400,
+                "2": 781,
+                "3": 215
+              },
+              "overlapping_candidate_count_at_decision": {
+                "0": 705,
+                "1": 1307,
+                "2": 730,
+                "3": 277,
+                "4": 73,
+                "5": 6,
+                "6": 3
+              }
+            },
+            "original_columns_sha256_unchanged": true
+          }
+        },
+        "all_old_columns_unchanged": true,
+        "independent_overlap_interval_replay": "PASS",
+        "current_schema_and_all_original_columns": "PASS"
+      },
+      "runtime_seconds": 2.612021000008099
+    }
+  ],
+  "overlap_features": {
+    "version": "asof_other_family_overlap_v1",
+    "definitions": "Strict positive-width overlap against sample frozen geometry; distinct OTHER source identities and distinct OTHER detector families only. Same-family evidence excluded from BOTH counts.",
+    "asof_policy": "All source versions available <= decision close installed before querying; latest version per identity; Phase 7 invalidation/expiry/version-end known <= decision removes only that version. Future retirements never applied early.",
+    "eligibility": "Actual Phase 6 recency parameters since latest version (30/90/180 days, equality included unless Phase 7 has retired it); latest scheduled Phase 5 profile only, including empty slots and one-stride end-of-input freshness.",
+    "interpretation": "Provisional evidence eligibility, NOT verified survival, strength or independent confirmations. Overlap is a predictor, never a target. Volume family counted once even if multiple profile areas overlap.",
+    "missing": "Null only when sample has no decision timestamp; known decision with no eligible overlaps is zero."
+  },
+  "runtime_seconds": 127.46425329998601,
+  "runtime_measurement": "Final generation plus built-in read-back validation; independent audits, tests and discarded initial runs excluded",
+  "verification": {
+    "upstream_sha256_files_checked": 93,
+    "upstream_files_changed": 0,
+    "same_updated_schema_csv_files": 12,
+    "original_column_projection_sha256_matches": 12,
+    "labels_ids_timestamps_splits_and_old_features_unchanged": true,
+    "duplicate_sample_rows": 0,
+    "independent_overlap_interval_replay_datasets": 6,
+    "already_completed_csv_files_unchanged": 10,
+    "regenerated_this_resume": [
+      "Component_4\\data\\ml\\strong_zone\\BTCUSDT_4h.csv",
+      "Component_4\\data\\ml\\scenario\\BTCUSDT_4h.csv"
+    ],
+    "schema_columns": 32,
+    "overlap_features": [
+      "overlapping_family_count_at_decision",
+      "overlapping_candidate_count_at_decision"
+    ],
+    "sample_totals": {
+      "strong_zone": {
+        "rows": 154751,
+        "eligible_labels": {
+          "0": 70335,
+          "1": 29555
+        },
+        "family_distribution": {
+          "0": 29097,
+          "1": 47306,
+          "2": 19017,
+          "3": 4470
+        }
+      },
+      "scenario": {
+        "rows": 274722,
+        "eligible_labels": {
+          "breakout": 65317,
+          "bounce": 81569,
+          "consolidation": 3315
+        },
+        "family_distribution": {
+          "0": 31482,
+          "1": 66477,
+          "2": 40563,
+          "3": 11679
+        }
+      }
+    }
+  },
+  "training_filter": "label_status == labeled AND split_status == eligible; features ONLY from model_features",
+  "targets": {
+    "strong_zone": "First creation only. Wait next 20 bars for first frozen-range intersection; exclude wrong/ambiguous approach or adverse close before touch (including decision close). Evaluate 24 bars including touch. 1 iff any 1.50 ATR favorable close AND no 0.50 ATR adverse close. Otherwise 0 only with complete valid response.",
+    "scenario": "First lifecycle touch per version within 20 bars. Decision at touch close; exclude already resolved. Next 12 bars only: first 0.75 ATR favorable close -> bounce, first 0.50 ATR adverse close -> breakout. Else full-horizon consolidation requires >=9 closes in zone +/-0.25 ATR and total range <= width+1.00 ATR. Otherwise unresolved/censored.",
+    "thresholds": "Bullish favorable measured above upper, adverse below lower; bearish favorable below lower, adverse above upper. Equality qualifies. No wick-order inference. ATR frozen separately at each model's decision."
+  },
+  "split_policy": "Decision-time years: train 2020-2023, validation 2024, test Jan-Aug 2025. Creation partition owns identity across both tasks. Purge label endpoints >= split end. Embargo first 176h of validation/test.",
+  "warnings": [
+    "All thresholds provisional; no models fitted or preprocessing learned",
+    "A is conditional on eligible observed touch; exclusions are not weak labels",
+    "Frozen geometry outcomes are not live-zone survival; ignore later updates/invalidation for response labels",
+    "B uses lifecycle-observed first touches per version, not independent identities or retests",
+    "No observed B first touch can mean replacement, invalidation, expiry, no contact or EOF; it is not a negative",
+    "Neutral estimated volume profiles are context only; latest-profile overlap is included, not a volume strength label",
+    "Close-based outcomes ignore wick-hit ordering; ambiguous approaches are excluded",
+    "176h embargo is conservative for 4h horizons and unnecessarily large for shorter timeframes",
+    "Purging plus identity ownership reduces correlated leakage but does not remove all nearby-zone dependence",
+    "Missing predictor values remain null for later training-only preprocessing; missing/nonpositive decision ATR excludes labels",
+    "Audit timestamps, labels, source IDs and statuses are NOT predictors"
+  ]
+}
