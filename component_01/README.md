@@ -63,6 +63,7 @@ Run the steps in this order. Each one prints a report of what it produced.
 | 8c. Test H2b | `..\.venv\Scripts\python.exe -W ignore -m src.experiments.h2b_failed_propagation --period test` | about 3 minutes | `results/h2b_*` |
 | 9. Stability score | `..\.venv\Scripts\python.exe -W ignore -m src.stability.stability` | about 20 seconds | `data/stability/`, `results/stability_model_*` |
 | 9b. Evaluate it | `..\.venv\Scripts\python.exe -W ignore -m src.experiments.m6_evaluation --period test` | seconds | `results/m6_*` |
+| 9d. What the nulls rule out | `..\.venv\Scripts\python.exe -W ignore -m src.experiments.null_bounds` | seconds | `results/null_bounds.*`, `results/NULL_RESULTS_BOUNDS.md` |
 | 9c. Model-quality charts | `..\.venv\Scripts\python.exe -W ignore -m src.figures.model_quality_charts` | seconds | `results/model_quality/` |
 | 10. Output record | `..\.venv\Scripts\python.exe -W ignore -m src.output.snapshot --symbol BTCUSDT` | seconds | printed JSON |
 
@@ -130,6 +131,14 @@ per timeframe, and weights learned per timeframe and volatility context, were no
 than the fixed weights at judging whether the Daily regime would hold (Brier, adaptive
 minus fixed: BTC +0.0028, ETH +0.0013; both intervals include zero). The fixed weights
 are kept. The 4-hour timeframe carries almost all of the learned weight.
+
+**What the null results rule out** (`results/NULL_RESULTS_BOUNDS.md`, a re-reading of the
+intervals above; no new test). For H1, a decline in alignment before transitions of even
+a small size (Vargha & Delaney) is ruled out in both assets; for BTC the interval lies
+entirely in the opposite direction. For Novelty 3, a gain from adaptive over learned
+weights as large as the gain from cross-timeframe agreement itself is ruled out in both
+assets. Propagation at the Daily level (H2) and failed propagation at 4h and 1h (H2b)
+are inconclusive: too few events to rule a small effect in or out.
 
 The H1, H2 and H2b designs were fixed before their results were computed. The H2 placebo
 control was added after the H2 result was known and is reported as an additional check.
