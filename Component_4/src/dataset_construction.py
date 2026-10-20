@@ -7,7 +7,7 @@ import math
 import sys
 import unittest
 from array import array
-from collections import Counter
+from collections import Counter, deque
 from contextlib import ExitStack
 from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta, timezone
@@ -21,11 +21,13 @@ from zone_detection.swings import INTERVALS, iso, positive, utc
 ROOT = Path(__file__).resolve().parents[1]
 SYMBOLS = ("BTCUSDT", "ETHUSDT")
 METHOD = "frozen_geometry_close_outcomes_v1"
+OVERLAP_FEATURES = ("overlapping_family_count_at_decision", "overlapping_candidate_count_at_decision")
 CANDLE_FIELDS = ("open", "high", "low", "close", "atr_14_sma", "normalized_atr",
                  "body_ratio", "close_location_value", "relative_volume_20", "rolling_mean_return_20")
 COMMON_FEATURES = ("symbol", "source_timeframe", "zone_family", "origin_type", "direction",
                    "width_atr", "signed_distance_atr", "normalized_atr", "body_ratio",
-                   "close_location_value", "relative_volume_20", "rolling_mean_return_20")
+                   "close_location_value", "relative_volume_20", "rolling_mean_return_20",
+                   "overlapping_family_count_at_decision", "overlapping_candidate_count_at_decision")
 MODEL_FEATURES = {"strong_zone": COMMON_FEATURES,
                   "scenario": COMMON_FEATURES + ("version_age_bars", "touch_penetration")}
 COLUMNS = (
@@ -35,7 +37,7 @@ COLUMNS = (
     "observation_end_utc", "label", "label_status", "split", "split_status",
     "width_atr", "signed_distance_atr", "normalized_atr", "body_ratio", "close_location_value",
     "relative_volume_20", "rolling_mean_return_20", "version_age_bars", "touch_penetration",
-)
+) + OVERLAP_FEATURES
 TRAIN_START = utc("2020-01-01T00:00:00Z")
 VALIDATION_START = utc("2024-01-01T00:00:00Z")
 TEST_START = utc("2025-01-01T00:00:00Z")
@@ -135,7 +137,7 @@ def version_index(events, candles):
     return versions, first, next_version
 
 
-def read_touches(path, versions, next_version, candles):
+def read_touches(path, versions, next_version, candles, retired=None):
     """Stream the entire lifecycle once; retain only first-touch indices per version.
 
     Validate sequence, source geometry, direction and knowledge at candle opening
@@ -160,6 +162,8 @@ def read_touches(path, versions, next_version, candles):
                 raise ValueError("Lifecycle sequence, geometry, direction or time mismatch")
             sequences[key], previous_time = sequence, when
             counts[row["event_type"]] += 1
+            if retired is not None and row["event_type"] in ("observed_invalidation", "monitoring_expiry", "version_end"):
+                retired.setdefault(key, when)
             if not row["candle_time_utc"]:
                 if row["event_type"] not in ("version_end", "monitoring_expiry"):
                     raise ValueError("Price event has no candle")
@@ -178,6 +182,70 @@ def read_touches(path, versions, next_version, candles):
                     raise ValueError("Invalid lifecycle first-touch geometry")
                 touches[key] = index
     return touches, dict(counts)
+
+
+class OverlapEvidence:
+    """Decision-close evidence eligibility, not verified validity or strength.
+
+    Apply all source versions and lifecycle retirements known by the decision.
+    Query the sample's frozen interval against latest eligible OTHER families.
+    Only a bounded recent-state dictionary is searched, not all history.
+    """
+
+    def __init__(self, events, config=None, clock=None, retired=None):
+        self.config, self.clock = config or registry.Config(), clock
+        self.events = iter(sorted(events, key=registry.Event.order_key))
+        self.pending = next(self.events, None)
+        self.retirements = iter(sorted((when, key) for key, when in (retired or {}).items()))
+        self.retirement = next(self.retirements, None)
+        self.latest, self.expiry, self.volume_ids = {}, deque(), set()
+        self.slot, self.now = None, None
+
+    def features(self, target, now):
+        if target.available > now or (self.now is not None and now < self.now):
+            raise ValueError("Overlap queries must be chronological and decision-time-known")
+        self.now = now
+        slot = self.clock.latest_profile_at(now) if self.clock is not None else None
+        if slot is not None and now - slot >= self.clock.stride:
+            slot = None
+        if slot != self.slot:
+            for identity in self.volume_ids:
+                self.latest.pop(identity, None)
+            self.volume_ids.clear()
+            self.slot = slot
+        # Consume the complete <= now batch before counting, including updates.
+        while self.pending is not None and self.pending.available <= now:
+            event = self.pending
+            if event.family == "volume_derived":
+                if self.clock is None:
+                    raise ValueError("Volume evidence requires the actual Phase 5 calendar")
+                if event.available == slot:
+                    self.latest[event.registry_id] = event
+                    self.volume_ids.add(event.registry_id)
+            else:
+                self.latest[event.registry_id] = event
+                self.expiry.append(event)
+            self.pending = next(self.events, None)
+        cutoff = now - self.config.recency(target.timeframe)
+        while self.expiry and self.expiry[0].available < cutoff:
+            old = self.expiry.popleft()
+            if self.latest.get(old.registry_id) is old:
+                del self.latest[old.registry_id]
+        while self.retirement is not None and self.retirement[0] <= now:
+            _, (identity, version) = self.retirement
+            old = self.latest.get(identity)
+            if old is not None and old.available == version:
+                del self.latest[identity]
+                self.volume_ids.discard(identity)
+            self.retirement = next(self.retirements, None)
+        count, families = 0, set()
+        for other in self.latest.values():
+            if (other.registry_id != target.registry_id and other.family != target.family
+                    and other.symbol == target.symbol and other.timeframe == target.timeframe
+                    and registry.overlaps(target, other)):
+                count += 1
+                families.add(other.family)
+        return dict(zip(OVERLAP_FEATURES, (len(families), count)))
 
 
 def threshold_hits(event, close, atr, favorable_atr, failure_atr):
@@ -267,7 +335,7 @@ def split_status(decision, end, first_available, config):
     return name, "eligible"
 
 
-def sample(event, model, candles, decision, touch, status, label, end, first_available, config):
+def sample(event, model, candles, decision, touch, status, label, end, first_available, config, evidence=None):
     row = dict.fromkeys(COLUMNS)
     row.update(sample_id=f"{model}:{event.registry_id}:{iso(event.available)}", model=model,
                registry_zone_id=event.registry_id, zone_version_at_utc=iso(event.available),
@@ -283,6 +351,8 @@ def sample(event, model, candles, decision, touch, status, label, end, first_ava
     observed = candles.available(end)
     row.update(decision_at_utc=iso(now), observation_end_utc=iso(observed))
     row["split"], row["split_status"] = split_status(now, observed, first_available, config)
+    if evidence is not None:
+        row.update(evidence.features(event, now))
     atr = candles.data["atr_14_sma"][decision]
     if not positive(atr):
         return row
@@ -299,10 +369,11 @@ def sample(event, model, candles, decision, touch, status, label, end, first_ava
     return row
 
 
-def iter_samples(events, candles, touches, config):
+def iter_samples(events, candles, touches, config, overlap_config=None, clock=None, retired=None):
     """Each identity supplies ONE A row; each directional version ONE B audit row."""
     first = {}
     events = sorted(events, key=registry.Event.order_key)
+    evidence = OverlapEvidence(events, overlap_config, clock, retired)
     for event in events:
         if lifecycle.direction_for(event) is None:
             continue
@@ -312,9 +383,10 @@ def iter_samples(events, candles, touches, config):
             status, label, touch, end = ("invalid_decision_atr", None, None, decision)
             if positive(candles.data["atr_14_sma"][decision]):
                 status, label, touch, end = strong_outcome(event, candles, decision, config)
-            yield sample(event, "strong_zone", candles, decision, touch, status, label, end, original.available, config)
+            yield sample(event, "strong_zone", candles, decision, touch, status, label, end, original.available, config, evidence)
     # Sort B by observed decision time, not the earlier version-creation order.
     ordered = sorted(events, key=lambda e: (touches.get((e.registry_id, e.available), candles.index(e.available)), e.order_key()))
+    evidence = OverlapEvidence(events, overlap_config, clock, retired)
     for event in ordered:
         if lifecycle.direction_for(event) is None:
             continue
@@ -333,18 +405,19 @@ def iter_samples(events, candles, touches, config):
                     status = "invalid_decision_atr"
                     if positive(candles.data["atr_14_sma"][touch]):
                         status, label, end = scenario_outcome(event, candles, touch, config)
-        yield sample(event, "scenario", candles, b_decision, touch, status, label, end, original.available, config)
+        yield sample(event, "scenario", candles, b_decision, touch, status, label, end, original.available, config, evidence)
 
 
 def output_paths(root, symbol, timeframe):
     return {model: root / "data" / "ml" / model / f"{symbol}_{timeframe}.csv" for model in MODEL_FEATURES}
 
 
-def validate_outputs(paths, candles, versions, first, config):
+def validate_outputs(paths, candles, versions, first, config, overlap_config=None, clock=None, retired=None):
     """Read back serialized outputs; verify every target, split and predictor value."""
     counts = {}
     for model, path in paths.items():
         seen, families = set(), {}
+        evidence = OverlapEvidence(versions.values(), overlap_config, clock, retired)
         with path.open(newline="", encoding="utf-8") as handle:
             reader = csv.DictReader(handle)
             if reader.fieldnames != list(COLUMNS):
@@ -371,7 +444,7 @@ def validate_outputs(paths, candles, versions, first, config):
                     status = row["label_status"]
                     end = decision if decision is not None else candles.index(event.available)
                 expected = sample(event, model, candles, decision, touch, status, label, end,
-                                  first[event.registry_id].available, config)
+                                  first[event.registry_id].available, config, evidence)
                 if any(row[k] != ("" if v is None else str(v)) for k, v in expected.items()):
                     raise ValueError("Serialized target/feature/geometry/split validation failed")
                 group = families.setdefault(event.family, {"rows": 0, "labels": Counter(), "statuses": Counter(),
@@ -405,7 +478,14 @@ def process_dataset(root, symbol, timeframe, config=None, overwrite=False):
     candles = read_candles(source, timeframe)
     events = lifecycle.load_registry_events(root, symbol, timeframe)
     versions, first, next_version = version_index(events, candles)
-    touches, lifecycle_counts = read_touches(history, versions, next_version, candles)
+    with (root / "reports/zone_detection/registry_summary.json").open(encoding="utf-8") as handle:
+        overlap_config = registry.Config(**json.load(handle)["parameters"])
+    clock = None
+    if any(event.family == "volume_derived" for event in events):
+        with (root / "reports/zone_detection/volume_summary.json").open(encoding="utf-8") as handle:
+            clock = registry.profile_clock({"volume_derived": json.load(handle)}, symbol, timeframe)
+    retired = {}
+    touches, lifecycle_counts = read_touches(history, versions, next_version, candles, retired)
     with ExitStack() as stack:
         writers = {}
         for model, path in paths.items():
@@ -413,9 +493,9 @@ def process_dataset(root, symbol, timeframe, config=None, overwrite=False):
             handle = stack.enter_context(path.open("w" if overwrite else "x", newline="", encoding="utf-8"))
             writers[model] = csv.DictWriter(handle, fieldnames=COLUMNS)
             writers[model].writeheader()
-        for row in iter_samples(events, candles, touches, config):
+        for row in iter_samples(events, candles, touches, config, overlap_config, clock, retired):
             writers[row["model"]].writerow(row)
-    validation = validate_outputs(paths, candles, versions, first, config)
+    validation = validate_outputs(paths, candles, versions, first, config, overlap_config, clock, retired)
     return {"symbol": symbol, "timeframe": timeframe, "input_candles": len(candles),
             "registry_events": len(events), "registry_identities": len(first),
             "neutral_volume_versions_excluded": sum(e.family == "volume_derived" for e in events),

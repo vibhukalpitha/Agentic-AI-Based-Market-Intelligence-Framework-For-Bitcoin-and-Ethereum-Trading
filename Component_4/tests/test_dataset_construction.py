@@ -342,6 +342,15 @@ class TimeAndIdentityTests(unittest.TestCase):
         for features in ds.MODEL_FEATURES.values():
             self.assertFalse(set(features) & forbidden)
 
+    def test_feature_allowlists_match_approved_phase8_report(self):
+        path = Path(__file__).resolve().parents[1] / "reports/phase8_summary.json"
+        approved = json.loads(path.read_text())["model_features"]
+        for model, count in (("strong_zone", 14), ("scenario", 16)):
+            features = ds.MODEL_FEATURES[model]
+            self.assertEqual(list(features), approved[model])
+            self.assertEqual(len(features), count)
+            self.assertEqual(len(set(features)), count)
+
 
 class OverlapTests(unittest.TestCase):
     def other(self, e, identity="r", family="reaction", **kwargs):
