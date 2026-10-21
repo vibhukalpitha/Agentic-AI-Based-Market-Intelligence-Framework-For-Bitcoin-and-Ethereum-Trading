@@ -58,6 +58,30 @@ def test_snapshot_is_valid_json_with_the_documented_blocks(labels):
                    + record["fusion"]["timeframes_disagreeing"]) == sorted(config.INTERVALS))
 
 
+def test_a_written_time_can_be_fed_back_in_and_gives_the_same_record(labels):
+    """Times are written to the microsecond, so a record's own as_of reproduces it,
+    also exactly at a candle's close (the case that failed with milliseconds)."""
+    newest = max(frame["known_time"].iloc[-1] for frame in labels.values())
+    for as_of in (None, START + pd.Timedelta(days=6, hours=13, minutes=7),
+                  labels["5m"]["known_time"].iloc[2000]):
+        record = snapshot.build_snapshot("TEST", as_of, labels)
+        again = snapshot.build_snapshot("TEST", pd.Timestamp(record["as_of"].rstrip("Z")), labels)
+        assert again == record
+    assert snapshot.build_snapshot("TEST", None, labels)["as_of"] == snapshot._iso(newest)
+    assert snapshot._iso(pd.Timestamp("2026-10-21 08:49:59.999999")) == "2026-10-21T08:49:59.999999Z"
+
+
+def test_a_moment_after_the_newest_data_is_refused(labels):
+    newest = max(frame["known_time"].iloc[-1] for frame in labels.values())
+    step = config.INTERVAL_STEP["5m"]
+    # Within the 5-minute candle still forming, the data covers the moment.
+    snapshot.build_snapshot("TEST", newest + step - ALMOST, labels)
+    # Once the next 5-minute candle would have closed, candles are missing.
+    for later in (newest + step, newest + pd.Timedelta(days=365 * 4)):
+        with pytest.raises(ValueError, match="data ends at"):
+            snapshot.build_snapshot("TEST", later, labels)
+
+
 def test_unfinished_daily_candle_is_not_reported(labels):
     """At 12:00 on day 5 the day-5 Daily candle is still forming."""
     as_of = START + pd.Timedelta(days=5, hours=12)

@@ -1,6 +1,6 @@
 # Output of the Market Regime Engine (Component 01)
 
-**Status: proposal, schema version 0.5.** The group has not yet agreed a common format.
+**Status: proposal, schema version 0.6.** The group has not yet agreed a common format.
 This is what Component 01 can deliver today; field names can be changed to fit the
 Fusion Intelligence Engine.
 
@@ -30,6 +30,18 @@ record = build_snapshot("ETHUSDT", "2025-03-01T12:00")    # any past moment (UTC
 
 `symbol` is `BTCUSDT` or `ETHUSDT`. A record for a past moment uses only candles that
 had closed by that moment, so it is exactly what the engine would have said then.
+
+**Which moments are accepted.** From 1 Jan 2021 (when all five timeframes have data) up
+to the newest data, plus the 5 minutes in which the next 5-minute candle is still
+forming. An earlier moment, or a moment for which candles are missing, is refused with
+an error that says why; the engine never answers with older data. For moments after
+30 Sep 2026, run the live update (`python -m src.live.update`) first.
+
+**Times** are UTC, ISO 8601, to the microsecond (e.g. `2026-10-21T08:49:59.999999Z`).
+A record's own `as_of` can be passed back as input and gives the same record.
+
+**Version 0.6** (from 0.5): times written to the microsecond instead of the millisecond,
+and moments beyond the newest data refused. No field was added, removed or renamed.
 
 Full examples: `component_01/results/sample_output_BTCUSDT.json` and
 `component_01/results/sample_output_ETHUSDT.json`.

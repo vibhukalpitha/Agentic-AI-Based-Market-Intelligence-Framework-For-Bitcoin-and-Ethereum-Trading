@@ -26,7 +26,10 @@ from src.fusion import alignment, propagation
 from src.regime import describe
 from src.similarity import dtw_match
 
-SCHEMA_VERSION = "0.5"
+# 0.6: times are written to the microsecond (they were rounded to milliseconds),
+# and a moment later than the newest data is refused instead of answered with
+# the newest data. No field was added or removed.
+SCHEMA_VERSION = "0.6"
 PROBABILITY_COLUMNS = [f"p_{name.lower()}" for name in config.REGIMES]
 
 # Facts a consumer of this record must know to use it correctly.
@@ -57,7 +60,11 @@ CAVEATS = [
 
 
 def _iso(time: pd.Timestamp) -> str:
-    return pd.Timestamp(time).isoformat(timespec="milliseconds") + "Z"
+    """UTC time to the microsecond. Binance candles from 2025 close at ...59.999999;
+    rounding to milliseconds (...59.999) would put a written time one microsecond
+    BEFORE the candle closed, so the time could not be fed back in as `as_of`
+    and give the same record."""
+    return pd.Timestamp(time).isoformat(timespec="microseconds") + "Z"
 
 
 def load_all_labels(symbol: str) -> dict[str, pd.DataFrame]:
@@ -227,9 +234,17 @@ def build_snapshot(symbol: str, as_of: pd.Timestamp | None = None,
     labels = load_all_labels(symbol) if labels is None else labels
     if profiles is None:
         profiles = {i: describe.load_profiles(symbol, i) for i in config.INTERVALS}
-    if as_of is None:
-        as_of = max(frame["known_time"].iloc[-1] for frame in labels.values())
-    as_of = pd.Timestamp(as_of)
+    newest = max(frame["known_time"].iloc[-1] for frame in labels.values())
+    as_of = newest if as_of is None else pd.Timestamp(as_of)
+    # A moment for which candles are missing would silently be described with
+    # older data. The next fastest candle closes one step after the newest one;
+    # from then on the data no longer covers the moment, so it is refused.
+    fastest_step = config.INTERVAL_STEP[config.INTERVALS[-1]]
+    if as_of >= newest + fastest_step:
+        raise ValueError(
+            f"the data ends at {_iso(newest)} (newest closed candle); a record for "
+            f"{_iso(as_of)} would miss later candles. For later moments run the live "
+            "update: python -m src.live.update")
 
     states = {i: timeframe_state(labels[i], as_of, profiles.get(i)) for i in config.INTERVALS}
     missing = [i for i, state in states.items() if state is None]
