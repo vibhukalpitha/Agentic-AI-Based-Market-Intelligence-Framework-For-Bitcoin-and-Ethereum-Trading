@@ -10,11 +10,12 @@ from fastapi.responses import FileResponse
 # Add Vibhu Kalpitha root to sys.path so modules import reliably
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", ".."))
+REPO_ROOT = os.path.abspath(os.path.join(PROJECT_ROOT, ".."))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-DIST_DIR = os.path.join(PROJECT_ROOT, "frontend", "dist")
-SIMILARITY_IMG_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, "..", "component_01", "results", "similarity"))
+DIST_DIR = os.path.join(REPO_ROOT, "frontend", "dist")
+SIMILARITY_IMG_DIR = os.path.abspath(os.path.join(REPO_ROOT, "component_01", "results", "similarity"))
 
 from datetime import datetime, timezone
 from src.api.inference_service import run_full_prediction, registry
