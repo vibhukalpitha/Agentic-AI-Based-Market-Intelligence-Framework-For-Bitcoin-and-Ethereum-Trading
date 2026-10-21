@@ -13,11 +13,10 @@ from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 warnings.filterwarnings('ignore')
 
 # ==========================================
-# 1. Local Paths Setup
+# 1. VS Code Local Paths Setup (BTC)
 # ==========================================
-BASE_PATH = r"E:\Innovus\Documents\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\Vibhu Kalpitha"
-DATA_DIR = os.path.join(BASE_PATH, r"data\03_features_1h")
-MODELS_BTC_DIR = os.path.join(BASE_PATH, r"src\models\saved models\1_hr_BTC")
+DATA_DIR = r"E:\Innovus\Documents\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\Vibhu Kalpitha\data\03_features_1h"
+MODELS_BTC_DIR = r"E:\Innovus\Documents\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\Vibhu Kalpitha\src\models\saved models\1_hr_BTC"
 
 os.makedirs(MODELS_BTC_DIR, exist_ok=True)
 
@@ -30,6 +29,11 @@ def load_data(filename):
         raise FileNotFoundError(f"Missing File: {filepath}")
         
     df = pd.read_csv(filepath, engine='python')
+    
+    # Datetime timezone fix
+    if 'datetime' in df.columns:
+        df['datetime'] = pd.to_datetime(df['datetime'], utc=True).dt.tz_localize(None)
+        
     text_cols = [
         'combined_article_text', 'summary', 'title', 'text', 
         'finbert_sentiment', 'symbol', 'pair', 
@@ -42,22 +46,14 @@ def load_data(filename):
     return df.fillna(0)
 
 print("Loading 1H Datasets for BTC...")
-df_macro = load_data("macro_feature_store_1h.csv")
+df_macro = load_data("final_1h_dataset_with_macro.csv")
 df_internal = load_data("internal_feature_store_1h.csv")
 df_sp500 = load_data("sp500_feature_store_1h.csv")
 df_news = load_data("news_feature_store_1h.csv")
 
-print("\n=== DATASET SHAPES & FEATURE COUNTS ===")
-print(f"Macro Data   : {df_macro.shape[0]} rows | {df_macro.shape[1]} features")
-print(f"Internal Data: {df_internal.shape[0]} rows | {df_internal.shape[1]} features")
-print(f"SP500 Data   : {df_sp500.shape[0]} rows | {df_sp500.shape[1]} features")
-print(f"News Data    : {df_news.shape[0]} rows | {df_news.shape[1]} features")
-print("=======================================\n")
-
-# Target Dataframe
+# Target Dataframe (BTC)
 target_df = df_macro[['datetime', 'BTC_target_1h']].copy()
 
-# Add Target to each dataset separately
 def attach_target(df, target_df):
     if 'BTC_target_1h' in df.columns:
         return df
@@ -160,7 +156,8 @@ for train_idx, test_idx in tscv.split(X_meta):
     
     acc_list.append(accuracy_score(y_test, preds))
     f1_list.append(f1_score(y_test, preds, zero_division=0))
-    auc_list.append(roc_auc_score(y_test, probs))
+    current_auc = roc_auc_score(y_test, probs) if len(np.unique(y_test)) > 1 else 0.5
+    auc_list.append(current_auc)
 
 print(f"BTC Meta-Learner Accuracy: {np.mean(acc_list):.4f}")
 print(f"BTC Meta-Learner F1-Score: {np.mean(f1_list):.4f}")
@@ -178,5 +175,4 @@ print(importance.to_markdown(index=False))
 
 meta_path = os.path.join(MODELS_BTC_DIR, "btc_meta_learner_1h.joblib")
 joblib.dump(meta_model, meta_path)
-
-print(f"\n🎉 Models successfully saved to: {MODELS_BTC_DIR}")
+print(f"\n Models successfully saved to: {MODELS_BTC_DIR}")
