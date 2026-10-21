@@ -20,7 +20,7 @@ try:
 except Exception:
     finbert_analyzer = None
 
-BASE_PATH = r"E:\Innovus\Documents\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\Vibhu Kalpitha"
+BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
 # ==========================================
 # 1. Model Storage & Lazy Loader

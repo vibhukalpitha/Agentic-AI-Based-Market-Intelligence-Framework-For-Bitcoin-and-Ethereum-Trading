@@ -16,7 +16,7 @@ warnings.filterwarnings('ignore')
 # ==========================================
 # 1. Local Paths Setup (1H Only)
 # ==========================================
-BASE_PATH = r"E:\Innovus\Documents\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\Vibhu Kalpitha"
+BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 MODELS_1H_ETH_DIR = os.path.join(BASE_PATH, r"src\models\saved models\1_hr_ETH")
 MODELS_1H_BTC_DIR = os.path.join(BASE_PATH, r"src\models\saved models\1_hr_BTC")
 

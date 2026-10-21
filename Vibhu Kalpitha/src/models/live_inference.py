@@ -22,7 +22,7 @@ except Exception:
 # ==========================================
 # 1. Configuration & Paths
 # ==========================================
-BASE_PATH = r"E:\Innovus\Documents\Agentic-AI-Based-Market-Intelligence-Framework-For-Bitcoin-and-Ethereum-Trading\Vibhu Kalpitha"
+BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 ETH_MODELS_DIR = os.path.join(BASE_PATH, r"src\models\saved models\ETH")
 BTC_MODELS_DIR = os.path.join(BASE_PATH, r"src\models\saved models")
 

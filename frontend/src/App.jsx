@@ -726,9 +726,20 @@ export default function App() {
                   <span>Ξ Ethereum (ETHUSDT)</span>
                 </button>
               </div>
-              <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                Evaluated At: <strong style={{ color: '#fff' }}>{currentRegimeData.as_of}</strong>
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                  As Of: <strong style={{ color: '#fff' }}>{currentRegimeData.as_of?.split('T')[0] || '2026-09-30'}</strong>
+                </span>
+                {currentRegimeData.is_live_service ? (
+                  <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--emerald-buy)', border: '1px solid rgba(16, 185, 129, 0.3)', fontWeight: 700 }}>
+                    ● Live Engine (Port 8001)
+                  </span>
+                ) : (
+                  <span style={{ fontSize: '11px', padding: '3px 8px', borderRadius: '4px', background: 'rgba(234, 179, 8, 0.15)', color: '#facc15', border: '1px solid rgba(234, 179, 8, 0.3)', fontWeight: 700 }}>
+                    Benchmark Reference Snapshot (30 Sep 2026)
+                  </span>
+                )}
+              </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -738,6 +749,16 @@ export default function App() {
               </div>
             </div>
           </div>
+
+          {/* Benchmark Notice when user picks custom date */}
+          {mode === 'custom' && !currentRegimeData.is_live_service && (
+            <div style={{ background: 'rgba(234, 179, 8, 0.08)', border: '1px solid rgba(234, 179, 8, 0.25)', borderRadius: '10px', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#fef08a' }}>
+              <Info size={16} color="#facc15" style={{ flexShrink: 0 }} />
+              <span>
+                <strong>Component 01 Notice:</strong> Showing verified 30 Sep 2026 benchmark multi-timeframe regime analysis. Dynamic custom historical date inference will automatically stream via Component 01's Port 8001 microservice once launched.
+              </span>
+            </div>
+          )}
 
           {/* Fusion Engine Overview Banner */}
           <div className="glass-panel fusion-overview-bar">
