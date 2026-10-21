@@ -3,6 +3,7 @@
 WHY one file: an examiner must be able to see every number that influences the
 results in a single place. No module may hard-code a period, path or threshold.
 """
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -11,11 +12,19 @@ import pandas as pd
 # Paths
 # --------------------------------------------------------------------------
 ROOT_DIR = Path(__file__).resolve().parents[1]
-DATA_DIR = ROOT_DIR / "data"            # git-ignored
+
+# Live data (src/live) runs the SAME pipeline in a separate workspace folder, so
+# the frozen data, the ten models and the committed results are never written.
+# Only src/live sets this variable; every normal run leaves it unset and uses the
+# usual folders below, unchanged.
+WORKSPACE_ENV = "COMPONENT01_WORKSPACE"
+_BASE_DIR = Path(os.environ[WORKSPACE_ENV]) if os.environ.get(WORKSPACE_ENV) else ROOT_DIR
+
+DATA_DIR = _BASE_DIR / "data"           # git-ignored
 PARQUET_DIR = DATA_DIR / "parquet"      # raw OHLCV candles (M1 output)
 FEATURES_DIR = DATA_DIR / "features"    # engineered features (M2 output)
-MODELS_DIR = ROOT_DIR / "models"        # git-ignored, trained HMMs
-RESULTS_DIR = ROOT_DIR / "results"
+MODELS_DIR = _BASE_DIR / "models"       # git-ignored, trained HMMs
+RESULTS_DIR = _BASE_DIR / "results"
 
 # --------------------------------------------------------------------------
 # Assets and timeframes

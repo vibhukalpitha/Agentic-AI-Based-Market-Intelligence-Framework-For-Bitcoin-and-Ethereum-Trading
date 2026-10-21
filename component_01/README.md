@@ -44,7 +44,40 @@ python -m venv ..\.venv
 
 ### Running the pipeline
 
-Run the steps in this order. Each one prints a report of what it produced.
+**One command** runs the steps below in the right order, from the saved models:
+
+```
+..\.venv\Scripts\python.exe -W ignore -m src.run_all              # build the output (about 2.5 minutes)
+..\.venv\Scripts\python.exe -W ignore -m src.run_all --reproduce  # also every experiment, chart and test (20-50 minutes)
+..\.venv\Scripts\python.exe -W ignore -m src.run_all --list       # show the steps without running them
+```
+
+It never downloads data or trains a model, stops at the first failing step, writes each
+step's full output to `data/logs/`, and ends by listing every file in `results/`,
+`docs/` and `models/` that changed (on the frozen data: none). The build also saves the
+latest output record of each asset to `data/output/latest_<symbol>.json`.
+
+### Live data (Binance REST API)
+
+```
+..\.venv\Scripts\python.exe -W ignore -m src.live.update              # fetch, build, verify, publish (~7 minutes)
+..\.venv\Scripts\python.exe -W ignore -m src.live.update --fetch-only # only fetch and store new candles
+..\.venv\Scripts\python.exe -W ignore -m src.live.check_source        # REST API vs archive, value by value
+```
+
+One update fetches every new **closed** candle after the frozen dataset (30 Sep 2026) from
+`https://data-api.binance.vision/api/v3/klines` (public market data, no API key), checks
+it, and runs the same BUILD steps as `run_all` with the **frozen** models in a separate
+workspace (`data/live/`, git-ignored). Nothing is retrained, and `data/parquet/`,
+`models/` and `results/` are never written. Before anything is published, a
+reproduction check confirms that every feature, label, alignment value, stability
+score and archetype up to 30 Sep 2026 is identical to the saved files. The latest
+records are written to `data/live/output/latest_<symbol>.json`, with a dated copy in
+`data/live/output/history/`. `results/live_source_check.json` shows that the REST API
+and the archive files agree on every compared candle (prices, volumes, times and trade
+counts exactly; the two quote-currency totals to within float rounding, 2 × 10⁻¹⁶).
+
+The individual steps, in this order, each print a report of what they produced:
 
 | Step | Command | Time | Output |
 |---|---|---|---|

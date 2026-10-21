@@ -1,0 +1,174 @@
+{
+  "checked_at_binance_time": "2026-10-20 19:58:07.816024",
+  "candles_per_series": 300,
+  "float_rounding_tolerance": 1e-15,
+  "series": [
+    {
+      "symbol": "BTCUSDT",
+      "interval": "1d",
+      "candles": 300,
+      "from": "2025-12-05 00:00:00",
+      "to": "2026-09-30 00:00:00",
+      "missing_in_one_source": 0,
+      "real_differences": {},
+      "float_rounding_only": {
+        "quote_volume": {
+          "candles": 75,
+          "max_relative_difference": 2.621810862868875e-16
+        },
+        "taker_buy_quote": {
+          "candles": 80,
+          "max_relative_difference": 2.3944954323773765e-16
+        }
+      },
+      "status": "EQUAL (within float rounding)",
+      "equal": true
+    },
+    {
+      "symbol": "BTCUSDT",
+      "interval": "4h",
+      "candles": 300,
+      "from": "2026-08-12 00:00:00",
+      "to": "2026-09-30 20:00:00",
+      "missing_in_one_source": 0,
+      "real_differences": {},
+      "float_rounding_only": {
+        "quote_volume": {
+          "candles": 36,
+          "max_relative_difference": 2.528458558050385e-16
+        },
+        "taker_buy_quote": {
+          "candles": 12,
+          "max_relative_difference": 2.1653406249732973e-16
+        }
+      },
+      "status": "EQUAL (within float rounding)",
+      "equal": true
+    },
+    {
+      "symbol": "BTCUSDT",
+      "interval": "1h",
+      "candles": 300,
+      "from": "2026-09-18 12:00:00",
+      "to": "2026-09-30 23:00:00",
+      "missing_in_one_source": 0,
+      "real_differences": {},
+      "float_rounding_only": {
+        "quote_volume": {
+          "candles": 3,
+          "max_relative_difference": 1.6193339271943483e-16
+        }
+      },
+      "status": "EQUAL (within float rounding)",
+      "equal": true
+    },
+    {
+      "symbol": "BTCUSDT",
+      "interval": "15m",
+      "candles": 300,
+      "from": "2026-09-27 21:00:00",
+      "to": "2026-09-30 23:45:00",
+      "missing_in_one_source": 0,
+      "real_differences": {},
+      "float_rounding_only": {
+        "quote_volume": {
+          "candles": 1,
+          "max_relative_difference": 1.6030566291450775e-16
+        }
+      },
+      "status": "EQUAL (within float rounding)",
+      "equal": true
+    },
+    {
+      "symbol": "BTCUSDT",
+      "interval": "5m",
+      "candles": 300,
+      "from": "2026-09-29 23:00:00",
+      "to": "2026-09-30 23:55:00",
+      "missing_in_one_source": 0,
+      "real_differences": {},
+      "float_rounding_only": {},
+      "status": "IDENTICAL",
+      "equal": true
+    },
+    {
+      "symbol": "ETHUSDT",
+      "interval": "1d",
+      "candles": 300,
+      "from": "2025-12-05 00:00:00",
+      "to": "2026-09-30 00:00:00",
+      "missing_in_one_source": 0,
+      "real_differences": {},
+      "float_rounding_only": {
+        "quote_volume": {
+          "candles": 43,
+          "max_relative_difference": 2.2056883146146934e-16
+        },
+        "taker_buy_quote": {
+          "candles": 36,
+          "max_relative_difference": 1.991272866944891e-16
+        }
+      },
+      "status": "EQUAL (within float rounding)",
+      "equal": true
+    },
+    {
+      "symbol": "ETHUSDT",
+      "interval": "4h",
+      "candles": 300,
+      "from": "2026-08-12 00:00:00",
+      "to": "2026-09-30 20:00:00",
+      "missing_in_one_source": 0,
+      "real_differences": {},
+      "float_rounding_only": {
+        "quote_volume": {
+          "candles": 6,
+          "max_relative_difference": 1.854458511519141e-16
+        },
+        "taker_buy_quote": {
+          "candles": 1,
+          "max_relative_difference": 1.1393506159695174e-16
+        }
+      },
+      "status": "EQUAL (within float rounding)",
+      "equal": true
+    },
+    {
+      "symbol": "ETHUSDT",
+      "interval": "1h",
+      "candles": 300,
+      "from": "2026-09-18 12:00:00",
+      "to": "2026-09-30 23:00:00",
+      "missing_in_one_source": 0,
+      "real_differences": {},
+      "float_rounding_only": {},
+      "status": "IDENTICAL",
+      "equal": true
+    },
+    {
+      "symbol": "ETHUSDT",
+      "interval": "15m",
+      "candles": 300,
+      "from": "2026-09-27 21:00:00",
+      "to": "2026-09-30 23:45:00",
+      "missing_in_one_source": 0,
+      "real_differences": {},
+      "float_rounding_only": {},
+      "status": "IDENTICAL",
+      "equal": true
+    },
+    {
+      "symbol": "ETHUSDT",
+      "interval": "5m",
+      "candles": 300,
+      "from": "2026-09-29 23:00:00",
+      "to": "2026-09-30 23:55:00",
+      "missing_in_one_source": 0,
+      "real_differences": {},
+      "float_rounding_only": {},
+      "status": "IDENTICAL",
+      "equal": true
+    }
+  ],
+  "all_equal": true
+}
