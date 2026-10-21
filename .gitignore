@@ -35,3 +35,7 @@ Thumbs.db
 # Large local raw data
 data/01_raw/
 component_01/data/
+
+# Local scripts
+*.ps1
+
