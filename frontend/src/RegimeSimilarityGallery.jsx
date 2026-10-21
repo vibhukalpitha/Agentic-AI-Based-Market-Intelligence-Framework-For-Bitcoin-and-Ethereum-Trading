@@ -451,8 +451,8 @@ export default function RegimeSimilarityGallery({ similarityData, symbol }) {
     if (!distribution.length) return null;
 
     const maxDensity = Math.max(...distribution.map(d => d.density));
-    const minDist = 1.0;
-    const maxDist = 6.0;
+    const minDist = Math.min(1.0, ...distribution.map(d => d.dist), ...matches.map(m => m.distance || Infinity));
+    const maxDist = Math.max(6.0, ...distribution.map(d => d.dist));
 
     const getX = (d) => padding.left + ((d - minDist) / (maxDist - minDist)) * innerWidth;
     const getY = (dens) => padding.top + innerHeight - (dens / (maxDensity * 1.15)) * innerHeight;
@@ -541,11 +541,11 @@ export default function RegimeSimilarityGallery({ similarityData, symbol }) {
             />
             <circle cx={getX(match1Dist)} cy={padding.top + 6} r="4" fill={COLOR_MATCH1} />
             <text x={getX(match1Dist) + 8} y={padding.top + 9} fill={COLOR_MATCH1} fontSize="11" fontWeight="800" fontFamily="monospace">
-              M1: {match1Dist.toFixed(3)} (Top 99.96%)
+              M1: {match1Dist.toFixed(3)}{matches[0]?.similarity_percentile !== undefined && ` (Top ${matches[0].similarity_percentile}%)`}
             </text>
 
             {/* X-Axis Ticks */}
-            {[1.0, 2.0, 3.0, 4.0, 5.0, 6.0].map((tick, i) => (
+            {Array.from({ length: Math.floor(maxDist) - Math.ceil(minDist) + 1 }, (_, i) => Math.ceil(minDist) + i).map((tick, i) => (
               <g key={i}>
                 <line x1={getX(tick)} y1={chartHeight - padding.bottom} x2={getX(tick)} y2={chartHeight - padding.bottom + 5} stroke="rgba(255,255,255,0.2)" />
                 <text x={getX(tick)} y={chartHeight - 16} textAnchor="middle" fill="var(--text-dim)" fontSize="10" fontFamily="monospace">

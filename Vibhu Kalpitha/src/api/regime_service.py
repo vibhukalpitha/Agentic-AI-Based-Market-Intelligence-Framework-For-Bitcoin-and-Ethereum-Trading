@@ -173,26 +173,40 @@ def get_regime_snapshot(symbol: str, target_dt: datetime = None, is_live: bool =
     
     formatted_ts = target_dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
 
-    # Check if Component 01's dedicated microservice on Port 8001 is active
-    live_api_url = f"http://127.0.0.1:8001/api/regime/{clean_sym}"
+    # Component 01's regime engine service (Component_01/src/api/service.py) on Port 8001
+    import urllib.error
+    import urllib.parse
+    import urllib.request
+    query = "" if is_live else "?" + urllib.parse.urlencode({"as_of": target_dt.strftime("%Y-%m-%dT%H:%M:%S")})
+    live_api_url = f"http://127.0.0.1:8001/api/regime/{clean_sym}{query}"
     live_record = None
+    service_notice = None
     try:
-        import urllib.request
         req = urllib.request.Request(
             live_api_url,
             headers={"User-Agent": "AgenticAI-Dashboard"}
         )
-        with urllib.request.urlopen(req, timeout=1.0) as resp:
+        # The first request loads the data (a few seconds); a stopped service fails at once.
+        with urllib.request.urlopen(req, timeout=30.0) as resp:
             if resp.status == 200:
                 live_record = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        # The service is running but cannot build this moment (e.g. before 2021)
+        try:
+            service_notice = json.loads(e.read().decode("utf-8")).get("detail")
+        except Exception:
+            service_notice = f"Component 01 service returned HTTP {e.code}"
     except Exception:
-        # Microservice not yet running on port 8001, fall back to verified benchmark snapshot
+        # Microservice not running on port 8001, fall back to verified benchmark snapshot
         live_record = None
 
     if live_record:
         record = live_record
         record["is_live_service"] = True
         record["source_mode"] = "Component 01 Live Engine (Port 8001)"
+        record["user_evaluated_time"] = formatted_ts
+        # The service sends the real DTW chart data for this date in dtw_similarity
+        return record
     elif base_record:
         # Verified benchmark sample record (30 Sep 2026)
         record = json.loads(json.dumps(base_record))
@@ -239,6 +253,9 @@ def get_regime_snapshot(symbol: str, target_dt: datetime = None, is_live: bool =
                 "text": f"{clean_sym}: Multi-timeframe agreement is strong. Faster and slower timeframes exhibit predominantly Bullish regimes."
             }
         }
+
+    if service_notice:
+        record["service_notice"] = service_notice
 
     # Augment similar_history with rich DTW similarity details if available
     if sim_record:
