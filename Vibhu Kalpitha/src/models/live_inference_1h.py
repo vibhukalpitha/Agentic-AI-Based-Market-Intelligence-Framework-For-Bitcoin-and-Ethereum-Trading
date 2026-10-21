@@ -51,17 +51,47 @@ except Exception as e:
 # 3. Free Data Fetchers (With Anti-Ban Sleep)
 # ==========================================
 def fetch_crypto_data(symbol, timeframe='1h', limit=5):
-    exchange = ccxt.binance()
-    ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
-    df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-    return df.iloc[-1]
-
-def fetch_sp500_live():
     try:
-        sp500 = yf.download('^GSPC', period='1d', interval='1h', progress=False)
-        return float(sp500['Close'].iloc[-1])
-    except:
-        return 0.0
+        exchange = ccxt.binance()
+        ohlcv = exchange.fetch_ohlcv(symbol, timeframe, limit=limit)
+        df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+        return df.iloc[-1]
+    except Exception as e:
+        print(f"⚠️ Error fetching {symbol}: {e}")
+        return None
+
+def fetch_macro_market_data():
+    """Live S&P 500, Gold (GLD), සහ DXY දත්ත yfinance හරහා ලබා ගැනීම"""
+    macro_data = {'sp500': 0.0, 'gold': 0.0, 'dxy': 0.0}
+    
+    # 1. S&P 500 (^GSPC)
+    try:
+        sp500 = yf.download('^GSPC', period='5d', interval='1h', progress=False)
+        if not sp500.empty:
+            close_val = sp500['Close'].dropna().iloc[-1]
+            macro_data['sp500'] = float(close_val.values[0] if isinstance(close_val, pd.Series) else close_val)
+    except Exception:
+        pass
+
+    # 2. Gold / GLD (GLD or GC=F)
+    try:
+        gold = yf.download('GLD', period='5d', interval='1h', progress=False)
+        if not gold.empty:
+            close_val = gold['Close'].dropna().iloc[-1]
+            macro_data['gold'] = float(close_val.values[0] if isinstance(close_val, pd.Series) else close_val)
+    except Exception:
+        pass
+
+    # 3. US Dollar Index / DXY (DX-Y.NYB or UUP)
+    try:
+        dxy = yf.download('DX-Y.NYB', period='5d', interval='1h', progress=False)
+        if not dxy.empty:
+            close_val = dxy['Close'].dropna().iloc[-1]
+            macro_data['dxy'] = float(close_val.values[0] if isinstance(close_val, pd.Series) else close_val)
+    except Exception:
+        pass
+
+    return macro_data
 
 def fetch_crypto_news_sentiment():
     try:
@@ -73,16 +103,57 @@ def fetch_crypto_news_sentiment():
         return 0.0
 
 # ==========================================
-# 4. Feature Builder
+# 4. Smart Feature Builder
 # ==========================================
-def create_safe_features(model, real_time_value_dict):
+def create_safe_features(model, real_time_dict):
     features = getattr(model, 'feature_names_in_', getattr(model, 'feature_names_', None))
-    df = pd.DataFrame(columns=features)
-    df.loc[0] = 0.0 
+    if features is None:
+        return pd.DataFrame()
+        
+    df = pd.DataFrame(0.0, index=[0], columns=features)
+    
     for col in features:
-        for key, val in real_time_value_dict.items():
-            if key.lower() in col.lower():
-                df.at[0, col] = val
+        c_low = col.lower()
+        
+        # Crypto OHLCV mappings
+        if 'btc_close' in c_low and 'btc_close' in real_time_dict:
+            df.at[0, col] = real_time_dict['btc_close']
+        elif 'btc_open' in c_low and 'btc_open' in real_time_dict:
+            df.at[0, col] = real_time_dict['btc_open']
+        elif 'btc_high' in c_low and 'btc_high' in real_time_dict:
+            df.at[0, col] = real_time_dict['btc_high']
+        elif 'btc_low' in c_low and 'btc_low' in real_time_dict:
+            df.at[0, col] = real_time_dict['btc_low']
+        elif 'btc_vol' in c_low and 'btc_volume' in real_time_dict:
+            df.at[0, col] = real_time_dict['btc_volume']
+
+        elif 'eth_close' in c_low and 'eth_close' in real_time_dict:
+            df.at[0, col] = real_time_dict['eth_close']
+        elif 'eth_open' in c_low and 'eth_open' in real_time_dict:
+            df.at[0, col] = real_time_dict['eth_open']
+        elif 'eth_high' in c_low and 'eth_high' in real_time_dict:
+            df.at[0, col] = real_time_dict['eth_high']
+        elif 'eth_low' in c_low and 'eth_low' in real_time_dict:
+            df.at[0, col] = real_time_dict['eth_low']
+        elif 'eth_vol' in c_low and 'eth_volume' in real_time_dict:
+            df.at[0, col] = real_time_dict['eth_volume']
+
+        # Macro: Gold mappings
+        elif any(k in c_low for k in ['gld', 'gold']) and 'gold' in real_time_dict:
+            df.at[0, col] = real_time_dict['gold']
+
+        # Macro: DXY mappings
+        elif 'dxy' in c_low and 'dxy' in real_time_dict:
+            df.at[0, col] = real_time_dict['dxy']
+
+        # SP500 mappings
+        elif any(k in c_low for k in ['sp500', 'sp_500', 'gspc', 'spy']) and 'sp500' in real_time_dict:
+            df.at[0, col] = real_time_dict['sp500']
+
+        # Sentiment / News mappings
+        elif any(k in c_low for k in ['finbert', 'sentiment', 'score', 'news', 'polarity']) and 'sentiment' in real_time_dict:
+            df.at[0, col] = real_time_dict['sentiment']
+            
     return df
 
 # ==========================================
@@ -92,24 +163,62 @@ def run_1h_inference():
     print("\n" + "="*70)
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Executing 1-Hour Market Analysis...")
     
-    sp500_price = fetch_sp500_live()
-    time.sleep(2)  # Prevent rate limit
+    # 1. Macro, SP500 & News Data Fetching
+    macro_info = fetch_macro_market_data()
+    print(f"📊 Macro Fetched -> SP500: {macro_info['sp500']:.2f} | Gold: {macro_info['gold']:.2f} | DXY: {macro_info['dxy']:.2f}")
+    
+    time.sleep(1)
     news_sentiment = fetch_crypto_news_sentiment()
+    print(f"📰 News Sentiment -> Polarity: {news_sentiment:.4f}")
+    
+    # 2. Crypto Data Fetching (BTC & ETH)
+    btc_candle = fetch_crypto_data('BTC/USDT', '1h')
+    time.sleep(1)
+    eth_candle = fetch_crypto_data('ETH/USDT', '1h')
+
+    if btc_candle is None or eth_candle is None:
+        print("⚠️ Could not fetch exchange candles. Skipping cycle.")
+        print("="*70)
+        return
+
+    # Master Real-time feature dictionary
+    rt_master = {
+        'btc_close': float(btc_candle['close']),
+        'btc_open': float(btc_candle['open']),
+        'btc_high': float(btc_candle['high']),
+        'btc_low': float(btc_candle['low']),
+        'btc_volume': float(btc_candle['volume']),
+        
+        'eth_close': float(eth_candle['close']),
+        'eth_open': float(eth_candle['open']),
+        'eth_high': float(eth_candle['high']),
+        'eth_low': float(eth_candle['low']),
+        'eth_volume': float(eth_candle['volume']),
+        
+        'sp500': macro_info['sp500'],
+        'gold': macro_info['gold'],
+        'dxy': macro_info['dxy'],
+        'sentiment': news_sentiment
+    }
     
     for coin in ['ETH', 'BTC']:
         print(f"\n--- {coin}/USDT (1-Hour) ---")
-        time.sleep(2)  # Delay between requests
         try:
-            data = fetch_crypto_data(f'{coin}/USDT', '1h')
-            rt_dict = {'close': data['close'], 'volume': data['volume'], 'sp500': sp500_price, 'finbert': news_sentiment}
-            
             m_mods = models[coin]
-            m_probs = m_mods['macro'].predict_proba(create_safe_features(m_mods['macro'], rt_dict))[0][1]
-            i_probs = m_mods['internal'].predict_proba(create_safe_features(m_mods['internal'], rt_dict))[0][1]
-            s_probs = m_mods['sp500'].predict_proba(create_safe_features(m_mods['sp500'], rt_dict))[0][1]
-            n_probs = m_mods['news'].predict_proba(create_safe_features(m_mods['news'], rt_dict))[0][1]
             
-            X_meta = pd.DataFrame({'Macro_Expert': [m_probs], 'Whale_Expert': [i_probs], 'SP500_Expert': [s_probs], 'News_Expert': [n_probs]})
+            # Predict Probabilities
+            m_probs = m_mods['macro'].predict_proba(create_safe_features(m_mods['macro'], rt_master))[0][1]
+            i_probs = m_mods['internal'].predict_proba(create_safe_features(m_mods['internal'], rt_master))[0][1]
+            s_probs = m_mods['sp500'].predict_proba(create_safe_features(m_mods['sp500'], rt_master))[0][1]
+            n_probs = m_mods['news'].predict_proba(create_safe_features(m_mods['news'], rt_master))[0][1]
+            
+            # Meta Learner Late Fusion
+            X_meta = pd.DataFrame({
+                'Macro_Expert': [m_probs],
+                'Whale_Expert': [i_probs],
+                'SP500_Expert': [s_probs],
+                'News_Expert': [n_probs]
+            })
             meta_conf = m_mods['meta'].predict_proba(X_meta)[0][1] * 100
             
             signal = "BUY 🟢" if meta_conf > 50 else "SELL 🔴"
