@@ -590,3 +590,176 @@ body {
 @keyframes rotate {
   100% { transform: rotate(360deg); }
 }
+
+/* ==========================================
+   Engine Tabs Navigation Bar
+   ========================================== */
+.engine-tabs-bar {
+  display: flex;
+  gap: 12px;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(13, 17, 28, 0.6);
+  border: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.engine-tab-btn {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+}
+
+.engine-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.engine-tab-btn.active {
+  background: rgba(6, 182, 212, 0.1);
+  border-color: rgba(6, 182, 212, 0.35);
+  box-shadow: 0 4px 20px -2px rgba(6, 182, 212, 0.2);
+}
+
+.tab-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.engine-tab-btn.active .tab-icon-wrap {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3));
+  color: var(--cyan-primary);
+  box-shadow: 0 0 15px var(--cyan-glow);
+}
+
+.tab-text-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tab-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.tab-subtitle {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+/* ==========================================
+   Component 01 Regime Engine Styling
+   ========================================== */
+.regime-pill {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  letter-spacing: 0.02em;
+}
+
+.regime-pill.bullish {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--emerald-buy);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 10px var(--emerald-glow);
+}
+
+.regime-pill.bearish {
+  background: rgba(244, 63, 94, 0.15);
+  color: var(--rose-sell);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  box-shadow: 0 0 10px var(--rose-glow);
+}
+
+.regime-pill.sideways {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--amber-hold);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  box-shadow: 0 0 10px var(--amber-glow);
+}
+
+.regime-pill.volatile {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.35);
+}
+
+.regime-matrix-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.regime-tf-card {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.regime-tf-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.regime-stats-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-dim);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 8px;
+}
+
+.fusion-overview-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.fusion-stat-box {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.explanation-callout {
+  padding: 18px 22px;
+  border-radius: 12px;
+  background: rgba(168, 85, 247, 0.06);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+

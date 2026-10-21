@@ -14,14 +14,21 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 DIST_DIR = os.path.join(PROJECT_ROOT, "frontend", "dist")
+SIMILARITY_IMG_DIR = os.path.abspath(os.path.join(PROJECT_ROOT, "..", "component_01", "results", "similarity"))
 
+from datetime import datetime, timezone
 from src.api.inference_service import run_full_prediction, registry
+from src.api.regime_service import get_regime_snapshot
 
 app = FastAPI(
     title="Agentic AI Market Intelligence API (BTC & ETH)",
     description="Multi-Horizon (1H & 4H) Market Intelligence & Prediction Framework",
     version="1.0.0"
 )
+
+# Mount Component 01 DTW similarity visual charts
+if os.path.exists(SIMILARITY_IMG_DIR):
+    app.mount("/api/similarity-images", StaticFiles(directory=SIMILARITY_IMG_DIR), name="similarity_images")
 
 # Enable CORS for local Vite development & custom ports
 app.add_middleware(
@@ -82,6 +89,11 @@ def health_check():
 def get_live_prediction():
     try:
         result = run_full_prediction(is_live=True)
+        now_utc = datetime.now(timezone.utc)
+        result["regimes"] = {
+            "BTC": get_regime_snapshot("BTCUSDT", now_utc, is_live=True),
+            "ETH": get_regime_snapshot("ETHUSDT", now_utc, is_live=True)
+        }
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -94,6 +106,17 @@ def predict_market(req: PredictionRequest):
             trade_time=req.trade_time,
             is_live=req.is_live
         )
+        target_dt = datetime.now(timezone.utc)
+        if not req.is_live and req.trade_date and req.trade_time:
+            try:
+                target_dt = datetime.strptime(f"{req.trade_date} {req.trade_time}", "%Y-%m-%d %H:%M").replace(tzinfo=timezone.utc)
+            except Exception:
+                pass
+
+        result["regimes"] = {
+            "BTC": get_regime_snapshot("BTCUSDT", target_dt, is_live=req.is_live),
+            "ETH": get_regime_snapshot("ETHUSDT", target_dt, is_live=req.is_live)
+        }
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
