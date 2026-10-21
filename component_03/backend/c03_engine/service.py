@@ -5,7 +5,9 @@ import numpy as np
 from .core import SymbolEngine
 from . import explain
 from .reliability import ReliabilityTracker, Assets
-import os
+import os, threading
+from collections import OrderedDict
+from . import context
 from .validate import check_features, check_warmup, problem, DataError
 
 _ASSETS = {}
@@ -33,6 +35,7 @@ class SymbolService:
         self.ex, self.sym = export, sym; self.eng = SymbolEngine(export, sym); self.assets = assets if assets is not None else default_assets(); self.rel = ReliabilityTracker(self.eng.MODELS, self.eng.c.TRF, self.eng.qa, self.eng.mq, self.eng.WIN, self.eng.MINP, self.assets, sym); mh = export.decl['mh']; self.mh_thr = mh['thresholds'][sym]; self.mh_pts = {h: np.asarray(mh['score100_percentile_points_genuine_dev_windows'][sym][v[0]]) for h, v in HORIZONS.items()}
         self.bars = deque(maxlen=max_bars); self.windows = {h: deque(maxlen=5000) for h in HORIZONS}; self.cur = {h: None for h in HORIZONS}; self.episodes = []; self.open_ep = None; self.state = 'NORMAL'; self.last = None
         self.last_m = None; self.n_bad = 0; self.consec_bad = 0
+        self.lock = threading.RLock(); self.hidx = context.default_history(); self.dwin = deque(maxlen=60); self.xai = OrderedDict()      # dwin: last 60 scored minutes for the history query; xai: detail of flagged bars
 
     def prime(self, F, ts):
         check_warmup(F)                         # clear DataError (too short / columns missing / bad rows) instead of an assertion or a silent NaN
@@ -46,6 +49,9 @@ class SymbolService:
     def _unus100(self, h, peak): return float(np.searchsorted(self.mh_pts[h], peak) / max(len(self.mh_pts[h]), 1) * 100.0)
 
     def on_bar(self, feat, ts, ohlc=None):
+        with self.lock: return self._on_bar(feat, ts, ohlc)
+
+    def _on_bar(self, feat, ts, ohlc=None):
         """Process one closed bar. Returns (status, events). A bar that fails the input checks is not given to the models: it is reported as state NO_DATA."""
         problems = check_features(feat)
         try: m = minute_of(ts)
@@ -55,6 +61,12 @@ class SymbolService:
         warnings = [] if self.last_m is None or m - self.last_m == 1 else [f'{m - self.last_m - 1} minute(s) are missing before this bar; indicators that look back 3 or 15 minutes mix across the gap']
         self.last_m = m; self.consec_bad = 0
         r = self.eng.step(feat, ts); events = []; state = r['state']; fz = r['fusion']; reasons, caveats = ([], [])
+        sc_ = r['scores']; self.dwin.append((m, fz, sc_['ae'], sc_['xgboost'], sc_['transformer'], np.array(self.eng.zbuf['N1'][-1], 'float64')))
+        if state != 'NORMAL':
+            try:
+                self.xai[iso(ts)] = context.xai_detail(self.eng)
+                while len(self.xai) > 300: self.xai.popitem(last=False)
+            except Exception: pass
         if state != 'NORMAL': reasons, caveats = explain.reasons(self.eng, r)
         rel = self.rel.update(fz, {m: r['scores'][k] for m, k in zip(self.eng.MODELS, ['ae', 'xgboost', 'transformer'])}, state)
         f = {k: float(v) for k, v in zip(self.ex.B.FEATS, feat)}
@@ -79,6 +91,44 @@ class SymbolService:
         status = self._status(bar, r, reasons, caveats); status['data_quality'] = {'ok': True, 'warnings': warnings, 'bad_minutes_total': self.n_bad}; status['reliability'] = rel; bar['reliability'] = {k: rel[k] for k in ('level', 'level_code', 'checks_met')} | {'conformal_set': rel['conformal']['set']}
         if state != self.state: events.append({'type': 'state_change', 'data': {'symbol': self.sym, 'from': self.state, 'to': state, 'at_utc': iso(ts), 'status': status}}); self.state = state
         events.insert(0, {'type': 'bar_scored', 'data': status}); self.last = status; return status, events
+
+    # ------------------------------------------------------------------ queries used by /explain, /similar, /reliability
+    def explain(self, at=None):
+        """detail of the latest bar (computed now) or of an earlier FLAGGED bar (kept for the last 300 flagged bars); None when not available"""
+        with self.lock:
+            if not self.bars or self.bars[-1]['state'] == 'NO_DATA': return None
+            last = self.bars[-1]; at = at or last['bar_open_utc']
+            if at == last['bar_open_utc']: det = context.xai_detail(self.eng); bar = last
+            else:
+                det = self.xai.get(at); bar = next((b for b in reversed(self.bars) if b['bar_open_utc'] == at), None)
+                if det is None or bar is None: return None
+            return {'symbol': self.sym, 'bar_open_utc': bar['bar_open_utc'], 'state': bar['state'], 'detail': det,
+                    'reasons': (self.last or {}).get('reasons', []) if bar is last else [],
+                    'validation': {'xgboost_groups': 'supported on held-out test events (notebook 59, protocol E4 v1)', 'single_features': 'indicative only', 'transformer': 'group level only (notebook 55)', 'ae_errors': 'secondary, lower confidence (notebook 45)'},
+                    'interventional_available': 'shap_int' in det}
+
+    def similar(self, k=5):
+        """the k most similar past hours (protocol H1 v4): context only, never an alert probability (H-H5 failed)"""
+        with self.lock:
+            base = {'symbol': self.sym, 'note': 'Historical context: what the market did in the hour after similar hours. It does not change any score or alert.'}
+            if not self.hidx.ok: return base | {'status': 'unavailable', 'reason': 'the history index is not loaded (set C03_ASSETS)', 'matches': []}
+            w = list(self.dwin)
+            if len(w) < 60: return base | {'status': 'collecting', 'have': len(w), 'need': 60, 'matches': []}
+            mins = [x[0] for x in w]
+            if mins[-1] - mins[0] != 59 or any(b - a != 1 for a, b in zip(mins, mins[1:])): return base | {'status': 'collecting', 'reason': 'a minute is missing in the last hour; the query needs 60 consecutive scored minutes', 'have': len(w), 'need': 60, 'matches': []}
+            from .history import descriptor_raw
+            d = descriptor_raw([[x[i] for x in w] for i in (1, 2, 3, 4)], np.array([x[5] for x in w]))
+            if d is None: return base | {'status': 'unavailable', 'reason': 'a score of the last hour is not finite', 'matches': []}
+            res = self.hidx.find(self.sym, d, mins[-1] * 60 * 10 ** 9, k); out = []
+            for r in res:
+                tr = self.hidx.trace(self.sym, r['end_ts_ns']); out.append(r | {'trace': None if tr is None else {'fused': tr[0].tolist(), 'alert_line': tr[1].tolist(), 'minutes_before': 60 - 1, 'minutes_after': 60}})
+            return base | {'status': 'ok', 'query_end_utc': self.bars[-1]['bar_open_utc'] if self.bars else None, 'now_fused': [x[1] for x in w], 'matches': out}
+
+    def reliability_view(self, limit=120):
+        """current reliability object plus the level / checks / conformal set of the last `limit` bars"""
+        with self.lock:
+            cur = (self.last or {}).get('reliability'); ser = [{'bar_open_utc': b['bar_open_utc'], **b['reliability']} for b in list(self.bars)[-limit:] if b.get('reliability')]
+            return {'symbol': self.sym, 'current': cur, 'series': ser, 'note': 'Checks: rare, persistent, no conflict between XGBoost and Transformer. Conformal set: normal / abnormal / cannot_tell. Levels describe how much to trust an ALERT; they are shown as display labels.'}
 
     def reject(self, ts, problems, feat=None, ohlc=None):
         """report a minute that cannot be scored: state NO_DATA, the reasons in plain words. The engine memory, windows and episodes are left untouched."""

@@ -82,7 +82,7 @@ def create_app(export_root, mode='replay', verify=True, replay_default=None):
     @app.get(P + '/health')
     def health():
         lb = [v.last['bar_open_utc'] for v in S['svc'].values() if v.last]
-        return {'status': 'ok' if S['svc'] else 'warming_up', 'mode': S['mode'], 'engine_version': VERSION, 'manifest_sha16': man_sha, 'last_bar_utc': max(lb) if lb else None, 'data_age_sec': None if S['last_bar'] is None else round(time.time() - S['last_bar'], 1)}
+        return {'status': 'ok' if S['svc'] else 'warming_up', 'warmup': S.get('warmup'), 'last_error': S.get('last_error'), 'mode': S['mode'], 'engine_version': VERSION, 'manifest_sha16': man_sha, 'last_bar_utc': max(lb) if lb else None, 'data_age_sec': None if S['last_bar'] is None else round(time.time() - S['last_bar'], 1)}
 
     @app.get(P + '/status')
     def status(symbol: str = None):
@@ -110,6 +110,18 @@ def create_app(export_root, mode='replay', verify=True, replay_default=None):
 
     @app.get(P + '/day')
     def day(symbol: str, date: str): return clean(svc_of(symbol).day_view(date))
+
+    @app.get(P + '/reliability')
+    def reliability(symbol: str, limit: int = 120): return clean(svc_of(symbol).reliability_view(min(limit, 2880)))
+
+    @app.get(P + '/explain')
+    def explain(symbol: str, at: str = None):
+        r = svc_of(symbol).explain(at)
+        if r is None: raise HTTPException(404, {'error': {'code': 'no_explanation', 'message': 'only the latest scored bar and the last 300 flagged bars can be explained'}})
+        return clean(r)
+
+    @app.get(P + '/similar')
+    def similar(symbol: str, k: int = 5): return clean(svc_of(symbol).similar(max(1, min(k, 10))))
 
     @app.get(P + '/model-info')
     def model_info():

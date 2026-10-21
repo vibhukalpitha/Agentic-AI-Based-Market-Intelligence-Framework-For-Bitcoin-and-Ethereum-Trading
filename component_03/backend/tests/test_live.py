@@ -4,6 +4,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 ROOT = os.environ.get('C03_EXPORT'); pytestmark = pytest.mark.skipif(not ROOT, reason='set C03_EXPORT')
 
 
+def iso_(ms): import datetime as dt; return dt.datetime.fromtimestamp(ms / 1000, dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+
+
 def test_live_pipeline():
     from c03_engine import live
     from c03_engine.api import create_app
@@ -17,12 +20,13 @@ def test_live_pipeline():
         if n: ks = ks[-n:]
         else: ks = [k for k in ks if start_ms <= k[0] <= end_ms]
         return [{'open_ms': k[0], 'open': k[1], 'high': k[2], 'low': k[3], 'close': k[4], 'volume': k[5], 'trades': k[8], 'taker_buy_base': k[9], 'large_count': 0} for k in ks]
-    live.fetch_klines = fake_fetch; live.WARMUP_BARS = 1650
+    async def fake_counts(sym, a, b, progress=None): return {m: 7 for m in range(a, b + 1, 60000)}, 0      # the exact large-trade history: every warm-up minute has large trades
+    live.fetch_large_counts = fake_counts; live.fetch_klines = fake_fetch; live.WARMUP_BARS = 1650
     async def run():
         sent = []
         async def server(ws):
             for s in price:     # a few big trades in the next minute, then the closed kline of that minute; then skip 2 minutes (gap) and send another closed kline
-                for j in range(3): await ws.send(json.dumps({'stream': 'x', 'data': {'e': 'trade', 's': s, 'q': '5.0', 'T': t0 + 1700 * 60000 + 1000 * (j + 1)}}))
+                for j in range(3): await ws.send(json.dumps({'stream': 'x', 'data': {'e': 'trade', 's': s, 'q': '5.0', 'T': t0 + 1703 * 60000 + 1000 * (j + 1)}}))
             for i in (1700, 1703):
                 for s in price:
                     k = kl(s, i); hist[s].append(k) if i == 1700 else hist[s].extend([kl(s, 1701), kl(s, 1702), k])
@@ -37,4 +41,20 @@ def test_live_pipeline():
     sent, S = asyncio.run(run())
     bars = [m for m in sent if m['type'] == 'bar_scored' and m['data']['symbol'] == 'BTCUSDT']; types = {m['type'] for m in sent}
     assert len(bars) >= 4 and 'data_gap' in types, (len(bars), types)       # bar 1700, gap-filled 1701, 1702, then 1703
-    assert S['svc']['BTCUSDT'].bars[-1]['features']['large_trade_count'] == 0 and any(b['features']['large_trade_count'] == 3 for b in S['svc']['BTCUSDT'].bars)
+    lc = [b['features']['large_trade_count'] for b in S['svc']['BTCUSDT'].bars if b['bar_open_utc'] >= iso_(t0 + 1700 * 60000)]
+    assert lc[0] == 7 and lc[-1] == 3 and S['approx_live_minutes'] >= 1, lc       # minute 1700: connected mid-minute -> estimated (7); minute 1703: whole minute on the stream -> exact (3)
+
+
+def test_warmup_history_is_used_and_all_zero_is_refused():
+    from c03_engine import live
+    async def counts(sym, a, b, progress=None): return {}, 0
+    async def kl(sym, start_ms=None, end_ms=None, n=None): return [{'open_ms': 60000 * i, 'open': 1.0, 'high': 1.0, 'low': 1.0, 'close': 1.0, 'volume': 1.0, 'trades': 10, 'taker_buy_base': .5, 'large_count': 0} for i in range(n)]
+    live.fetch_large_counts = counts; live.fetch_klines = kl; live.WARMUP_BARS = 1600
+    from c03_engine.store import Export
+    ex = Export(ROOT); S = {}
+    class Hub:
+        async def send(self, m): pass
+    async def run():
+        t = asyncio.create_task(live.run_live(ex, S, Hub(), lambda: {s: None for s in ex.symbols})); await asyncio.sleep(1.5); t.cancel()
+    asyncio.run(run())
+    assert S['svc'] == {} and 'all zero' in S['warmup']['error']       # not silent, not "ok": health says warming_up with the reason

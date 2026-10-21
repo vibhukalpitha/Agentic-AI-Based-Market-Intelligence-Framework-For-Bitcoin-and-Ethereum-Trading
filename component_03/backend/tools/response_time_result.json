@@ -7,16 +7,28 @@
   },
   "symbol": "BTCUSDT",
   "bar_interval_ms": 60000,
-  "load_export_sha256_check_s": 0.07,
-  "warmup_1500_bars_s": 0.66,
+  "load_export_sha256_check_s": 0.52,
+  "warmup_1500_bars_s": 0.57,
   "engine_per_bar": {
     "n": 1000,
-    "median_ms": 51.52,
-    "p95_ms": 56.65,
-    "p99_ms": 67.43,
-    "max_ms": 216.77
+    "median_ms": 44.14,
+    "p95_ms": 51.52,
+    "p99_ms": 56.27,
+    "max_ms": 194.46
   },
-  "share_of_bar_interval_pct": 0.112,
-  "bars_per_second_possible": 19.4,
-  "replay_jump_estimate_s_per_1000_bars": 51.5
+  "share_of_bar_interval_pct": 0.094,
+  "bars_per_second_possible": 22.7,
+  "replay_jump_estimate_s_per_1000_bars": 44.1,
+  "api_status_round_trip": {
+    "n": 50,
+    "median_ms": 6.65,
+    "p95_ms": 11.02,
+    "p99_ms": 16.4,
+    "max_ms": 16.54
+  },
+  "api_health": {
+    "mode": "live",
+    "data_age_sec": 12.4,
+    "status": "ok"
+  }
 }

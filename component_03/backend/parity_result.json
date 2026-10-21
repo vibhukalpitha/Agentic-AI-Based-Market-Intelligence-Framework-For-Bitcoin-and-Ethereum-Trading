@@ -1,0 +1,68 @@
+{
+ "BTCUSDT": {
+  "minutes_compared": 2880,
+  "log_returns": {
+   "corr": 1.0,
+   "share_equal_1e-6": 1.0,
+   "median_ratio_arch_over_rec": 1.0
+  },
+  "trade_flow_imbalance": {
+   "corr": 0.9999999999999746,
+   "share_equal_1e-6": 0.999650959860384,
+   "median_ratio_arch_over_rec": 1.0
+  },
+  "hl_spread_ratio": {
+   "corr": 0.9999999999999999,
+   "share_equal_1e-6": 1.0,
+   "median_ratio_arch_over_rec": 1.0
+  },
+  "rush_order_density": {
+   "corr": 0.9999999999032047,
+   "share_equal_1e-6": 0.999650959860384,
+   "median_ratio_arch_over_rec": 1.0
+  },
+  "volume_acceleration": {
+   "corr": 0.999999999999454,
+   "share_equal_1e-6": 0.9951134380453752,
+   "median_ratio_arch_over_rec": 0.9999999999999987
+  },
+  "large_trade_count": {
+   "corr": 0.9878987957527119,
+   "share_equal_1e-6": 0.06492146596858639,
+   "median_ratio_arch_over_rec": 0.9333333333333333
+  }
+ },
+ "ETHUSDT": {
+  "minutes_compared": 2880,
+  "log_returns": {
+   "corr": 1.0,
+   "share_equal_1e-6": 1.0,
+   "median_ratio_arch_over_rec": 1.0
+  },
+  "trade_flow_imbalance": {
+   "corr": 1.0,
+   "share_equal_1e-6": 1.0,
+   "median_ratio_arch_over_rec": 1.0
+  },
+  "hl_spread_ratio": {
+   "corr": 0.9999999999999999,
+   "share_equal_1e-6": 1.0,
+   "median_ratio_arch_over_rec": 1.0
+  },
+  "rush_order_density": {
+   "corr": 1.0,
+   "share_equal_1e-6": 1.0,
+   "median_ratio_arch_over_rec": 1.0
+  },
+  "volume_acceleration": {
+   "corr": 0.9999999999999998,
+   "share_equal_1e-6": 1.0,
+   "median_ratio_arch_over_rec": 1.0000000000000449
+  },
+  "large_trade_count": {
+   "corr": 0.9878262218467259,
+   "share_equal_1e-6": 0.12041884816753927,
+   "median_ratio_arch_over_rec": 1.0
+  }
+ }
+}
