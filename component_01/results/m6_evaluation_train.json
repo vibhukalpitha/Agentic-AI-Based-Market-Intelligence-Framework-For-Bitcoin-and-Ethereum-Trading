@@ -1,0 +1,171 @@
+{
+  "design": {
+    "period": "train",
+    "horizon_days": 3,
+    "block_days": 7,
+    "bootstraps": 2000,
+    "seed": 42
+  },
+  "BTCUSDT": {
+    "days": 701,
+    "from": "2021-01-21",
+    "to": "2022-12-28",
+    "persisted_rate": 0.8102710413694721,
+    "delivered_model": "S1",
+    "metrics": [
+      {
+        "score": "B0",
+        "delivered": false,
+        "brier": 0.15373188088750328,
+        "log_loss": 0.48582971315854556,
+        "auc": 0.5
+      },
+      {
+        "score": "B1",
+        "delivered": false,
+        "brier": 0.15453604032177556,
+        "log_loss": 0.489213202230303,
+        "auc": 0.5267790956263899
+      },
+      {
+        "score": "S1",
+        "delivered": true,
+        "brier": 0.12492983620124232,
+        "log_loss": 0.40384952971336974,
+        "auc": 0.7746611246425924
+      },
+      {
+        "score": "S2",
+        "delivered": false,
+        "brier": 0.12085588809358062,
+        "log_loss": 0.3896164066856844,
+        "auc": 0.7938552366832574
+      }
+    ],
+    "calibration": [
+      {
+        "days": 141,
+        "mean_forecast": 0.5098490167504859,
+        "observed_rate": 0.5319148936170213
+      },
+      {
+        "days": 140,
+        "mean_forecast": 0.8106848721662445,
+        "observed_rate": 0.75
+      },
+      {
+        "days": 140,
+        "mean_forecast": 0.8824013800287215,
+        "observed_rate": 0.8857142857142857
+      },
+      {
+        "days": 140,
+        "mean_forecast": 0.9088981342398794,
+        "observed_rate": 0.95
+      },
+      {
+        "days": 140,
+        "mean_forecast": 0.9416676868572482,
+        "observed_rate": 0.9357142857142857
+      }
+    ],
+    "differences": {
+      "S1_minus_B0": {
+        "brier_difference": -0.028802044686260946,
+        "ci_low": -0.04319516209713635,
+        "ci_high": -0.014167197274937891
+      },
+      "S1_minus_B1": {
+        "brier_difference": -0.029606204120533216,
+        "ci_low": -0.04454080542345567,
+        "ci_high": -0.013514097298902307
+      },
+      "S2_minus_S1": {
+        "brier_difference": -0.004073948107661706,
+        "ci_low": -0.009081697309779013,
+        "ci_high": 0.0007149151991587442
+      }
+    }
+  },
+  "ETHUSDT": {
+    "days": 670,
+    "from": "2021-02-22",
+    "to": "2022-12-28",
+    "persisted_rate": 0.8298507462686567,
+    "delivered_model": "S1",
+    "metrics": [
+      {
+        "score": "B0",
+        "delivered": false,
+        "brier": 0.14119848518601025,
+        "log_loss": 0.45612279489203217,
+        "auc": 0.5
+      },
+      {
+        "score": "B1",
+        "delivered": false,
+        "brier": 0.140356901534911,
+        "log_loss": 0.4530963110752655,
+        "auc": 0.5609617569102613
+      },
+      {
+        "score": "S1",
+        "delivered": true,
+        "brier": 0.11232848711381663,
+        "log_loss": 0.3712584265506869,
+        "auc": 0.7828789599899029
+      },
+      {
+        "score": "S2",
+        "delivered": false,
+        "brier": 0.10337182789086154,
+        "log_loss": 0.3457421499989982,
+        "auc": 0.8289315915688502
+      }
+    ],
+    "calibration": [
+      {
+        "days": 134,
+        "mean_forecast": 0.5522760398155999,
+        "observed_rate": 0.5671641791044776
+      },
+      {
+        "days": 134,
+        "mean_forecast": 0.8092028367149865,
+        "observed_rate": 0.7910447761194029
+      },
+      {
+        "days": 134,
+        "mean_forecast": 0.8894671132101518,
+        "observed_rate": 0.8880597014925373
+      },
+      {
+        "days": 134,
+        "mean_forecast": 0.9304506501799327,
+        "observed_rate": 0.9701492537313433
+      },
+      {
+        "days": 134,
+        "mean_forecast": 0.9678570998412219,
+        "observed_rate": 0.9328358208955224
+      }
+    ],
+    "differences": {
+      "S1_minus_B0": {
+        "brier_difference": -0.028869998072193627,
+        "ci_low": -0.04410827215797292,
+        "ci_high": -0.01314243493932502
+      },
+      "S1_minus_B1": {
+        "brier_difference": -0.02802841442109438,
+        "ci_low": -0.04397465085929788,
+        "ci_high": -0.011954183623550678
+      },
+      "S2_minus_S1": {
+        "brier_difference": -0.008956659222955092,
+        "ci_low": -0.016090722569467114,
+        "ci_high": -0.0018435283220106045
+      }
+    }
+  }
+}

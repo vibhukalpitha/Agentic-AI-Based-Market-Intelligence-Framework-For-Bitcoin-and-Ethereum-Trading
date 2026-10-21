@@ -1,0 +1,32 @@
+{
+  "overall_change_rate": 0.19119669876203577,
+  "training_days": 727,
+  "archetypes": {
+    "Aligned": {
+      "days": 88,
+      "change_rate": 0.07954545454545454
+    },
+    "Partly backed": {
+      "days": 201,
+      "change_rate": 0.14427860696517414
+    },
+    "Fragmented": {
+      "days": 286,
+      "change_rate": 0.23076923076923078
+    },
+    "Opposed": {
+      "days": 152,
+      "change_rate": 0.24342105263157895
+    }
+  },
+  "symbol": "BTCUSDT",
+  "horizon_days": 3,
+  "train_from": "2021-01-01",
+  "train_to": "2022-12-28",
+  "definitions": {
+    "Aligned": "at least three of the four faster timeframes are in the same regime as Daily",
+    "Partly backed": "exactly two of the four faster timeframes are in the same regime as Daily",
+    "Fragmented": "at most one faster timeframe backs Daily, and no three agree on any single other regime",
+    "Opposed": "at least three of the four faster timeframes agree on one regime that differs from Daily's"
+  }
+}

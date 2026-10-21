@@ -1,0 +1,32 @@
+{
+  "symbol": "ETHUSDT",
+  "date": "2026-09-30",
+  "window_days": 10,
+  "regime_now": "Bullish",
+  "past_stretches_compared": 2848,
+  "median_distance": 3.434,
+  "matches": [
+    {
+      "window_start": "2019-04-09",
+      "window_end": "2019-04-18",
+      "distance": 1.15,
+      "similarity_percentile": 99.96,
+      "regime_then": "Bullish"
+    },
+    {
+      "window_start": "2023-01-22",
+      "window_end": "2023-01-31",
+      "distance": 1.3,
+      "similarity_percentile": 99.86,
+      "regime_then": "Volatile"
+    },
+    {
+      "window_start": "2020-01-20",
+      "window_end": "2020-01-29",
+      "distance": 1.311,
+      "similarity_percentile": 99.82,
+      "regime_then": "Bullish"
+    }
+  ],
+  "scope": "supporting evidence for the present regime only; nothing about what followed a past stretch is reported"
+}

@@ -1,0 +1,32 @@
+{
+  "symbol": "BTCUSDT",
+  "date": "2026-09-30",
+  "window_days": 10,
+  "regime_now": "Bullish",
+  "past_stretches_compared": 2848,
+  "median_distance": 3.444,
+  "matches": [
+    {
+      "window_start": "2020-08-05",
+      "window_end": "2020-08-14",
+      "distance": 1.106,
+      "similarity_percentile": 99.96,
+      "regime_then": "Bullish"
+    },
+    {
+      "window_start": "2023-02-17",
+      "window_end": "2023-02-26",
+      "distance": 1.153,
+      "similarity_percentile": 99.93,
+      "regime_then": "Bullish"
+    },
+    {
+      "window_start": "2020-01-14",
+      "window_end": "2020-01-23",
+      "distance": 1.187,
+      "similarity_percentile": 99.89,
+      "regime_then": "Bullish"
+    }
+  ],
+  "scope": "supporting evidence for the present regime only; nothing about what followed a past stretch is reported"
+}

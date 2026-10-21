@@ -1,0 +1,32 @@
+{
+  "overall_change_rate": 0.1623108665749656,
+  "training_days": 727,
+  "archetypes": {
+    "Aligned": {
+      "days": 145,
+      "change_rate": 0.0896551724137931
+    },
+    "Partly backed": {
+      "days": 137,
+      "change_rate": 0.1386861313868613
+    },
+    "Fragmented": {
+      "days": 165,
+      "change_rate": 0.16363636363636364
+    },
+    "Opposed": {
+      "days": 280,
+      "change_rate": 0.21071428571428572
+    }
+  },
+  "symbol": "ETHUSDT",
+  "horizon_days": 3,
+  "train_from": "2021-01-01",
+  "train_to": "2022-12-28",
+  "definitions": {
+    "Aligned": "at least three of the four faster timeframes are in the same regime as Daily",
+    "Partly backed": "exactly two of the four faster timeframes are in the same regime as Daily",
+    "Fragmented": "at most one faster timeframe backs Daily, and no three agree on any single other regime",
+    "Opposed": "at least three of the four faster timeframes agree on one regime that differs from Daily's"
+  }
+}

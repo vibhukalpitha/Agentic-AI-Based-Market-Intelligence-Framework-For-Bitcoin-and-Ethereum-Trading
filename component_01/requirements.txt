@@ -1,0 +1,13 @@
+# Exact versions used to produce the committed results (Python 3.13.2).
+# Pinned so that a fresh install reproduces the same numbers.
+pandas==3.0.6
+pyarrow==25.0.1
+numpy==2.5.3
+hmmlearn==0.3.3
+scipy==1.18.1
+matplotlib==3.11.2
+pytest==9.1.1
+# Not used yet - installed for the planned comparison models (Random Forest).
+scikit-learn==1.9.1
+# tslearn is NOT needed: the DTW distance for M7 is written out in
+# src/similarity/dtw_match.py, like the indicators.

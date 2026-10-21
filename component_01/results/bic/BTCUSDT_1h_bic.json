@@ -1,0 +1,79 @@
+{
+  "symbol": "BTCUSDT",
+  "interval": "1h",
+  "train_candles": 38122,
+  "restarts": 10,
+  "max_iterations": 300,
+  "state_candidates": [
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "bic": [
+    {
+      "covariance": "diag",
+      "states": 2,
+      "log_likelihood": -400076.10850074777,
+      "bic": 800563.6103275648
+    },
+    {
+      "covariance": "diag",
+      "states": 3,
+      "log_likelihood": -357620.5817918745,
+      "bic": 715895.1734867309
+    },
+    {
+      "covariance": "diag",
+      "states": 4,
+      "log_likelihood": -328808.490887744,
+      "bic": 658534.7053490272
+    },
+    {
+      "covariance": "diag",
+      "states": 5,
+      "log_likelihood": -309672.8286904935,
+      "bic": 620548.1917187279
+    },
+    {
+      "covariance": "diag",
+      "states": 6,
+      "log_likelihood": -295781.65087861917,
+      "bic": 593071.7439528257
+    },
+    {
+      "covariance": "full",
+      "states": 2,
+      "log_likelihood": -235913.26030175935,
+      "bic": 472997.4093007928
+    },
+    {
+      "covariance": "full",
+      "states": 3,
+      "log_likelihood": -199307.41614016792,
+      "bic": 400408.08524012496
+    },
+    {
+      "covariance": "full",
+      "states": 4,
+      "log_likelihood": -171561.5655749224,
+      "bic": 345559.84546579357
+    },
+    {
+      "covariance": "full",
+      "states": 5,
+      "log_likelihood": -154146.18922195013,
+      "bic": 311393.65120965324
+    },
+    {
+      "covariance": "full",
+      "states": 6,
+      "log_likelihood": -140975.53228353406,
+      "bic": 285737.99287626985
+    }
+  ],
+  "saved_model_bic": 345559.8454656756,
+  "best_full_covariance_states": 6,
+  "minutes": 38.2
+}
