@@ -77,6 +77,24 @@ records are written to `data/live/output/latest_<symbol>.json`, with a dated cop
 and the archive files agree on every compared candle (prices, volumes, times and trade
 counts exactly; the two quote-currency totals to within float rounding, 2 × 10⁻¹⁶).
 
+### Historical similarity charts (M7, supporting evidence only)
+
+```
+..\.venv\Scripts\python.exe -W ignore -m src.figures.similarity_charts                    # last Daily candle
+..\.venv\Scripts\python.exe -W ignore -m src.figures.similarity_charts --date 2025-03-01  # any Daily candle
+```
+
+For each asset, the last 10 Daily candles (all nine features) are compared by dynamic time
+warping with every earlier 10-day stretch, and the three closest are shown in four
+charts in `results/similarity/`: where they lie in history, the key features side by
+side, how close they are compared with every past stretch, and how DTW paired the days.
+Each match gets a **similarity percentile**: the share of all earlier stretches that are
+further from today (a rank, not a probability). The matches are exactly those in the
+output record's `similar_history` block. The live update draws the same charts for the
+latest live day in `data/live/output/similarity/`. Scope: the charts show when similar
+stretches occurred and the regime then; nothing about what followed a past stretch is
+shown or assessed.
+
 The individual steps, in this order, each print a report of what they produced:
 
 | Step | Command | Time | Output |

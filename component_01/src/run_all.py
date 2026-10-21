@@ -92,6 +92,7 @@ REPRODUCE_STEPS = [
     Step("Novelty 4 check (training)", "src.experiments.n4_archetypes", ("--period", "train")),
     Step("Novelty 4 test", "src.experiments.n4_archetypes", ("--period", "test")),
     Step("Similarity check (M7)", "src.similarity.dtw_match"),
+    Step("Similarity charts (M7)", "src.figures.similarity_charts"),
     *[Step(f"Sample output record {s}", "src.output.snapshot", ("--symbol", s, "--save"))
       for s in config.SYMBOLS],
     Step("Verify output records", "src.output.verify_outputs"),

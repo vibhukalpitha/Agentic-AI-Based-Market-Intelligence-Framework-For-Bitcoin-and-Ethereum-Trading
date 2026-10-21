@@ -23,6 +23,8 @@ What happens:
             If anything differs, nothing is published.
  5. PUBLISH data/live/output/latest_<symbol>.json, plus a dated copy in
             data/live/output/history/.
+ 6. CHARTS  the historical-similarity charts (src/figures/similarity_charts.py)
+            for the latest Daily candle -> data/live/output/similarity/.
 
 It never trains a model, never re-runs an experiment, never writes data/parquet/,
 models/ or results/, and never runs Git. Everything it writes is in data/live/
@@ -172,6 +174,25 @@ def publish() -> list[dict]:
     return records
 
 
+def similarity_charts() -> bool:
+    """Draw the historical-similarity charts for the latest live Daily candle, in the
+    workspace, and copy them to data/live/output/similarity/."""
+    env = {**os.environ, config.WORKSPACE_ENV: str(WORKSPACE), "PYTHONIOENCODING": "utf-8"}
+    result = subprocess.run([sys.executable, "-W", "ignore", "-m", "src.figures.similarity_charts"],
+                            cwd=config.ROOT_DIR, env=env, capture_output=True, text=True,
+                            encoding="utf-8", errors="replace")
+    if result.returncode != 0:
+        print(result.stdout[-2000:] + result.stderr[-2000:])
+        return False
+    target = OUTPUT_DIR / "similarity"
+    if target.exists():
+        shutil.rmtree(target)
+    shutil.copytree(WORKSPACE / "results" / "similarity", target)
+    for line in result.stdout.splitlines()[:-1]:
+        print("   " + line)
+    return True
+
+
 def headline(record: dict) -> str:
     stability = record.get("stability") or {}
     explanation = record.get("explanation") or {}
@@ -218,6 +239,11 @@ def main() -> int:
     print("5. Publishing the latest output records")
     for record in publish():
         print("   " + headline(record))
+    print("6. Historical similarity charts for the latest Daily candle")
+    if not similarity_charts():
+        print("   SIMILARITY CHARTS FAILED (the records above were published).")
+        return 1
+    print(f"   Charts: {(OUTPUT_DIR / 'similarity').relative_to(config.ROOT_DIR)}")
     print(f"\nDone in {(time.perf_counter() - started) / 60:.1f} minutes. "
           f"Records: {OUTPUT_DIR.relative_to(config.ROOT_DIR)}\\latest_<symbol>.json")
     return 0
