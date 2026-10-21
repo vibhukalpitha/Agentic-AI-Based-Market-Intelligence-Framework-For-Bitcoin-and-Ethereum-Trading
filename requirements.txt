@@ -11,6 +11,8 @@ scikit-learn==1.9.1
 joblib==1.6.0
 lightgbm==4.7.0
 xgboost==3.4.1
+hmmlearn==0.3.3
+pyarrow==25.0.1
 
 # Market Data Acquisition & Exchange Connectors
 ccxt==4.5.88
