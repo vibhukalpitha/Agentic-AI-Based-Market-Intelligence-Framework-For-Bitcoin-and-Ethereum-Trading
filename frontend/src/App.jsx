@@ -755,7 +755,21 @@ export default function App() {
             <div style={{ background: 'rgba(234, 179, 8, 0.08)', border: '1px solid rgba(234, 179, 8, 0.25)', borderRadius: '10px', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#fef08a' }}>
               <Info size={16} color="#facc15" style={{ flexShrink: 0 }} />
               <span>
-                <strong>Component 01 Notice:</strong> Showing verified 30 Sep 2026 benchmark multi-timeframe regime analysis. Dynamic custom historical date inference will automatically stream via Component 01's Port 8001 microservice once launched.
+                {currentRegimeData.service_notice ? (
+                  <><strong>Component 01 Notice:</strong> The selected date cannot be analysed ({currentRegimeData.service_notice}). Showing the verified 30 Sep 2026 benchmark instead.</>
+                ) : (
+                  <><strong>Component 01 Notice:</strong> Showing verified 30 Sep 2026 benchmark multi-timeframe regime analysis. Dynamic custom historical date inference will automatically stream via Component 01's Port 8001 microservice once launched.</>
+                )}
+              </span>
+            </div>
+          )}
+
+          {/* Requested moment is after the newest closed candle: the latest record is shown */}
+          {currentRegimeData.is_live_service && currentRegimeData.requested_as_of && currentRegimeData.data_end && currentRegimeData.requested_as_of > currentRegimeData.data_end && (
+            <div style={{ background: 'rgba(56, 189, 248, 0.08)', border: '1px solid rgba(56, 189, 248, 0.25)', borderRadius: '10px', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12px', color: '#bae6fd' }}>
+              <Info size={16} color="#38bdf8" style={{ flexShrink: 0 }} />
+              <span>
+                <strong>Component 01 Notice:</strong> The selected time is after the newest closed candle in Component 01's data ({currentRegimeData.data_end.replace('T', ' ').slice(0, 16)} UTC), so the latest regime record is shown.
               </span>
             </div>
           )}
