@@ -1,0 +1,23 @@
+{
+ "tolerance": 0.0001,
+ "day": "2024-08-05",
+ "symbols": {
+  "BTCUSDT": {
+   "minutes_compared": 1440,
+   "max_abs_fused_diff": 5.030722089702233e-05,
+   "at": "2024-08-05T04:32",
+   "minutes_over_tolerance": 0,
+   "state_mismatches": 0,
+   "pass": true
+  },
+  "ETHUSDT": {
+   "minutes_compared": 1440,
+   "max_abs_fused_diff": 0.005283149060093972,
+   "at": "2024-08-05T22:35",
+   "minutes_over_tolerance": 7,
+   "state_mismatches": 0,
+   "pass": false
+  }
+ },
+ "pass": false
+}

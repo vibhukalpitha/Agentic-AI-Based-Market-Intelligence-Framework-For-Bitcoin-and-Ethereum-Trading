@@ -93,9 +93,10 @@ def create_app(export_root, mode='replay', verify=True, replay_default=None):
         return out[symbol] if symbol else out
 
     @app.get(P + '/bars')
-    def bars(symbol: str, frm: str = Query(None, alias='from'), to: str = None, limit: int = 500):
+    def bars(symbol: str, frm: str = Query(None, alias='from'), to: str = None, limit: int = 500, detail: bool = False):
         b = list(svc_of(symbol).bars); b = [x for x in b if (not frm or x['bar_open_utc'] >= frm) and (not to or x['bar_open_utc'] <= to)]
-        return clean(b[-min(limit, 2880):])
+        b = b[-min(limit, 2880):]
+        return clean(b if detail else [{k: v for k, v in x.items() if k != 'x'} for x in b])      # v0.2.1: detail=true adds the per-bar engine detail 'x' (thresholds, z, contributions, reliability checks, reasons)
 
     @app.get(P + '/windows')
     def windows(symbol: str, horizon: str = '15m', frm: str = Query(None, alias='from'), to: str = None):

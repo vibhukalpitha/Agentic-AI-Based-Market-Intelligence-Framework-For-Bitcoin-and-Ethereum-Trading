@@ -89,6 +89,7 @@ class SymbolService:
             order = {'LOW': 0, 'MEDIUM': 1, 'HIGH': 2}; e['confidence'] = max([e['confidence'], r['confidence']], key=lambda x: order.get(x, -1))
         elif self.open_ep is not None and m - self.open_ep['_last'] > 5: self._close_ep()
         status = self._status(bar, r, reasons, caveats); status['data_quality'] = {'ok': True, 'warnings': warnings, 'bad_minutes_total': self.n_bad}; status['reliability'] = rel; bar['reliability'] = {k: rel[k] for k in ('level', 'level_code', 'checks_met')} | {'conformal_set': rel['conformal']['set']}
+        bar['x'] = {'thr_alert': r['thr_alert'], 'thr_watch': r['thr_watch'], 'z': r['z'], 'contrib': r['contrib'], 'plevel': r['plevel'], 'models_above': r['models_above'], 'reasons': reasons, 'rel': rel}      # v0.2.1 additive: per-bar detail, returned by GET /bars only with detail=true
         if state != self.state: events.append({'type': 'state_change', 'data': {'symbol': self.sym, 'from': self.state, 'to': state, 'at_utc': iso(ts), 'status': status}}); self.state = state
         events.insert(0, {'type': 'bar_scored', 'data': status}); self.last = status; return status, events
 

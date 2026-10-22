@@ -189,6 +189,21 @@ def parse_kline(k):
     return {'open_ms': int(k['t']), 'open': float(k['o']), 'high': float(k['h']), 'low': float(k['l']), 'close': float(k['c']), 'volume': float(k['v']), 'trades': int(k['n']), 'taker_buy_base': float(k['V'])}
 
 
+SEED_MINUTES = int(os.environ.get('C03_SEED_MINUTES', '180'))     # v0.2.2: the newest warm-up minutes are scored one by one (as a live minute would be) so the page has history at once; 0 = off
+
+
+def prime_and_seed(service, rows, tss, ks_rows, seed=None):
+    """prime the engine on all warm-up minutes but the last `seed`, then score those last minutes bar by bar with the SAME code path as a live minute (identical to the replay path).
+    Nothing is written to the live_bars files and no event is sent: these are past minutes. rows: feature rows, tss: their timestamps, ks_rows: the Binance kline of each row (price for the chart)."""
+    import pandas as pd
+    seed = SEED_MINUTES if seed is None else seed
+    n = len(rows); seed = max(0, min(int(seed), n - 1500))               # the engine needs >= 1,500 minutes to prime
+    service.prime(pd.DataFrame(rows[:n - seed], columns=ORDER), tss[:n - seed])
+    for f, ts, k in zip(rows[n - seed:], tss[n - seed:], ks_rows[n - seed:]):
+        service.on_bar(np.asarray(f, 'float64'), ts, k)
+    return seed
+
+
 async def run_live(ex, S, hub, fresh):
     svc = fresh(); S['mode'] = 'live'; S['svc'] = {}; fb = {}; last_open = {}; B = ex.B; S['warmup'] = {'stage': 'starting', 'done': 0, 'total': len(ex.symbols), 'error': None}; S['warnings'] = []
     import pandas as pd
@@ -200,11 +215,11 @@ async def run_live(ex, S, hub, fresh):
                 lc, napprox = await fetch_large_counts(sym, ks[0]['open_ms'], ks[-1]['open_ms'], lambda msg: S['warmup'].update(stage=msg)); S['warmup'].setdefault('approx_minutes', {})[sym] = napprox
                 for k in ks: k['large_count'] = lc.get(k['open_ms'], 0)
                 if sum(k['large_count'] for k in ks) == 0: raise RuntimeError(f'{sym}: large_trade_count history is all zero - the models would be scored on a wrong baseline')
-                fb[sym] = FeatureBuilder(sym); rows, tss = [], []
+                fb[sym] = FeatureBuilder(sym); rows, tss, krow = [], [], []
                 for k in ks:
                     f = fb[sym].push(k)
-                    if f is not None: rows.append(f); tss.append(ms_iso(k['open_ms']))
-                S['warmup']['stage'] = f'{sym}: priming the engine'; await asyncio.to_thread(svc[sym].prime, pd.DataFrame(rows, columns=ORDER), tss); last_open[sym] = ks[-1]['open_ms']
+                    if f is not None: rows.append(f); tss.append(ms_iso(k['open_ms'])); krow.append(k)
+                S['warmup']['stage'] = f'{sym}: priming the engine'; await asyncio.to_thread(prime_and_seed, svc[sym], rows, tss, krow); last_open[sym] = ks[-1]['open_ms']
             break
         except asyncio.CancelledError: raise
         except Exception as e:

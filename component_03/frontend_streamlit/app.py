@@ -144,7 +144,83 @@ def live_symbols(root, backend, cal_key):
     return B, ex
 
 
+def src_live():
+    """True when the page follows the running engine API (Live) instead of replaying the recording"""
+    return st.session_state.get('src_sel') == 'Live'
+
+
+def lv(replay_text, live_text):
+    """wording that depends on the source: Replay (recorded day) or Live (Binance)"""
+    return live_text if src_live() else replay_text
+
+
+def live_cfg():
+    """constants the live objects need that the API does not carry: alert / watch bands and labels from the engine export (when the backend is next to this folder), else the declared values"""
+    cfg = dict(bandA=0.3, bandW=1.0, models=['AE-ctx fmax', 'XGBoost v2', 'Transformer v2'], alert_budget_per_day=2, conf_labels=None, thr_windows={})
+    paths = engine_paths()
+    if paths is not None:
+        try:
+            ex = load_export(str(paths[1]), str(paths[0]))
+            c_ = ex.config
+            cfg.update(bandA=100.0 * (1 - c_['alert_q']['BTCUSDT']), bandW=100.0 * (1 - c_['watch_q'][c_['watch_default_budget']]['BTCUSDT']), alert_budget_per_day=c_.get('alert_budget_per_day', 2),
+                       conf_labels=ex.decl['unc']['labels'], thr_windows=ex.decl['mh']['thresholds'])
+        except Exception:
+            pass
+    return cfg
+
+
+def live_assets():
+    """conformal tables of CAL-3 for the 'normal or unusual' ruler (optional, git-ignored folder)"""
+    import os
+    d = os.environ.get('C03_ASSETS')
+    paths = engine_paths()
+    if not d and paths is not None and (Path(paths[1]).parent / 'data_local' / 'n3n4_assets').exists():
+        d = str(Path(paths[1]).parent / 'data_local' / 'n3n4_assets')
+    if not d:
+        return None
+    try:
+        bk = os.environ.get('C03_BACKEND') or (str(paths[0]) if paths else None)       # folder that holds c03_engine (set C03_BACKEND when this app runs outside the repo)
+        if bk and bk not in sys.path:
+            sys.path.insert(0, bk)
+        from c03_engine.reliability import Assets
+        a = Assets(d)
+        return a if a.folder else None
+    except Exception:
+        return None
+
+
+def live_bundles():
+    """download the new minutes from the engine API and rebuild the page objects. Returns (B, problem) where problem is None or a dict(kind, text)"""
+    import live_api as LA
+    s_ = ss()
+    try:
+        h = LA.health()
+    except LA.ApiDown as e:
+        return None, dict(kind='down', text=str(e), health=None)
+    s_['_health'] = h
+    if h.get('status') != 'ok':
+        return None, dict(kind='warming', text='The engine is warming up.', health=h)
+    cfg, cal, assets = live_cfg(), load_calibration(), live_assets()
+    out = {}
+    try:
+        for sym in SYMBOLS:
+            bars = LA.poll(sym)
+            if not bars:
+                return None, dict(kind='warming', text='The engine has not scored a minute yet.', health=h)
+            wins = {hz: (LA.get('windows', symbol=sym, horizon=hz) or []) for hz in ('15m', '1h')}
+            j = LA.build(sym, bars, wins, cfg, cal.get(sym), assets)
+            hist = LA.similar(sym, bars[-1]['bar_open_utc'])
+            j.hidx = LA.ApiHist(sym, hist)
+            j.hist_answer = hist
+            out[sym] = j
+    except LA.ApiDown as e:
+        return None, dict(kind='down', text=str(e), health=h)
+    return out, None
+
+
 def bundles():
+    if src_live():
+        return st.session_state.get('_LIVEB'), []
     paths = engine_paths()
     if paths is not None:
         if '_LB' not in st.session_state:
@@ -249,7 +325,19 @@ def file_sha(path, mtime):
 def render_provenance(B):
     d = Path(st.session_state.get('_data_dir', DATA_DIR))
     with st.expander('Where do these numbers come from? (data & model provenance)'):
-        if live_mode():
+        if src_live():
+            h = ss().get('_health') or {}
+            import live_api as LA
+            st.markdown('**Live source.** This page does not run any model itself. It reads the running engine through its API '
+                        f'(`{LA.api_base()}`, contract v0.2): every minute was scored by the frozen engine (Autoencoder + XGBoost + Transformer -> fusion v0 -> rolling 7-day thresholds), '
+                        'with the same checks on the input as in the replay. A minute that does not arrive or fails the input checks is shown as NO DATA, never as NORMAL.')
+            rows = [{'market': sym, 'minutes loaded': jj.n, 'scored (after warm-up)': jj.n - jj.first, 'from': jj.ts[0][:16], 'to': jj.ts[jj.n - 1][:16], 'flagged episodes': len(jj.eps), 'ALERT episodes': len(jj.alert_eps),
+                     'NO DATA minutes': len(jj.bad), 'minutes with detail': len(jj.xai)} for sym, jj in B.items()]
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width='stretch')
+            st.markdown(f"Engine {h.get('engine_version', 'n/a')} · mode **{h.get('mode', 'n/a')}** · export `{h.get('manifest_sha16', 'n/a')}` · last minute {h.get('last_bar_utc', 'n/a')} · "
+                        f"data age {h.get('data_age_sec', 'n/a')} s · page objects: {next(iter(B.values())).bundle_version}.")
+            st.caption('Live minutes have no labels. The reliability and calibration numbers on the other tabs come from synthetic test events, as stated there; whether the alert rate stays near its budget on live data is being measured (14 days needed).')
+        elif live_mode():
             ex = st.session_state.get('_EX')
             st.markdown('**Trained models run live in this session.** Each replayed minute (six recorded Layer-1 features) is passed through the frozen engine: '
                         'Autoencoder (3 seeds) + XGBoost (3 seeds) + Transformer (3 seeds) -> fusion v0 -> rolling 7-day thresholds -> state, confidence, reasons and SHAP. '
@@ -431,6 +519,23 @@ def toggle_play():
             ss().i = j.first
             ss().ver += 1
         ss().playing = True
+
+
+def toggle_follow():
+    if ss().playing:
+        ss().playing = False
+    else:
+        ss().playing = True
+        ss().i = CUR().n - 1
+        ss().sel = None
+        ss().ver += 1
+
+
+def go_latest():
+    ss().playing = True
+    ss().i = CUR().n - 1
+    ss().sel = None
+    ss().ver += 1
 
 
 def open_episode(sym, s, k):
@@ -683,12 +788,12 @@ def render_overview(B, j, i):
             ov_charts(j, i)
     with c2:
         with st.container(border=True):
-            st.markdown('#### Replay Summary')
+            st.markdown(lv('#### Replay Summary', '#### Live Summary'))
             c = [int((j.state[j.first:i + 1] == q).sum()) for q in range(3)]
             tot = max(1, sum(c))
             vis = vis_eps(j, i)
             nal = sum(1 for v in vis if v.mx == 2)
-            st.caption(f'{(i - j.first + 1) / 1440:.1f} days replayed')
+            st.caption(lv(f'{(i - j.first + 1) / 1440:.1f} days replayed', f'{(i - j.first + 1) / 60:.1f} hours monitored'))
             f = go.Figure(go.Pie(values=[max(x, 0.012 * tot) if q and x else x for q, x in enumerate(c)], hole=0.75, sort=False,
                                  marker=dict(colors=[COL[0], COL[1], COL[2]]), textinfo='none', hoverinfo='skip'))
             f.add_annotation(text=f'<b>{nal}</b><br><span style="font-size:9px;color:{DIM}">ALERT EPISODES</span>', showarrow=False, font=dict(size=30, color=TXT))
@@ -726,7 +831,7 @@ def render_overview(B, j, i):
                     rows.append(v)
         rows.sort(key=lambda v: -v.s)
         if not rows:
-            st.info('No flagged episode yet in this replay. Press Play or use Next Alert.')
+            st.info(lv('No flagged episode yet in this replay. Press Play or use Next Alert.', 'No alert has been raised yet. It will appear here as soon as one is flagged.'))
         for n, v in enumerate(rows[:12]):
             jj = v.j
             d = lead_det(jj, v.eng)
@@ -762,7 +867,7 @@ def ep_window(v, i):
 def pick_episode(vis):
     """shared episode picker, shown once above the tabs"""
     if not vis:
-        st.info('No episode has been flagged yet in the replay. Press Play or use Next Alert.')
+        st.info(lv('No episode has been flagged yet in the replay. Press Play or use Next Alert.', 'No alert has been raised yet. It will appear here as soon as one is flagged.'))
         return None, None
     j = CUR()
     latest = vis[-1]
@@ -937,7 +1042,7 @@ def resem_compact(v):
 
 def render_xai(v):
     if v is None:
-        st.info('Nothing has been flagged yet. Press Play, or use Next Alert at the top.')
+        st.info(lv('Nothing has been flagged yet. Press Play, or use Next Alert at the top.', 'No alert has been raised yet. It will appear here as soon as one is flagged.'))
         return
     j, k = v.j, v.eng
     i = ss().i
@@ -1059,7 +1164,7 @@ def win_row(v, hk, n, lab):
 
 def render_unc_legacy(v, vis):
     if v is None:
-        st.info('Nothing has been flagged yet. Press Play, or use Next Alert at the top.')
+        st.info(lv('Nothing has been flagged yet. Press Play, or use Next Alert at the top.', 'No alert has been raised yet. It will appear here as soon as one is flagged.'))
         return
     j, k = v.j, v.eng
     e = evid(v)
@@ -1200,7 +1305,7 @@ def render_unc(v, vis):
         return render_unc_legacy(v, vis)
     i = ss().i
     if i in getattr(j, 'bad', {}) or not np.isfinite(j.fusion[i]):
-        st.info('This minute has no score (NO DATA, or the models are still warming up), so no reliability can be given. Move the replay on.')
+        st.info('This minute has no score (NO DATA, or the models are still warming up), so no reliability can be given. ' + lv('Move the replay on.', 'Wait for the next minute.'))
         return
     lvl, met = int(j.rel_level[i]), int(j.rel_met[i])
     rare, pers, nc, gate = int(j.rel_rare[i]), int(j.rel_pers[i]), int(j.rel_nc[i]), bool(j.rel_gate[i])
@@ -1232,10 +1337,10 @@ def render_unc(v, vis):
             pos.append('above its own line' if ab_ == 1 else 'low' if lo_ == 1 else 'in between' if ab_ == 0 else 'n/a')
         hist = int(j.rel_hist[i])
         rows = [
-            (rare, 'Big move', f'Score {fz:.2f}, the big-move line is {fx(rl)}' if np.isfinite(rl) else f'Score {fz:.2f}', f'{fz - rl:+.2f}' if np.isfinite(rl) else ''),
-            (pers, 'Lasting', f'<span style="letter-spacing:2px;color:{ACC}">{dots}</span> &nbsp;{cnt} of the last 5 minutes were alerts', 'needs 3'),
-            (nc, 'Models agree', f'Known-pattern check {pos[0]} · multi-minute check {pos[1]}', 'no conflict' if nc == 1 else 'conflict' if nc == 0 else ''),
-            (int(gate), 'Data is clean', f'{min(hist, 10080):,} minutes of history' + ('' if gate or hist < 1440 else ' · a rejected minute is recent'), 'needs 1,440'),
+            (rare, 'Big move', f'Score {fz:.2f}; it must be above {fx(rl)}' if np.isfinite(rl) else f'Score {fz:.2f}', ''),
+            (pers, 'Lasting', f'<span style="letter-spacing:2px;color:{ACC}">{dots}</span> &nbsp;{cnt} of the last 5 minutes were alerts (at least 3 needed)', ''),
+            (nc, 'Models agree', ('No model contradicts another' if nc == 1 else f'Known-pattern check {pos[0]} · multi-minute check {pos[1]}'), '' if nc == 1 else 'conflict' if nc == 0 else ''),
+            (int(gate), 'Data is clean', f'{min(hist, 10080):,} minutes of history (at least 1,440 needed)' + ('' if gate or hist < 1440 else ' · a rejected minute is recent'), ''),
         ]
         h_ = ''
         for ok, nm_, dt_, rt_ in rows:
@@ -1312,7 +1417,7 @@ def render_unc(v, vis):
     with cy.container(border=True):
         head('This alert, minute by minute', 'Confidence of each alert minute.')
         if v is None:
-            st.markdown(f'<div style="font-size:12.5px;color:{DIM}">No alert yet. Press Play, or use Next Alert at the top.</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="font-size:12.5px;color:{DIM}">' + lv('No alert yet. Press Play, or use Next Alert at the top.', 'No alert yet.') + '</div>', unsafe_allow_html=True)
         else:
             ks_ = np.arange(v.s, v.e + 1)
             al_ = ks_[j.state[ks_] == 2]
@@ -1412,7 +1517,7 @@ def render_hist_legacy(j, i):
         st.caption('Fused score · dashed = alert line')
         st.plotly_chart(spark(j.fusion[i - HW + 1:i + 1], j.thr_alert[i], None, 150), width='stretch', config=dict(displayModeBar=False), key='h_now')
     if not res:
-        st.info('Not enough earlier history yet to find similar moments. Move the replay later (a few hours after the start).')
+        st.info(lv('Not enough earlier history yet to find similar moments. Move the replay later (a few hours after the start).', 'Not enough scored minutes yet to find similar moments. This fills in as the engine keeps running.'))
         return
     rows = []
     for e, d in res:
@@ -1462,14 +1567,28 @@ def match_fig(f, t, h=150):
 def render_hist(j, i, v=None):
     status_strip(j, i, v)
     hx = getattr(j, 'hidx', None)
-    if hx is None or not hx.ok:
-        return render_hist_legacy(j, i)
-    import live_engine as LE
-    d = LE.window_descriptor(j, i)
+    if getattr(j, 'api', False):                       # Live: the engine answers for the newest minute (/similar)
+        if i != j.n - 1:
+            st.info('Similar past hours are found by the engine for the newest minute. Press **Latest minute** to see them.')
+            return
+        ans = getattr(j, 'hist_answer', None) or {}
+        if hx is None or not hx.ok:
+            why = {'collecting': f"The engine is still collecting the last hour ({ans.get('have', '?')} of {ans.get('need', 60)} consecutive scored minutes)." + (' ' + ans['reason'] if ans.get('reason') else ''),
+                   'unavailable': 'The history index is not available on the engine: ' + str(ans.get('reason', 'unknown reason')) + '.'}.get(ans.get('status'), 'No answer from the engine yet.')
+            with st.container(border=True):
+                head('Similar past hours', 'Not available right now.')
+                st.markdown(f'<div style="font-size:13px;color:{DIM}">{why}</div>', unsafe_allow_html=True)
+            return
+        d = True
+    else:
+        if hx is None or not hx.ok:
+            return render_hist_legacy(j, i)
+        import live_engine as LE
+        d = LE.window_descriptor(j, i)
     res = []
     if d is not None:
         key = (j.symbol, i)
-        cache = ss().setdefault('_hq', {})
+        cache = ss().setdefault('_hq', {}) if not getattr(j, 'api', False) else {}
         if key not in cache:
             cache[key] = hx.find(j.symbol, d, pd.Timestamp(j.ts[i]).value)
             if len(cache) > 400:
@@ -1498,15 +1617,13 @@ def render_hist(j, i, v=None):
         st.markdown(legend([('Now', ORG, False)] + ([('Similar past hours', ACC, False)] if has else [])), unsafe_allow_html=True)
     if d is None or not res:
         with top[1].container(border=True):
-            msg = ('This 60-minute window contains minutes without a score (warm-up or NO DATA), so it cannot be matched yet. Move the replay on a little.' if d is None else
+            msg = ('This 60-minute window contains minutes without a score (warm-up or NO DATA), so it cannot be matched yet. ' + lv('Move the replay on a little.', 'Wait a little.') if d is None else
                    'No earlier hour is old enough yet. The first day of the recording has no past of its own; the Jul 3-29 development period is used when available.')
             st.markdown(f'<div style="font-size:12.5px;color:{DIM}">{msg}</div>', unsafe_allow_html=True)
         return
     n_al = sum(1 for r in res if (r['minutes_above_alert_next_hour'] or 0) > 0)
     with top[1].container(border=True):
-        head('What happened next', f'In the {len(res)} most similar past hours.')
-        st.markdown(f'<div style="display:flex;gap:16px;align-items:center"><div style="font-size:46px;font-weight:800;line-height:1;color:{TXT}">{n_al}<span style="font-size:18px;color:{DIM}"> of {len(res)}</span></div>'
-                    f'<div style="font-size:13px;color:#A9B4D0;max-width:150px">went on to an alert in the next hour</div></div>', unsafe_allow_html=True)
+        head('What happened next', f'The hour after each of the {len(res)} most similar past hours: how high the score went.')
         pk = [r['peak_fused_next_hour'] if r['peak_fused_next_hour'] is not None else 0 for r in res]
         pf = go.Figure(go.Bar(x=[f'#{n + 1}' for n in range(len(res))], y=pk, marker_color=[COL[2] if (r['minutes_above_alert_next_hour'] or 0) > 0 else ACC for r in res],
                               hovertemplate='%{x}: highest score %{y:.2f}<extra></extra>'))
@@ -1527,6 +1644,9 @@ def render_hist(j, i, v=None):
                             + chip(f'Alert {ma} min' if (ma or 0) > 0 else 'No alert after', 'alert' if (ma or 0) > 0 else 'good') + '</div>', unsafe_allow_html=True)
                 if t_ is not None:
                     st.plotly_chart(match_fig(t_[0], t_[1], 140), width='stretch', config=dict(displayModeBar=False), key=f'h_{n}')
+                else:
+                    st.markdown(f'<div style="height:150px;display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed {GRID};border-radius:8px;color:{DIM};font-size:12px;padding:0 10px">'
+                                'Chart not stored for this hour<br>(scores are stored for 3-29 Jul 2024 only)</div>', unsafe_allow_html=True)
                 if clo is not None:
                     st.markdown(bar_rows([('Closeness', clo, f'{100 * clo:.0f}%', ACC)]).replace('150px', '70px'), unsafe_allow_html=True)
                 st.markdown(bar_rows([('Alert minutes', (ma or 0) / 60.0, f'{ma if ma is not None else "–"}', COL[2] if (ma or 0) > 0 else ACC)]).replace('150px', '90px')
@@ -1562,7 +1682,9 @@ def init_state(B):
         s.sym_sel = 'BTC/USDT'
         j = B[s.sym]
         s.ver, s.playing, s.sel, s.toast = 0, False, None, None
-        if live_mode():
+        if src_live():
+            s.playing, s.i = True, j.n - 1              # Live: follow the newest minute
+        elif live_mode():
             # run the models forward until the first alert episode of at least 3 minutes has closed, so every tab has something real to show
             import live_engine as LE
             ok = lambda jj: any(e[1] - e[0] + 1 >= 3 and jj.done - 1 - e[1] > 5 for e in jj.alert_eps)
@@ -1656,47 +1778,162 @@ def render_data_checks():
         st.caption('Limits are physical sanity limits (at least 5 times the largest value in the Aug 2024 data), never used to tune a model.')
 
 
+def live_banners(j, s):
+    """states of the live feed in plain words: delayed data, feed problem, replay-mode API, plain API, warm-up of the newest minute, state changes"""
+    h = s.get('_health') or {}
+    age = h.get('data_age_sec')
+    if h.get('mode') != 'live':
+        st.info('The engine API is running in **replay mode** (recorded bars), not on the live Binance feed.')
+    if age is not None and age > 150:
+        st.warning('**Live data is late.** Waiting for the next minute from Binance.')
+    if h.get('last_error'):
+        st.warning('The engine reported a feed problem: ' + str(h['last_error']) + ' (it reconnects by itself).')
+    if not getattr(j, 'has_detail', True):
+        st.warning('This engine answers with the plain v0.2 API: thresholds and reliability checks of earlier minutes are not available. Start the engine with v0.2.1 for the full page.')
+    if j.n and j.first >= j.n - 1 and j.state[j.n - 1] == 0 and not np.isfinite(j.fusion[j.n - 1]) and j.n - 1 not in j.bad:
+        st.info('The newest minute is still in the engine\'s warm-up: no score yet.')
+    st_now = int(j.state[j.n - 1])
+    key = f'{j.symbol}'
+    last = s.setdefault('_last_state', {})
+    if key in last and last[key] != st_now and s.playing:
+        s.toast = f'{j.sym}: state is now {NAME[st_now]}' if st_now >= 1 else f'{j.sym}: back to NORMAL'
+    last[key] = st_now
+
+
+def live_watch(last_ts, following, wait_for_ok=False, delayed=False):
+    """polls the engine health every 5 s inside a fragment (the rest of the page does not flicker) and starts a full redraw only when something changed:
+    a new minute arrived, the engine state changed (warm-up / down / back), or the data became delayed"""
+    import live_api as LA
+
+    def _w():
+        try:
+            h = LA.health()
+        except LA.ApiDown:
+            h = None
+        if wait_for_ok:
+            if h and h.get('status') == 'ok' and h.get('last_bar_utc'):
+                st.rerun()
+            return
+        import time as _t
+        urgent = h is None or h.get('status') != 'ok' or ((h.get("data_age_sec") or 0) > 150) != delayed
+        new_min = following and h.get('last_bar_utc') != last_ts
+        if urgent or (new_min and _t.time() - ss().get('_last_full', 0) > 20):      # a fast replay delivers a minute per second: redraw the page at most every 20 s
+            ss()['_last_full'] = _t.time()
+            st.rerun()
+    st.fragment(run_every=5 if (following or wait_for_ok) else 10)(_w)()
+
+
+def on_src():
+    """Replay <-> Live: start the page state again for the other source"""
+    for k in ('sym', 'i', 'sel', 'playing', '_B', '_LIVEB', '_live_t0', '_last_state', '_hq'):
+        ss().pop(k, None)
+
+
+def render_problem(pr):
+    """Live source cannot be shown: say why in plain words"""
+    h = pr.get('health') or {}
+    if pr['kind'] == 'down':
+        st.error('**Cannot reach the engine.** ' + pr['text'])
+        st.markdown('Start it in a terminal (it keeps running while you look):  `python -m c03_engine --mode live --export <path>\\engine_export_v1`  and check  `http://127.0.0.1:8000/api/c03/health`.  '
+                    'To use another address set `C03_API`. Meanwhile **Replay** shows the recorded 5 Aug 2024 stress day.')
+    else:
+        w = h.get('warmup') or {}
+        am = w.get('approx_minutes') or {}
+        st.info('**The engine is warming up.** It is loading the last 7 days of minutes so its rolling thresholds are right before it scores anything' + (f" (stage: {w.get('stage')}, {w.get('done', 0)} of {w.get('total', 2)} markets)." if w else '.') +
+                (' Minutes whose large-trade count is estimated: ' + ', '.join(f'{k} {v}' for k, v in am.items()) + '.' if am else ''))
+        if w.get('error'):
+            st.error('Warm-up problem: ' + str(w['error']))
+    st.caption('This page checks again every few seconds.')
+
+
 def render(data_dir=None):
     """Entry point: draws the whole component. Use inside a tab of the 4-component platform."""
     t_run = time.time()
     if data_dir:
         ss()._data_dir = str(data_dir)
-    B, miss = bundles()
+    if 'src_sel' not in ss():
+        ss()['src_sel'] = 'Live' if __import__('os').environ.get('C03_START_SRC', '').lower() == 'live' else 'Replay'
+    live = src_live()
+    pr = None
+    if live:
+        B, pr = live_bundles()
+        ss()['_LIVEB'] = B
+        miss = []
+    else:
+        B, miss = bundles()
     if miss:
         st.error('Bundle not found: ' + ', '.join(miss) + '. Run backend/tools/make_dashboard_bundle.py and save the two files in the data folder.')
         return
-    ss()._B = B
-    init_state(B)
-    run_goal(B)
-    ensure_scored(B, ss().i)
     st.markdown(CSS, unsafe_allow_html=True)
     s = ss()
     top = st.columns([3.2, 1.6, 2.2])
     top[0].markdown('## 🛡️ TradeSense')
     top[0].caption('Market integrity monitor · 1-minute Binance Spot bars · Monitor-only · Component 03')
+    with top[2]:
+        st.markdown('<div style="height:30px"></div>', unsafe_allow_html=True)
+        st.segmented_control('Source', ['Replay', 'Live'], key='src_sel', on_change=on_src, label_visibility='collapsed')
+    if pr is not None:
+        render_problem(pr)
+        live_watch(None, True, wait_for_ok=True)
+        return
+    ss()._B = B
+    if live:
+        old_t0 = s.get('_live_t0')
+        if old_t0 is not None and 'sym' in s:                       # the oldest minute held by the page moved on: keep the cursor on the same minute
+            sh = old_t0 - B[s.sym].t0
+            if sh and not s.playing:
+                s.i += sh
+                s.sel = None if s.sel is None else s.sel + sh
+        s['_live_t0'] = B[SYMBOLS[0]].t0
+    init_state(B)
+    if live:
+        s.i = B[s.sym].n - 1 if s.playing else s.i
+    else:
+        run_goal(B)
+        ensure_scored(B, ss().i)
     with top[1]:
         pick = st.segmented_control('Market', ['BTC/USDT', 'ETH/USDT'], key='sym_sel')
         if pick and pick.replace('/', '') != s.sym:
-            s.sym, s.sel, s.playing = pick.replace('/', ''), None, False
+            s.sym, s.sel, s.playing = pick.replace('/', ''), None, (True if live else False)
+            if live:
+                s.i = B[s.sym].n - 1
     j = CUR()
     s.i = max(j.first, min(j.n - 1, s.i))
-    mode_txt = 'TRAINED MODELS RUN LIVE ON EACH MINUTE' if live_mode() else 'STORED ENGINE RESULTS (REPLAY)'
-    top[0].markdown(badge('● ' + mode_txt, '#10B981' if live_mode() else '#F59E0B') + f'<span style="color:{DIM};font-size:12px"> &nbsp; recorded data {j.ts[0][:10]} → {j.ts[j.n - 1][:10]}</span>', unsafe_allow_html=True)
-    top[2].markdown(f'<div style="height:6px"></div>'
-                    f'<div style="text-align:right;font-size:18px;font-weight:700;font-family:monospace">{tstr(j, s.i)}</div>', unsafe_allow_html=True)
+    if live:
+        h_ = s.get('_health') or {}
+        is_live_feed = h_.get('mode') == 'live'
+        mode_txt = 'LIVE · TRAINED MODELS SCORE EACH NEW MINUTE' if is_live_feed else 'ENGINE API IN REPLAY MODE (RECORDED BARS)'
+        top[0].markdown(badge('● ' + mode_txt, '#10B981' if is_live_feed else '#F59E0B') + f'<span style="color:{DIM};font-size:12px"> &nbsp; minutes held {j.ts[0][5:16]} → {j.ts[j.n - 1][5:16]} UTC</span>', unsafe_allow_html=True)
+    else:
+        mode_txt = 'TRAINED MODELS RUN LIVE ON EACH MINUTE' if live_mode() else 'STORED ENGINE RESULTS (REPLAY)'
+        top[0].markdown(badge('● ' + mode_txt, '#10B981' if live_mode() else '#F59E0B') + f'<span style="color:{DIM};font-size:12px"> &nbsp; recorded data {j.ts[0][:10]} → {j.ts[j.n - 1][:10]}</span>', unsafe_allow_html=True)
+    top[2].markdown(f'<div style="text-align:right;font-size:18px;font-weight:700;font-family:monospace">{tstr(j, s.i)}</div>', unsafe_allow_html=True)
     # controls
-    c = st.columns([1, 1, 1, 0.9, 2.3, 1.1, 1.1, 1.7])
-    c[0].button('◀ 1 bar', width='stretch', on_click=lambda: set_i(s.i - 1))
-    c[1].button('❚❚ Pause' if s.playing else '▶ Play', type='primary', width='stretch', on_click=toggle_play)
-    c[2].button('1 bar ▶', width='stretch', on_click=lambda: set_i(s.i + 1))
-    speed = c[3].selectbox('Speed (bars/s)', [1, 2, 5, 10], index=1, key='speed', label_visibility='collapsed')
-    autop = c[4].checkbox('Auto-pause at WATCH/ALERT', value=True, key='autop')
-    c[5].button('◀ Prev Alert', width='stretch', on_click=lambda: jump_alert(-1))
-    c[6].button('Next Alert ▶', width='stretch', on_click=lambda: jump_alert(1))
-    c[7].button('⚡ Jump to Aug 5 (stress day)', width='stretch', on_click=jump_aug)
-    st.slider('Replay position', j.first, j.n - 1, int(s.i), key=f'seek{s.ver}', on_change=on_seek, label_visibility='collapsed')
+    if live:
+        c = st.columns([1, 1.5, 1, 1.1, 2.2, 1.4])
+        c[0].button('◀ 1 bar', width='stretch', on_click=lambda: set_i(s.i - 1))
+        c[1].button('● Following live' if s.playing else '▶ Follow live', type='primary', width='stretch', on_click=toggle_follow)
+        c[2].button('1 bar ▶', width='stretch', on_click=lambda: set_i(s.i + 1))
+        c[3].button('↻ Refresh', width='stretch')
+        c[4].markdown(f'<div style="font-size:12px;color:{DIM};padding-top:8px">{"Updates every 5 s" if s.playing else "Paused: press Follow live"}</div>', unsafe_allow_html=True)
+        c[5].button('⏭ Latest minute', width='stretch', on_click=go_latest)
+        autop = False
+        st.slider('Position', j.first, max(j.n - 1, j.first + 1), int(s.i), key=f'seek{s.ver}', on_change=on_seek, label_visibility='collapsed') if j.n - 1 > j.first else None
+    else:
+        c = st.columns([1, 1, 1, 0.9, 2.3, 1.1, 1.1, 1.7])
+        c[0].button('◀ 1 bar', width='stretch', on_click=lambda: set_i(s.i - 1))
+        c[1].button('❚❚ Pause' if s.playing else '▶ Play', type='primary', width='stretch', on_click=toggle_play)
+        c[2].button('1 bar ▶', width='stretch', on_click=lambda: set_i(s.i + 1))
+        speed = c[3].selectbox('Speed (bars/s)', [1, 2, 5, 10], index=1, key='speed', label_visibility='collapsed')
+        autop = c[4].checkbox('Auto-pause at WATCH/ALERT', value=True, key='autop')
+        c[5].button('◀ Prev Alert', width='stretch', on_click=lambda: jump_alert(-1))
+        c[6].button('Next Alert ▶', width='stretch', on_click=lambda: jump_alert(1))
+        c[7].button('⚡ Jump to Aug 5 (stress day)', width='stretch', on_click=jump_aug)
+        st.slider('Replay position', j.first, j.n - 1, int(s.i), key=f'seek{s.ver}', on_change=on_seek, label_visibility='collapsed')
     nbad = sum(1 for k in getattr(j, 'bad', {}) if k <= s.i)
     st.caption(f'{s.i - j.first + 1 - nbad} / {j.n - j.first} bars scored · {tstr(j, s.i)}' + (f' · {nbad} minute(s) skipped: invalid data' if nbad else ' · data checks: every minute so far passed'))
+    if live:
+        live_banners(j, s)
     if s.i in getattr(j, 'bad', {}):
         st.warning('**No score for this minute (NO DATA).** ' + ' '.join(j.bad[s.i]) + ' The models did not see it, and it is not shown as NORMAL. The next valid minute is scored as if this one never arrived.')
     if s.toast:
@@ -1716,6 +1953,10 @@ def render(data_dir=None):
         render_hist(j, i, v)
     render_data_checks()
     render_provenance(B)
+    if live:                                   # Live: a small background check looks for the next minute every 5 s while following; the page above stays still
+        h_ = s.get('_health') or {}
+        live_watch(h_.get('last_bar_utc'), bool(s.playing), delayed=(h_.get("data_age_sec") or 0) > 150)
+        return
     # replay engine: advance, then rerun
     if s.playing:
         period = 1.0 / speed if speed <= 2 else 0.5
