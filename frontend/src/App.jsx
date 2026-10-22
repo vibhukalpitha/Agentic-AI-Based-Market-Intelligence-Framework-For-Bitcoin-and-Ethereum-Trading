@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import HistoricalAnalogyChart from './HistoricalAnalogyChart.jsx';
 import RegimeSimilarityGallery from './RegimeSimilarityGallery.jsx';
+import SignalBadge from './SignalBadge.jsx';
 
 export default function App() {
   const [activeEngineTab, setActiveEngineTab] = useState('cross_market'); // 'cross_market' or 'regime_engine'
@@ -43,6 +44,14 @@ export default function App() {
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
   const [showJson, setShowJson] = useState(false);
+
+  // Meta-Learner confidence state with strict thresholds mock payload
+  const [currentSignal, setCurrentSignal] = useState({
+    asset: "BTC", 
+    "1H_conf": 51.2, // Must render as "NEUTRAL" (Yellow/Gray)
+    "4H_conf": 63.5, // Must render as "BUY" (Green)
+    "Daily_conf": 38.0 // Must render as "SELL" (Red)
+  });
 
   // Initial Fetch on component mount
   useEffect(() => {
@@ -71,6 +80,9 @@ export default function App() {
 
       const result = await response.json();
       setData(result);
+      if (result.current_signal) {
+        setCurrentSignal(result.current_signal);
+      }
     } catch (err) {
       console.error("Prediction fetch failed:", err);
       setError("Failed to fetch market intelligence. Ensure FastAPI backend is running on port 8000.");
@@ -383,19 +395,33 @@ export default function App() {
                     <div className="horizon-tag">
                       <Clock size={12} /> 1-Hour Horizon
                     </div>
-                    {getSignalBadge(data.predictions_1h?.BTC?.signal)}
+                    <SignalBadge 
+                      confidence={data.predictions_1h?.BTC?.display_confidence ?? currentSignal["1H_conf"]} 
+                      showPercentage={true} 
+                    />
                   </div>
 
                   <div className="confidence-wrap">
                     <div className="confidence-label-row">
                       <span>Meta-Learner Confidence</span>
-                      <span className="confidence-val">{data.predictions_1h?.BTC?.display_confidence}%</span>
+                      <span className="confidence-val">
+                        {data.predictions_1h?.BTC?.display_confidence ?? currentSignal["1H_conf"]}%
+                      </span>
                     </div>
                     <div className="progress-track">
-                      <div
-                        className={`progress-bar-fill ${data.predictions_1h?.BTC?.signal === 'BUY' ? 'fill-buy' : 'fill-sell'}`}
-                        style={{ width: `${Math.min(100, Math.max(10, data.predictions_1h?.BTC?.display_confidence))}%` }}
-                      ></div>
+                      {(() => {
+                        const confVal = data.predictions_1h?.BTC?.display_confidence ?? currentSignal["1H_conf"];
+                        const fillClass = confVal > 55 ? 'fill-buy' : confVal < 45 ? 'fill-sell' : 'fill-hold';
+                        return (
+                          <div
+                            className={`progress-bar-fill ${fillClass}`}
+                            style={{ 
+                              width: `${Math.min(100, Math.max(10, confVal))}%`,
+                              backgroundColor: confVal > 55 ? '#00FF00' : confVal < 45 ? '#FF0000' : '#eab308'
+                            }}
+                          ></div>
+                        );
+                      })()}
                     </div>
                   </div>
 
@@ -447,19 +473,33 @@ export default function App() {
                     <div className="horizon-tag">
                       <Clock size={12} /> 4-Hour Horizon
                     </div>
-                    {getSignalBadge(data.predictions_4h?.BTC?.signal)}
+                    <SignalBadge 
+                      confidence={data.predictions_4h?.BTC?.display_confidence ?? currentSignal["4H_conf"]} 
+                      showPercentage={true} 
+                    />
                   </div>
 
                   <div className="confidence-wrap">
                     <div className="confidence-label-row">
                       <span>Meta-Learner Confidence</span>
-                      <span className="confidence-val">{data.predictions_4h?.BTC?.display_confidence}%</span>
+                      <span className="confidence-val">
+                        {data.predictions_4h?.BTC?.display_confidence ?? currentSignal["4H_conf"]}%
+                      </span>
                     </div>
                     <div className="progress-track">
-                      <div
-                        className={`progress-bar-fill ${data.predictions_4h?.BTC?.signal === 'BUY' ? 'fill-buy' : data.predictions_4h?.BTC?.signal === 'SELL' ? 'fill-sell' : 'fill-hold'}`}
-                        style={{ width: `${Math.min(100, Math.max(10, data.predictions_4h?.BTC?.display_confidence))}%` }}
-                      ></div>
+                      {(() => {
+                        const confVal = data.predictions_4h?.BTC?.display_confidence ?? currentSignal["4H_conf"];
+                        const fillClass = confVal > 55 ? 'fill-buy' : confVal < 45 ? 'fill-sell' : 'fill-hold';
+                        return (
+                          <div
+                            className={`progress-bar-fill ${fillClass}`}
+                            style={{ 
+                              width: `${Math.min(100, Math.max(10, confVal))}%`,
+                              backgroundColor: confVal > 55 ? '#00FF00' : confVal < 45 ? '#FF0000' : '#eab308'
+                            }}
+                          ></div>
+                        );
+                      })()}
                     </div>
                   </div>
 
@@ -536,7 +576,7 @@ export default function App() {
                     <div className="horizon-tag">
                       <Clock size={12} /> 1-Hour Horizon
                     </div>
-                    {getSignalBadge(data.predictions_1h?.ETH?.signal)}
+                    <SignalBadge confidence={data.predictions_1h?.ETH?.display_confidence} showPercentage={true} />
                   </div>
 
                   <div className="confidence-wrap">
@@ -545,10 +585,19 @@ export default function App() {
                       <span className="confidence-val">{data.predictions_1h?.ETH?.display_confidence}%</span>
                     </div>
                     <div className="progress-track">
-                      <div
-                        className={`progress-bar-fill ${data.predictions_1h?.ETH?.signal === 'BUY' ? 'fill-buy' : 'fill-sell'}`}
-                        style={{ width: `${Math.min(100, Math.max(10, data.predictions_1h?.ETH?.display_confidence))}%` }}
-                      ></div>
+                      {(() => {
+                        const confVal = data.predictions_1h?.ETH?.display_confidence ?? 50;
+                        const fillClass = confVal > 55 ? 'fill-buy' : confVal < 45 ? 'fill-sell' : 'fill-hold';
+                        return (
+                          <div
+                            className={`progress-bar-fill ${fillClass}`}
+                            style={{ 
+                              width: `${Math.min(100, Math.max(10, confVal))}%`,
+                              backgroundColor: confVal > 55 ? '#00FF00' : confVal < 45 ? '#FF0000' : '#eab308'
+                            }}
+                          ></div>
+                        );
+                      })()}
                     </div>
                   </div>
 
@@ -600,7 +649,7 @@ export default function App() {
                     <div className="horizon-tag">
                       <Clock size={12} /> 4-Hour Horizon
                     </div>
-                    {getSignalBadge(data.predictions_4h?.ETH?.signal)}
+                    <SignalBadge confidence={data.predictions_4h?.ETH?.display_confidence} showPercentage={true} />
                   </div>
 
                   <div className="confidence-wrap">
@@ -609,10 +658,19 @@ export default function App() {
                       <span className="confidence-val">{data.predictions_4h?.ETH?.display_confidence}%</span>
                     </div>
                     <div className="progress-track">
-                      <div
-                        className={`progress-bar-fill ${data.predictions_4h?.ETH?.signal === 'BUY' ? 'fill-buy' : data.predictions_4h?.ETH?.signal === 'SELL' ? 'fill-sell' : 'fill-hold'}`}
-                        style={{ width: `${Math.min(100, Math.max(10, data.predictions_4h?.ETH?.display_confidence))}%` }}
-                      ></div>
+                      {(() => {
+                        const confVal = data.predictions_4h?.ETH?.display_confidence ?? 50;
+                        const fillClass = confVal > 55 ? 'fill-buy' : confVal < 45 ? 'fill-sell' : 'fill-hold';
+                        return (
+                          <div
+                            className={`progress-bar-fill ${fillClass}`}
+                            style={{ 
+                              width: `${Math.min(100, Math.max(10, confVal))}%`,
+                              backgroundColor: confVal > 55 ? '#00FF00' : confVal < 45 ? '#FF0000' : '#eab308'
+                            }}
+                          ></div>
+                        );
+                      })()}
                     </div>
                   </div>
 

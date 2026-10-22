@@ -763,3 +763,28 @@ body {
   align-items: flex-start;
 }
 
+/* Meta-Learner Signal Badge Styles */
+.signal-badge-buy {
+  color: #00FF00 !important;
+  border-color: #00FF00 !important;
+  background-color: rgba(0, 255, 0, 0.12) !important;
+  box-shadow: 0 0 12px rgba(0, 255, 0, 0.35) !important;
+  text-shadow: 0 0 4px rgba(0, 255, 0, 0.5) !important;
+}
+
+.signal-badge-neutral {
+  color: #eab308 !important;
+  border-color: rgba(234, 179, 8, 0.5) !important;
+  background-color: rgba(234, 179, 8, 0.12) !important;
+  box-shadow: 0 0 6px rgba(234, 179, 8, 0.2) !important;
+}
+
+.signal-badge-sell {
+  color: #FF0000 !important;
+  border-color: #FF0000 !important;
+  background-color: rgba(255, 0, 0, 0.12) !important;
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.35) !important;
+  text-shadow: 0 0 4px rgba(255, 0, 0, 0.5) !important;
+}
+
+
