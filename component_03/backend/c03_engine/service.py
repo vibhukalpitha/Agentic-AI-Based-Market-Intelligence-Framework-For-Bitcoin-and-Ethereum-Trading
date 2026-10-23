@@ -35,7 +35,7 @@ class SymbolService:
         self.ex, self.sym = export, sym; self.eng = SymbolEngine(export, sym); self.assets = assets if assets is not None else default_assets(); self.rel = ReliabilityTracker(self.eng.MODELS, self.eng.c.TRF, self.eng.qa, self.eng.mq, self.eng.WIN, self.eng.MINP, self.assets, sym); mh = export.decl['mh']; self.mh_thr = mh['thresholds'][sym]; self.mh_pts = {h: np.asarray(mh['score100_percentile_points_genuine_dev_windows'][sym][v[0]]) for h, v in HORIZONS.items()}
         self.bars = deque(maxlen=max_bars); self.windows = {h: deque(maxlen=5000) for h in HORIZONS}; self.cur = {h: None for h in HORIZONS}; self.episodes = []; self.open_ep = None; self.state = 'NORMAL'; self.last = None
         self.last_m = None; self.n_bad = 0; self.consec_bad = 0
-        self.lock = threading.RLock(); self.hidx = context.default_history(); self.dwin = deque(maxlen=60); self.xai = OrderedDict()      # dwin: last 60 scored minutes for the history query; xai: detail of flagged bars
+        self.lock = threading.RLock(); self.hidx = context.default_history(); self.dwin = deque(maxlen=max_bars); self.xai = OrderedDict()      # dwin: the scored minutes held (up to max_bars) for the history query (the last 60 up to the asked minute are used); xai: detail of flagged bars
 
     def prime(self, F, ts):
         check_warmup(F)                         # clear DataError (too short / columns missing / bad rows) instead of an assertion or a silent NaN
@@ -108,22 +108,31 @@ class SymbolService:
                     'validation': {'xgboost_groups': 'supported on held-out test events (notebook 59, protocol E4 v1)', 'single_features': 'indicative only', 'transformer': 'group level only (notebook 55)', 'ae_errors': 'secondary, lower confidence (notebook 45)'},
                     'interventional_available': 'shap_int' in det}
 
-    def similar(self, k=5):
-        """the k most similar past hours (protocol H1 v4): context only, never an alert probability (H-H5 failed)"""
+    def similar(self, k=5, at=None):
+        """the k most similar past hours (protocol H1 v4): context only, never an alert probability (H-H5 failed). `at` (optional, UTC ISO minute) asks about a minute the engine still holds instead of the newest one."""
         with self.lock:
             base = {'symbol': self.sym, 'note': 'Historical context: what the market did in the hour after similar hours. It does not change any score or alert.'}
             if not self.hidx.ok: return base | {'status': 'unavailable', 'reason': 'the history index is not loaded (set C03_ASSETS)', 'matches': []}
-            w = list(self.dwin)
+            full = list(self.dwin)
+            if at is not None:
+                try: m_at = minute_of(at)
+                except Exception: return base | {'status': 'unavailable', 'reason': f'the time {str(at)[:40]!r} is not a valid UTC time', 'matches': []}
+                pos = next((n for n, x in enumerate(full) if x[0] == m_at), None)
+                if pos is None: return base | {'status': 'unavailable', 'reason': 'the engine holds no scored minute for that time', 'matches': []}
+                w = full[max(0, pos - 59):pos + 1]
+            else:
+                w = full[-60:]
             if len(w) < 60: return base | {'status': 'collecting', 'have': len(w), 'need': 60, 'matches': []}
             mins = [x[0] for x in w]
-            if mins[-1] - mins[0] != 59 or any(b - a != 1 for a, b in zip(mins, mins[1:])): return base | {'status': 'collecting', 'reason': 'a minute is missing in the last hour; the query needs 60 consecutive scored minutes', 'have': len(w), 'need': 60, 'matches': []}
+            if mins[-1] - mins[0] != 59 or any(b - a != 1 for a, b in zip(mins, mins[1:])): return base | {'status': 'collecting', 'reason': 'a minute is missing in the hour before; the query needs 60 consecutive scored minutes', 'have': len(w), 'need': 60, 'matches': []}
             from .history import descriptor_raw
             d = descriptor_raw([[x[i] for x in w] for i in (1, 2, 3, 4)], np.array([x[5] for x in w]))
             if d is None: return base | {'status': 'unavailable', 'reason': 'a score of the last hour is not finite', 'matches': []}
             res = self.hidx.find(self.sym, d, mins[-1] * 60 * 10 ** 9, k); out = []
             for r in res:
                 tr = self.hidx.trace(self.sym, r['end_ts_ns']); out.append(r | {'trace': None if tr is None else {'fused': tr[0].tolist(), 'alert_line': tr[1].tolist(), 'minutes_before': 60 - 1, 'minutes_after': 60}})
-            return base | {'status': 'ok', 'query_end_utc': self.bars[-1]['bar_open_utc'] if self.bars else None, 'now_fused': [x[1] for x in w], 'matches': out}
+            qend = dt.datetime.fromtimestamp(mins[-1] * 60, dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+            return base | {'status': 'ok', 'query_end_utc': qend, 'now_fused': [x[1] for x in w], 'matches': out}
 
     def reliability_view(self, limit=120):
         """current reliability object plus the level / checks / conformal set of the last `limit` bars"""

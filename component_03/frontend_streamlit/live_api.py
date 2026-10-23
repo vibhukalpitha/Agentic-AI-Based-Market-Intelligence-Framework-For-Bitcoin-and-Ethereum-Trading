@@ -97,6 +97,19 @@ def similar(sym, ts_last):
     return _SIM[sym][1]
 
 
+_SIMAT = {}
+
+
+def similar_at(sym, iso_ts):
+    """similar past hours for one chosen minute the engine still holds (GET /similar?at=). Answers are cached per minute."""
+    key = (sym, iso_ts)
+    if key not in _SIMAT:
+        _SIMAT[key] = get('similar', symbol=sym, k=5, at=iso_ts)
+        if len(_SIMAT) > 300:
+            _SIMAT.pop(next(iter(_SIMAT)))
+    return _SIMAT[key]
+
+
 def explain_at(sym, ts):
     key = (sym, ts)
     if key not in _X:
@@ -209,6 +222,11 @@ def build(sym, bars, wins, cfg, cal=None, assets=None):
     todo = [k for k in fl if (sym, bars[k]['bar_open_utc']) not in _X][-40:]
     for k in todo:
         explain_at(sym, bars[k]['bar_open_utc'])
+    last = n - 1
+    if last >= j.first and j.state[last] == 0 and np.isfinite(j.fusion[last]):                  # a calm newest minute: its explanation is still shown in the Evidence tab
+        explain_at(sym, bars[last]['bar_open_utc'])
+        if (sym, bars[last]['bar_open_utc']) not in [(sym, bars[q]['bar_open_utc']) for q in fl]:
+            fl = fl + [last]
     for k in fl:
         d = _X.get((sym, bars[k]['bar_open_utc']))
         if d:

@@ -122,7 +122,7 @@ def create_app(export_root, mode='replay', verify=True, replay_default=None):
         return clean(r)
 
     @app.get(P + '/similar')
-    def similar(symbol: str, k: int = 5): return clean(svc_of(symbol).similar(max(1, min(k, 10))))
+    def similar(symbol: str, k: int = 5, at: str = None): return clean(svc_of(symbol).similar(max(1, min(k, 10)), at))
 
     @app.get(P + '/model-info')
     def model_info():

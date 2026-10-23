@@ -531,6 +531,77 @@ def toggle_follow():
         ss().ver += 1
 
 
+def _naive(x):
+    t = pd.Timestamp(x)
+    return t.tz_convert(None) if t.tzinfo is not None else t
+
+
+@st.dialog('Ask the engine')
+def ask_dialog(B):
+    s = ss()
+    st.markdown('Choose a coin, then type a date and a time in **Sri Lanka time**. The engine answers and all four tabs show that minute (the page itself shows UTC).')
+    st.selectbox('Coin', ['BTC/USDT', 'ETH/USDT'], key='ask_sym')
+    st.text_input('Date (Sri Lanka)', key='ask_date', placeholder='2026/10/23')
+    st.text_input('Time (Sri Lanka, 24-hour)', key='ask_time', placeholder='09:53')
+    if st.button('Check', type='primary', width='stretch', key='ask_go'):
+        ask_check()
+        if s.get('ask_msg'):
+            st.warning(s.ask_msg)
+        else:
+            st.rerun()
+
+
+def ask_check():
+    """'Ask the engine': the chosen coin and UTC minute go to the engine API (/bars); the page then shows that minute in all four tabs"""
+    import live_api as LA
+    s = ss()
+    sym = 'BTCUSDT' if s.get('ask_sym', 'BTC/USDT').startswith('BTC') else 'ETHUSDT'
+    d_txt = str(s.get('ask_date') or '').strip().replace('/', '-').replace('.', '-')
+    t_txt = str(s.get('ask_time') or '').strip().replace('.', ':').replace(' ', '')
+    if not d_txt:
+        s.ask_msg = 'Please type the date, for example 2026/10/23. (The grey text is only an example.)'
+        return
+    if not t_txt:
+        s.ask_msg = 'Please type the time, for example 09:53 (24-hour, Sri Lanka time).'
+        return
+    if ':' not in t_txt and t_txt.isdigit() and len(t_txt) in (3, 4):
+        t_txt = t_txt[:-2] + ':' + t_txt[-2:]
+    try:
+        hh, mm = t_txt.split(':')
+        tgt = pd.Timestamp(f'{d_txt} {int(hh):02d}:{int(mm):02d}')
+    except Exception:
+        s.ask_msg = 'Please type the date like 2026/10/23 and the time like 09:53 (24-hour, Sri Lanka time).'
+        return
+    tgt_local = tgt
+    tgt = tgt - pd.Timedelta(hours=5, minutes=30)                      # typed in Sri Lanka time, the engine works in UTC
+    LK = pd.Timedelta(hours=5, minutes=30)
+    if tgt > pd.Timestamp.utcnow().tz_localize(None):
+        s.ask_msg = 'C03 describes what the market is doing now or did before. It does not forecast, so a future time has no result.'
+        return
+    j = s._B[sym]
+    k = int((tgt - _naive(j.ts[0])).total_seconds() // 60)
+    if k < j.first or k > j.n - 1:
+        s.ask_msg = f'No data held for that time. Available for {sym[:3]} (Sri Lanka time): {(_naive(j.ts[j.first]) + LK).strftime("%m-%d %H:%M")} to {(_naive(j.ts[j.n - 1]) + LK).strftime("%m-%d %H:%M")}.'
+        return
+    iso = tgt.strftime('%Y-%m-%dT%H:%M:%SZ')
+    call = {'endpoint': '/api/c03/bars', 'params': {'symbol': sym, 'from': iso, 'to': iso, 'limit': 1, 'detail': 'true'}}
+    try:
+        call['response'] = LA.get('bars', symbol=sym, **{'from': iso, 'to': iso}, limit=1, detail='true')
+    except Exception as e:
+        call['response'] = f'{type(e).__name__}: {e}'
+    s.ask_msg = None
+    s.ask = {'sym': sym, 'k': k, 'call': call, 'when': tgt.strftime('%Y-%m-%d %H:%M'), 'local': tgt_local.strftime('%Y-%m-%d %H:%M')}
+    s.sym = sym
+    s.sym_sel = sym[:3] + '/USDT'
+    s.playing, s.sel, s.i = False, None, k
+    s.ver = s.get('ver', 0) + 1
+
+
+def ask_clear():
+    ss().ask = None
+    go_latest()
+
+
 def go_latest():
     ss().playing = True
     ss().i = CUR().n - 1
@@ -616,9 +687,7 @@ def score_hint(j, sc, st_):
         return f'WATCH zone: the score is down at {sc:.1f}. WATCH starts at roughly {j.bandW:.1f} or lower.'
     if sc >= 50:
         return 'Ordinary minute: more usual than most of the last 7 days.'
-    share = float(np.nanmean(j.integ[j.first:] <= sc))
-    return (f'This minute is more unusual than {100 - sc:.0f}% of the last 7 days, but {share * 100:.0f}% of the minutes in this recording are at least that unusual, so it is still normal. '
-            f'WATCH starts only at roughly {j.bandW:.1f} or lower, ALERT at {j.bandA:.1f} or lower.')
+    return ''
 
 
 def story(j, k, st_):
@@ -770,17 +839,11 @@ def render_overview(B, j, i):
             sctxt = '–' if np.isnan(sc) else (f'{sc:.1f}' if sc < 10 else f'{sc:.0f}')
             st.markdown(f'<div style="text-align:center;margin-top:-60px"><span style="font-size:42px;font-weight:700">{sctxt}</span> <span style="color:{DIM}">/ 100</span></div>', unsafe_allow_html=True)
             st.markdown(f'<div style="text-align:center;margin:10px 0 14px">{pill(st_, NAME[st_] + " · " + ["Typical market behaviour", "Elevated activity", "Unusual behaviour"][st_])}</div>', unsafe_allow_html=True)
-            a, b = st.columns(2)
-            a.metric('Unusualness', 'n/a' if np.isnan(sc) else f'{100 - sc:.2f}%')
-            pl = j.plev[i]
-            b.metric('Rarity (p-level)', 'n/a' if np.isnan(pl) else ('<0.001' if pl < 0.001 else f'{pl:.3f}'))
-            a.metric('Fused score', fx(j.fusion[i]))
-            b.metric('Alert threshold', fx(j.thr_alert[i]))
             st.markdown(f'<div style="font-size:12.5px;color:{TXT};line-height:1.5;margin-bottom:6px">{score_hint(j, sc, st_)}</div>', unsafe_allow_html=True)
             st.caption(f'Zones on the gauge: ALERT ≤ {j.bandA:.1f} · WATCH ≤ {j.bandW:.1f} · NORMAL above. Score = 100 − unusualness percentile versus the last 7 days (the gauge is stretched near 0).')
     with c1:
         with st.container(border=True):
-            st.markdown('#### Price & Detected Windows')
+            st.markdown('#### Current price')
             b0 = j.close[max(j.first, i - 15)]
             dl = (j.close[i] / b0 - 1) * 100
             st.markdown(f'<span style="font-size:32px;font-weight:700">${j.close[i]:,.2f}</span> &nbsp; <span style="color:{"#10B981" if dl >= 0 else "#EF4444"};font-weight:600">{dl:+.2f}% / 15m</span>', unsafe_allow_html=True)
@@ -878,17 +941,11 @@ def pick_episode(vis):
     cur_s = ss().sel if ss().sel in labels else latest.s
     idx = [e.s for e in opts].index(cur_s)
 
-    pk = f'ep_pick_{j.symbol}_{latest.s}_{ss().sel}'
-
-    def _chg():
-        ss().sel = ss()[pk]
-
-    s = st.selectbox('Episode to inspect', [e.s for e in opts], index=idx, format_func=lambda s_: labels[s_], key=pk, on_change=_chg)
-    v = next(e for e in opts if e.s == s)
+    v = opts[idx]
     if j.state[ss().i] >= 1 and v is latest:
         st.caption(f'{lvl_txt(v)} episode in progress · started {tstr(j, v.s)}')
     elif v is latest:
-        st.caption(f'No alert right now. Showing the latest episode: {tstr(j, v.s)} ({ss().i - v.e} min ago)')
+        st.caption(f'No alert right now. Last alert: {tstr(j, v.s)} ({ss().i - v.e} min ago).' + lv(' Details of that alert are shown below.', ' The checks and charts below follow the current minute; the alert details are from that last alert.'))
     else:
         st.caption(f'Showing the selected episode: {tstr(j, v.s)}')
     return v, latest
@@ -1000,12 +1057,14 @@ def status_strip(j, i, v):
     num = '–' if sc is None or not np.isfinite(sc) else (f'{sc:.1f}' if sc < 10 else f'{sc:.0f}')
     chp = chip(NAME[stt], {0: 'good', 1: 'warn', 2: 'alert'}[stt])
     if v is None:
-        hd, sb, since, k1, conf, cc = 'No alert yet', 'Nothing has been flagged in this recording so far.', '–', 'Flagged since', '–', DIM
+        k2 = 'Confidence'
+        hd, sb, since, k1, conf, cc = 'No alert yet', lv('Nothing has been flagged in this recording so far.', 'Nothing has been flagged since the engine started.'), 'No alert', 'Flagged since', 'Not needed (no alert)', DIM
     else:
         ev = evid(v)
         hd, sb = why_line(v)
         live_ep = stt >= 1 and v.e >= i
         k1 = 'Flagged since' if live_ep else 'Last flagged'
+        k2 = 'Confidence' if live_ep else 'Last alert confidence'
         since = f'{hhmm(j, v.s)} · {v.len} min'
         conf = LDISP[ev.level] if ev.level else 'Not rated'
         cc = LVC.get(ev.level, DIM)
@@ -1018,7 +1077,7 @@ def status_strip(j, i, v):
         f'<div style="display:flex;gap:14px;align-items:center"><div style="font-size:40px;font-weight:800;line-height:1;color:{TXT}">{num}<span style="font-size:14px;color:{DIM};font-weight:600">/100</span></div>'
         f'<div>{chp}<div style="font-size:11px;color:{DIM};text-transform:uppercase;letter-spacing:.08em;margin-top:2px">Integrity score</div></div></div>'
         f'<div style="flex:1;min-width:240px"><div style="font-size:17px;font-weight:700;color:{TXT}">{hd}</div><div style="font-size:12.5px;color:{DIM};margin-top:2px">{sb}</div></div>'
-        f'{kv(k1, since)}{kv("Confidence", conf, cc)}</div>', unsafe_allow_html=True)
+        f'{kv(k1, since)}{kv(k2, conf, cc)}</div>', unsafe_allow_html=True)
 
 
 # ------------------------------------------------------------------ EXPLAINABLE AI
@@ -1041,6 +1100,11 @@ def resem_compact(v):
 
 
 def render_xai(v):
+    if v is None and src_live():                      # Live and nothing flagged: explain the newest calm minute instead of an empty tab
+        j0 = CUR()
+        k0 = ss().i
+        if k0 in j0.xai and np.isfinite(j0.fusion[k0]):
+            v = SimpleNamespace(j=j0, s=k0, e=k0, full=k0, pk=k0, xb=k0, eng=k0, mx=int(j0.state[k0]), len=1)
     if v is None:
         st.info(lv('Nothing has been flagged yet. Press Play, or use Next Alert at the top.', 'No alert has been raised yet. It will appear here as soon as one is flagged.'))
         return
@@ -1050,12 +1114,15 @@ def render_xai(v):
     F = j.features
     names = [fname(f) for f in F]
     ev = evid(v)
-    status_strip(j, i, v)
+    calm = v.mx == 0
+    status_strip(j, i, None if calm else v)
+    if calm:
+        st.caption('No alert right now. This is how the models see the newest minute; when an alert is raised, the same view explains it.')
 
     # ---- row 1: price + score around the alert | what drove it
     ca, cb = st.columns([2, 1])
     with ca.container(border=True):
-        head('Price and unusual-ness around the alert', 'Shaded blocks are the minutes the system flagged.')
+        head('Price and unusual-ness around this minute' if calm else 'Price and unusual-ness around the alert', 'Shaded blocks are the minutes the system flagged.')
         b_ = min(i, v.e + 20)
         a_ = max(j.first, v.s - 40)
         if b_ - a_ < 59:
@@ -1264,13 +1331,6 @@ def render_unc_legacy(v, vis):
                 if q.mx == 2:
                     cnt[evid(q).level] += 1
             st.caption(f"All alerts so far ({sum(cnt.values())}): Strong {cnt['STRONG']} · Moderate {cnt['MODERATE']} · Weak {cnt['LIMITED']}")
-    with st.expander('Technical notes (calibration and diagnostics)'):
-        tw = j.thr_windows or {}
-        g = lambda a_, b_: fx((tw.get(a_) or {}).get(b_))
-        st.markdown(f"- Rarity p-level: `{e.pl}`\n- Detectors above line (bitmask): `{'n/a' if e.ag is None else format(e.ag, '03b') + ' (AE·XGB·TR)'}`\n"
-                    f"- Engine confidence: `{e.conf}`\n- Alert / watch line at peak: `{fx(j.thr_alert[v.pk], 3)} / {fx(j.thr_watch[v.pk], 3)}`\n"
-                    f"- 15-min lines (alert / watch): `{g('15 min', 'Alert')} / {g('15 min', 'Watch')}`\n- 1-hour lines (alert / watch): `{g('1 hour', 'Alert')} / {g('1 hour', 'Watch')}`\n"
-                    f"- Calibration source: `{cal['source'] if cal else 'n/a'}`\n- Calibration table id: `{cal['npz_sha16'] if cal else 'n/a'}`")
 
 
 # ------------------------------------------------------------------ UNCERTAINTY & ASSESSMENT RELIABILITY (novelty 3, protocol C1 v3 / notebook 49)
@@ -1315,20 +1375,26 @@ def render_unc(v, vis):
     status_strip(j, i, v)
 
     # ---- row 1: confidence | the checks behind it
-    ca, cb = st.columns([1, 2])
-    with ca.container(border=True):
-        label('Confidence in this alert')
-        if lvl > 0:
-            nm_, col_ = LDISP[LCODE[lvl]], LVC[LCODE[lvl]]
-            filled = lvl
-        else:
-            nm_, col_, filled = 'No alert now', DIM, max(0, met)
-        segs = ''.join(f'<span style="flex:1;height:10px;border-radius:5px;background:{col_ if q < filled else GRID}"></span>' for q in range(3))
-        st.markdown(f'<div style="font-size:32px;font-weight:800;color:{col_};margin:8px 0 12px">{nm_}</div><div style="display:flex;gap:5px">{segs}</div>'
-                    f'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:{DIM};margin-top:6px"><span>Weak</span><span>Moderate</span><span>Strong</span></div>'
-                    f'<div style="font-size:13px;color:#A9B4D0;margin-top:14px">{max(0, met)} of 3 checks passed' + ('' if gate else ' · data check failed') + '</div>', unsafe_allow_html=True)
+    calm_c = lvl <= 0 and int(j.state[i]) != 2
+    ca, cb = st.columns([2, 1])
+    if calm_c:
+        with ca.container(border=True):
+            label('Confidence in an alert')
+            st.markdown(f'<div style="font-size:15px;color:{DIM};margin:10px 0 4px">Confidence is only given when an alert is raised.</div>', unsafe_allow_html=True)
+    else:
+        with ca.container(border=True):
+            label('Confidence in this alert')
+            if lvl > 0:
+                nm_, col_ = LDISP[LCODE[lvl]], LVC[LCODE[lvl]]
+                filled = lvl
+            else:
+                nm_, col_, filled = 'No alert now', DIM, max(0, met)
+            segs = ''.join(f'<span style="flex:1;height:10px;border-radius:5px;background:{col_ if q < filled else GRID}"></span>' for q in range(3))
+            st.markdown(f'<div style="font-size:32px;font-weight:800;color:{col_};margin:8px 0 12px">{nm_}</div><div style="display:flex;gap:5px">{segs}</div>'
+                        f'<div style="display:flex;justify-content:space-between;font-size:11.5px;color:{DIM};margin-top:6px"><span>Weak</span><span>Moderate</span><span>Strong</span></div>'
+                        f'<div style="font-size:13px;color:#A9B4D0;margin-top:14px">{max(0, met)} of 3 checks passed' + ('' if gate else ' · data check failed') + '</div>', unsafe_allow_html=True)
     with cb.container(border=True):
-        head('The checks behind it', 'What was measured, and how close it was.')
+        head('What the system is watching' if calm_c else 'The checks behind it', 'Nothing is flagged now. A grey dash means that check is not triggered.' if calm_c else 'What was measured, and how close it was.')
         dots = ''.join('●' if j.state[q] == 2 else '○' for q in range(max(0, i - 4), i + 1))
         cnt = dots.count('●')
         pos = []
@@ -1344,7 +1410,7 @@ def render_unc(v, vis):
         ]
         h_ = ''
         for ok, nm_, dt_, rt_ in rows:
-            ic = {1: ('#113A31', COL[0], '✓'), 0: ('#3A1B22', COL[2], '✗')}.get(int(ok), (GRID, DIM, '–'))
+            ic = ({1: ('#113A31', COL[0], '✓'), 0: (GRID, DIM, '–')} if calm_c else {1: ('#113A31', COL[0], '✓'), 0: ('#3A1B22', COL[2], '✗')}).get(int(ok), (GRID, DIM, '–'))
             h_ += (f'<div style="display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid {GRID}">'
                    f'<span style="width:24px;height:24px;border-radius:50%;background:{ic[0]};color:{ic[1]};display:grid;place-items:center;font-weight:800;font-size:13px">{ic[2]}</span>'
                    f'<div><b style="color:{TXT}">{nm_}</b><div style="font-size:12px;color:{DIM}">{dt_}</div></div>'
@@ -1352,7 +1418,7 @@ def render_unc(v, vis):
         st.markdown(h_, unsafe_allow_html=True)
 
     # ---- row 2: normal or unusual | models agree | can the score tell
-    cl_, cm_, cr_ = st.columns(3)
+    cl_, cm_ = ca.columns(2)
     with cl_.container(border=True):
         head('Normal or unusual?', "Where the score sits against this market's own history.")
         if cset < 0 or bnd is None:
@@ -1383,7 +1449,8 @@ def render_unc(v, vis):
     w = slice(lo, i + 1)
     cs, lv_, st_ = j.rel_set[w], j.rel_level[w], j.state[w]
     n_ = max(1, len(cs))
-    with cr_.container(border=True):
+    cx, cy = st.columns([2, 1])
+    with cy.container(border=True):
         head('Can the score tell?', 'Share of the last 3 hours in each state.')
         segs = [('Looks normal', float((cs == 1).sum()), COL[0]), ("Can't tell", float(((cs == 3) | (cs == 0)).sum()), COL[1]), ('Leans unusual', float((cs == 2).sum()), COL[2])]
         d1, d2 = st.columns([1, 1])
@@ -1394,7 +1461,6 @@ def render_unc(v, vis):
                             f'<b style="margin-left:auto;color:{TXT};font-family:monospace">{100 * s / n_:.0f}%</b></div>' for n, s, c_ in segs), unsafe_allow_html=True)
 
     # ---- row 3: how the doubt changed | this alert minute by minute
-    cx, cy = st.columns([2, 1])
     with cx.container(border=True):
         head('How the doubt changed, last 3 hours', 'The score against the lines that decide normal, unusual and alert.')
         x = [pd.Timestamp(j.dt[q]) for q in ks]
@@ -1414,11 +1480,10 @@ def render_unc(v, vis):
             f.update_yaxes(visible=True, showticklabels=False, title_text=t_, range=[0, 1], row=r_, col=1)
         st.plotly_chart(f, width='stretch', config=dict(displayModeBar=False), key='u_tl')
         st.markdown(legend([('Score', '#C7D2F5', False), ('Normal up to here', COL[0], True), ('Unusual from here', COL[1], True), ('Alert line', COL[2], True), ('Big-move line', VIO, True)]), unsafe_allow_html=True)
-    with cy.container(border=True):
+    if v is not None:
+      with cy.container(border=True):
         head('This alert, minute by minute', 'Confidence of each alert minute.')
-        if v is None:
-            st.markdown(f'<div style="font-size:12.5px;color:{DIM}">' + lv('No alert yet. Press Play, or use Next Alert at the top.', 'No alert yet.') + '</div>', unsafe_allow_html=True)
-        else:
+        if True:
             ks_ = np.arange(v.s, v.e + 1)
             al_ = ks_[j.state[ks_] == 2]
             pad = 10
@@ -1431,24 +1496,6 @@ def render_unc(v, vis):
             ef.update_yaxes(tickvals=[1, 2, 3], ticktext=['Weak', 'Moderate', 'Strong'], range=[0, 3.3])
             st.plotly_chart(ef, width='stretch', config=dict(displayModeBar=False), key='u_ep')
             st.markdown(''.join(chip(f'{hhmm(j, q)} {LDISP[LCODE[int(j.rel_level[q])]]}', LVCHIP[LCODE[int(j.rel_level[q])]]) for q in al_[-6:] if j.rel_level[q] > 0), unsafe_allow_html=True)
-
-    with st.expander('How this works'):
-        st.markdown('- An alert minute is rated on three checks: a big move, a lasting move, and models that agree. **Strong** needs all three plus clean data, **Moderate** two plus clean data, **Weak** is every other alert minute.\n'
-                    "- The score is compared with the last 7 days of this same market.\n"
-                    "- On genuine (non-event) test minutes the score alone said 'looks normal' about 45% of the time and \"can't tell\" about 45%, because many event minutes are weak. "
-                    'Two further attempts to sharpen this were tested and did not help, so use this as support for your own judgement, not as an alarm.\n'
-                    f"- On the synthetic test events a Strong minute was {NB49_REF['STRONG']:.2f}x, a Moderate minute {NB49_REF['MODERATE']:.2f}x and a Weak minute {NB49_REF['LIMITED']:.2f}x as likely to be a genuine event as an average alert minute. This is not a probability.")
-        cal = j.cal
-        if cal:
-            E = np.array(cal['edges'])
-            ff = go.Figure()
-            for key, nm, col, fc in [('normal', f"ordinary calibration minutes ({cal['n_normal']:,})", '#3987E5', 'rgba(57,135,229,.25)'), ('abnormal', f"abnormal calibration minutes ({cal['n_abnormal']:,})", VIO, 'rgba(144,133,233,.25)')]:
-                ff.add_trace(go.Scatter(x=np.repeat(E, 2)[1:-1], y=np.repeat(cal[key], 2), mode='lines', line=dict(color=col, width=1.4), fill='tozeroy', fillcolor=fc, name=nm))
-            ff.add_vline(x=float(max(E[0], min(E[-1], fz))), line=dict(color='#FFFFFF', dash='dash', width=2), annotation_text=f'now {fz:.2f}', annotation_font_color='#FFFFFF')
-            themed(ff, 230, left=44, top=20, bottom=30, hover=False)
-            ff.update_layout(showlegend=True, legend=dict(orientation='h', y=-0.25))
-            ff.update_yaxes(title='density')
-            st.plotly_chart(ff, width='stretch', config=dict(displayModeBar=False), key='u_cal')
 
 
 # ------------------------------------------------------------------ SIMILAR PAST
@@ -1568,10 +1615,11 @@ def render_hist(j, i, v=None):
     status_strip(j, i, v)
     hx = getattr(j, 'hidx', None)
     if getattr(j, 'api', False):                       # Live: the engine answers for the newest minute (/similar)
-        if i != j.n - 1:
-            st.info('Similar past hours are found by the engine for the newest minute. Press **Latest minute** to see them.')
-            return
         ans = getattr(j, 'hist_answer', None) or {}
+        if i != j.n - 1:                                # a chosen older minute: ask the engine about exactly that minute (/similar?at=)
+            import live_api as LA
+            ans = LA.similar_at(j.symbol, pd.Timestamp(j.ts[i]).strftime('%Y-%m-%dT%H:%M:%SZ'))
+            hx = LA.ApiHist(j.symbol, ans)
         if hx is None or not hx.ok:
             why = {'collecting': f"The engine is still collecting the last hour ({ans.get('have', '?')} of {ans.get('need', 60)} consecutive scored minutes)." + (' ' + ans['reason'] if ans.get('reason') else ''),
                    'unavailable': 'The history index is not available on the engine: ' + str(ans.get('reason', 'unknown reason')) + '.'}.get(ans.get('status'), 'No answer from the engine yet.')
@@ -1625,11 +1673,21 @@ def render_hist(j, i, v=None):
     with top[1].container(border=True):
         head('What happened next', f'The hour after each of the {len(res)} most similar past hours: how high the score went.')
         pk = [r['peak_fused_next_hour'] if r['peak_fused_next_hour'] is not None else 0 for r in res]
-        pf = go.Figure(go.Bar(x=[f'#{n + 1}' for n in range(len(res))], y=pk, marker_color=[COL[2] if (r['minutes_above_alert_next_hour'] or 0) > 0 else ACC for r in res],
+        xs = [f'#{n + 1}' for n in range(len(res))]
+        cur_line = float(j.thr_alert[i]) if np.isfinite(j.thr_alert[i]) else None
+        lines = []
+        for t_ in trs:
+            nx = None if t_ is None else t_[1][HW:]
+            lines.append(float(np.nanmax(nx)) if nx is not None and np.isfinite(nx).any() else cur_line)
+        pf = go.Figure(go.Bar(x=xs, y=pk, marker_color=[COL[2] if (r['minutes_above_alert_next_hour'] or 0) > 0 else ACC for r in res],
                               hovertemplate='%{x}: highest score %{y:.2f}<extra></extra>'))
-        themed(pf, 130, left=34, top=10, bottom=22, hover=False)
+        if any(l_ is not None for l_ in lines):
+            pf.add_trace(go.Scatter(x=xs, y=lines, mode='markers', marker=dict(symbol='line-ew', size=44, color=COL[2], line=dict(color=COL[2], width=3)),
+                                    hovertemplate='%{x}: alert line %{y:.2f}<extra></extra>'))
+        themed(pf, 190, left=52, top=10, bottom=22, hover=False)
+        pf.update_yaxes(title_text='Highest fused score', title_font=dict(size=10.5))
         st.plotly_chart(pf, width='stretch', config=dict(displayModeBar=False), key='h_peaks')
-        st.markdown('<div style="font-size:11.5px;color:' + DIM + ';margin:-4px 0 8px">Highest score in the hour after each match</div>' + chip('Past hours, not a forecast', 'warn'), unsafe_allow_html=True)
+        st.markdown('<div style="font-size:11.5px;color:' + DIM + ';margin:-4px 0 8px">Red line = that day\'s alert line. A bar above its red line means an alert followed.</div>' + chip('Past hours, not a forecast', 'warn'), unsafe_allow_html=True)
 
     with st.container(border=True):
         head(f'The {len(res)} most similar past hours', 'Blue is the matched hour, orange is the hour after it, red dashed is that day\'s alert line.')
@@ -1786,8 +1844,8 @@ def live_banners(j, s):
         st.info('The engine API is running in **replay mode** (recorded bars), not on the live Binance feed.')
     if age is not None and age > 150:
         st.warning('**Live data is late.** Waiting for the next minute from Binance.')
-    if h.get('last_error'):
-        st.warning('The engine reported a feed problem: ' + str(h['last_error']) + ' (it reconnects by itself).')
+    if h.get('last_error') and (age is None or age > 150) and not (age is not None and age > 150):
+        st.warning('**Live feed is reconnecting.** It restarts by itself; no action needed.')
     if not getattr(j, 'has_detail', True):
         st.warning('This engine answers with the plain v0.2 API: thresholds and reliability checks of earlier minutes are not available. Start the engine with v0.2.1 for the full page.')
     if j.n and j.first >= j.n - 1 and j.state[j.n - 1] == 0 and not np.isfinite(j.fusion[j.n - 1]) and j.n - 1 not in j.bad:
@@ -1816,7 +1874,7 @@ def live_watch(last_ts, following, wait_for_ok=False, delayed=False):
             return
         import time as _t
         urgent = h is None or h.get('status') != 'ok' or ((h.get("data_age_sec") or 0) > 150) != delayed
-        new_min = following and h.get('last_bar_utc') != last_ts
+        new_min = bool(following and h and h.get('last_bar_utc') != last_ts)
         if urgent or (new_min and _t.time() - ss().get('_last_full', 0) > 20):      # a fast replay delivers a minute per second: redraw the page at most every 20 s
             ss()['_last_full'] = _t.time()
             st.rerun()
@@ -1825,8 +1883,21 @@ def live_watch(last_ts, following, wait_for_ok=False, delayed=False):
 
 def on_src():
     """Replay <-> Live: start the page state again for the other source"""
-    for k in ('sym', 'i', 'sel', 'playing', '_B', '_LIVEB', '_live_t0', '_last_state', '_hq'):
+    for k in ('sym', 'i', 'sel', 'playing', '_B', '_LIVEB', '_live_t0', '_last_state', '_hq', 'ask'):
         ss().pop(k, None)
+
+
+def on_src_w():
+    """the Source buttons: Replay / Live. Pressing Live while an Ask-the-engine result is shown goes back to live."""
+    v = ss().get('src_w')
+    if v is None:
+        return
+    if v == ss().get('src_sel'):
+        if ss().get('ask'):
+            ask_clear()
+        return
+    ss()['src_sel'] = v
+    on_src()
 
 
 def render_problem(pr):
@@ -1871,7 +1942,8 @@ def render(data_dir=None):
     top[0].caption('Market integrity monitor · 1-minute Binance Spot bars · Monitor-only · Component 03')
     with top[2]:
         st.markdown('<div style="height:30px"></div>', unsafe_allow_html=True)
-        st.segmented_control('Source', ['Replay', 'Live'], key='src_sel', on_change=on_src, label_visibility='collapsed')
+        ss()['src_w'] = None if (src_live() and ss().get('ask')) else ss()['src_sel']           # while an Ask-the-engine result is shown, neither button is selected
+        st.segmented_control('Source', ['Replay', 'Live'], key='src_w', on_change=on_src_w, label_visibility='collapsed')
     if pr is not None:
         render_problem(pr)
         live_watch(None, True, wait_for_ok=True)
@@ -1902,21 +1974,24 @@ def render(data_dir=None):
     if live:
         h_ = s.get('_health') or {}
         is_live_feed = h_.get('mode') == 'live'
-        mode_txt = 'LIVE · TRAINED MODELS SCORE EACH NEW MINUTE' if is_live_feed else 'ENGINE API IN REPLAY MODE (RECORDED BARS)'
-        top[0].markdown(badge('● ' + mode_txt, '#10B981' if is_live_feed else '#F59E0B') + f'<span style="color:{DIM};font-size:12px"> &nbsp; minutes held {j.ts[0][5:16]} → {j.ts[j.n - 1][5:16]} UTC</span>', unsafe_allow_html=True)
+        asked = bool(s.get('ask'))
+        mode_txt = 'YOUR CHOICE · ONE FIXED MINUTE (NOT FOLLOWING LIVE)' if asked else 'LIVE · TRAINED MODELS SCORE EACH NEW MINUTE' if is_live_feed else 'ENGINE API IN REPLAY MODE (RECORDED BARS)'
+        top[0].markdown(badge('● ' + mode_txt, '#6366F1' if asked else '#10B981' if is_live_feed else '#F59E0B') + f'<span style="color:{DIM};font-size:12px"> &nbsp; minutes held {j.ts[0][5:16]} → {j.ts[j.n - 1][5:16]} UTC</span>', unsafe_allow_html=True)
     else:
         mode_txt = 'TRAINED MODELS RUN LIVE ON EACH MINUTE' if live_mode() else 'STORED ENGINE RESULTS (REPLAY)'
         top[0].markdown(badge('● ' + mode_txt, '#10B981' if live_mode() else '#F59E0B') + f'<span style="color:{DIM};font-size:12px"> &nbsp; recorded data {j.ts[0][:10]} → {j.ts[j.n - 1][:10]}</span>', unsafe_allow_html=True)
     top[2].markdown(f'<div style="text-align:right;font-size:18px;font-weight:700;font-family:monospace">{tstr(j, s.i)}</div>', unsafe_allow_html=True)
     # controls
     if live:
-        c = st.columns([1, 1.5, 1, 1.1, 2.2, 1.4])
+        c = st.columns([1, 1.5, 1, 1.1, 1.5, 1.5, 1.4])
         c[0].button('◀ 1 bar', width='stretch', on_click=lambda: set_i(s.i - 1))
         c[1].button('● Following live' if s.playing else '▶ Follow live', type='primary', width='stretch', on_click=toggle_follow)
         c[2].button('1 bar ▶', width='stretch', on_click=lambda: set_i(s.i + 1))
         c[3].button('↻ Refresh', width='stretch')
         c[4].markdown(f'<div style="font-size:12px;color:{DIM};padding-top:8px">{"Updates every 5 s" if s.playing else "Paused: press Follow live"}</div>', unsafe_allow_html=True)
-        c[5].button('⏭ Latest minute', width='stretch', on_click=go_latest)
+        if c[5].button('🔎 Ask the engine', width='stretch', key='ask_open'):
+            ask_dialog(B)
+        c[6].button('⏭ Latest minute', width='stretch', on_click=go_latest)
         autop = False
         st.slider('Position', j.first, max(j.n - 1, j.first + 1), int(s.i), key=f'seek{s.ver}', on_change=on_seek, label_visibility='collapsed') if j.n - 1 > j.first else None
     else:
@@ -1930,8 +2005,37 @@ def render(data_dir=None):
         c[6].button('Next Alert ▶', width='stretch', on_click=lambda: jump_alert(1))
         c[7].button('⚡ Jump to Aug 5 (stress day)', width='stretch', on_click=jump_aug)
         st.slider('Replay position', j.first, j.n - 1, int(s.i), key=f'seek{s.ver}', on_change=on_seek, label_visibility='collapsed')
+        d0, d1 = pd.Timestamp(j.ts[0]), pd.Timestamp(j.ts[j.n - 1])  # tz-aware or naive
+        g = st.columns([1.3, 1.1, 1, 3.6])
+        g_d = g[0].date_input('Date (UTC)', value=pd.Timestamp(j.ts[s.i]).date(), min_value=d0.date(), max_value=max(d1.date(), pd.Timestamp.utcnow().date()), key='go_date')
+        g_t = g[1].time_input('Time (UTC)', value=pd.Timestamp(j.ts[s.i]).time().replace(second=0, microsecond=0), step=60, key='go_time')
+
+        def go_time():
+            tgt = pd.Timestamp(f'{ss().go_date} {ss().go_time}')
+            now_ = pd.Timestamp.utcnow().tz_localize(None)
+            if tgt > now_:
+                ss().toast = 'C03 describes what the market is doing now or did before. It does not forecast, so a future time has no result.'
+                return
+            k_ = int((tgt - pd.Timestamp(CUR().ts[0]).tz_localize(None)).total_seconds() // 60) if pd.Timestamp(CUR().ts[0]).tzinfo is None else int((tgt.tz_localize('UTC') - pd.Timestamp(CUR().ts[0])).total_seconds() // 60)
+            if k_ < CUR().first or k_ > CUR().n - 1:
+                ss().toast = f'No stored data for that time. Stored minutes: {CUR().ts[0][:16]} to {CUR().ts[CUR().n - 1][:16]} UTC.'
+                return
+            ss().sel = None
+            set_i(k_, toast=f'Showing {tstr(CUR(), k_)} UTC')
+        g[2].markdown('<div style="height:28px"></div>', unsafe_allow_html=True)
+        g[2].button('Go to this time', width='stretch', on_click=go_time)
     nbad = sum(1 for k in getattr(j, 'bad', {}) if k <= s.i)
     st.caption(f'{s.i - j.first + 1 - nbad} / {j.n - j.first} bars scored · {tstr(j, s.i)}' + (f' · {nbad} minute(s) skipped: invalid data' if nbad else ' · data checks: every minute so far passed'))
+    if live and s.get('ask') and s.ask['sym'] == s.sym and not s.playing and s.i == s.ask['k']:
+        import live_api as LA
+        a_ = s.ask
+        b1, b2 = st.columns([4, 1])
+        b1.markdown(badge(f"● SHOWING {a_['local']} SRI LANKA TIME ({a_['when']} UTC) · YOUR CHOICE", '#6366F1') + f'<span style="color:{DIM};font-size:12px"> &nbsp; the four tabs below show this minute</span>', unsafe_allow_html=True)
+        b2.button('Back to live', width='stretch', on_click=ask_clear, key='ask_back')
+        with st.expander('How this was computed (the request sent to the engine API)'):
+            st.markdown('The page sent this request to the engine and used the answer for this minute:')
+            st.code(f"GET {LA.api_base()}{a_['call']['endpoint']}\n" + '\n'.join(f'  {k_} = {v_}' for k_, v_ in a_['call']['params'].items()), language='text')
+            st.json(a_['call'].get('response'))
     if live:
         live_banners(j, s)
     if s.i in getattr(j, 'bad', {}):
@@ -1951,8 +2055,6 @@ def render(data_dir=None):
         render_unc(v, vis)
     with t4:
         render_hist(j, i, v)
-    render_data_checks()
-    render_provenance(B)
     if live:                                   # Live: a small background check looks for the next minute every 5 s while following; the page above stays still
         h_ = s.get('_health') or {}
         live_watch(h_.get('last_bar_utc'), bool(s.playing), delayed=(h_.get("data_age_sec") or 0) > 150)

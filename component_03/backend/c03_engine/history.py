@@ -62,8 +62,11 @@ class HistoryIndex:
             return
         f = Path(folder)
         try:                                   # optional: fused score + Alert line of every July minute (notebook 60), used only to DRAW a matched hour
-            if (f / 'history_traces_v1.npz').exists():
-                z = np.load(f / 'history_traces_v1.npz')
+            tf = f / 'history_traces_v2.npz'                      # July + Aug-Oct (p_traces_v2.py); falls back to the July-only v1
+            if not tf.exists():
+                tf = f / 'history_traces_v1.npz'
+            if tf.exists():
+                z = np.load(tf)
                 self.tr = {s: (z[f'{s}_ts'], z[f'{s}_F'], z[f'{s}_thr']) for s in ('BTCUSDT', 'ETHUSDT') if f'{s}_F' in z.files}
         except Exception:
             self.tr = {}
